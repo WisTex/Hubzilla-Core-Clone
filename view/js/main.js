@@ -1253,24 +1253,25 @@ function dopin(id) {
 }
 
 function dropItem(url, object) {
+	var confirm = confirmDelete();
+	if(confirm) {
+		var id = url.split('/')[2];
+		$('body').css('cursor', 'wait');
+		$(object + ', #pinned-wrapper-' + id).css('opacity', 0.33);
 
-        var confirm = confirmDelete();
-        if(confirm) {
-                var id = url.split('/')[2];
-                $('body').css('cursor', 'wait');
-                $(object + ', #pinned-wrapper-' + id).fadeTo('fast', 0.33, function () {
-                        $.get(url).done(function() {
-                                $(object + ', #pinned-wrapper-' + id).remove();
-                                $('body').css('cursor', 'auto');
-                        });
-                });
-                if($('#wall-item-pinned-' + id).length)
-                    $.post('pin/pin', { 'id' : id });
-                return true;
+		$.get(url, function() {
+			$(object + ', #pinned-wrapper-' + id).remove();
+			$('body').css('cursor', 'auto');
+		});
+
+		if($('#wall-item-pinned-' + id).length)
+			$.post('pin/pin', { 'id' : id });
+
+		return true;
         }
-        else {
-                return false;
-        }
+	else {
+		return false;
+	}
 }
 
 function dosubthread(ident) {

@@ -2509,7 +2509,7 @@ function copy_folder_to_cloudfiles($channel, $observer_hash, $srcpath, $cloudpat
  * @param string $new_folder_hash
  * @return void|boolean
  */
-function attach_move($channel_id, $resource_id, $new_folder_hash) {
+function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '') {
 
 	$c = channelx_by_n($channel_id);
 	if(! ($c && $resource_id))
@@ -2529,7 +2529,6 @@ function attach_move($channel_id, $resource_id, $new_folder_hash) {
 
 	$oldstorepath = dbunescbin($r[0]['content']);
 
-
 	// find the resource we are moving to
 
 	if($new_folder_hash) {
@@ -2540,6 +2539,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash) {
 		if(! $n)
 			return false;
 
+		$newdirname = $n[0]['filename'];
 		$newalbumname = $n[0]['display_path'];
 		$newstorepath = dbunescbin($n[0]['content']) . '/' . $resource_id;
 	}
@@ -2547,6 +2547,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash) {
 
 		// root directory
 
+		$newdirname = EMPTY_STR;
 		$newalbumname = EMPTY_STR;
 		$newstorepath = 'store/' . $c['channel_address'] . '/' . $resource_id;
 	}
@@ -2555,7 +2556,8 @@ function attach_move($channel_id, $resource_id, $new_folder_hash) {
 
 	// duplicate detection. If 'overwrite' is specified, return false because we can't yet do that.
 
-	$filename = $r[0]['filename'];
+ 	$oldfilename = $r[0]['filename'];
+	$filename = (($newname) ? basename($newname) : $oldfilename);
 
 	// don't do duplicate check unless our parent folder has changed.
 

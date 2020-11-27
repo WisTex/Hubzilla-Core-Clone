@@ -732,24 +732,33 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 	 * @return array Directory[]
  	 */
 	function ChannelList(&$auth) {
+
 		$ret = [];
+		$sql_extra = '';
+		$restricted = false;
 
 		if (intval(get_config('system','cloud_disable_siteroot'))) {
-			return $ret;
+			if (! local_channel())
+				return $ret;
+
+			$restricted = true;
+			$sql_extra = sprintf(" and channel_id = %d ", intval(local_channel()));
 		}
 
-		$r = q("SELECT channel_id, channel_address, profile.publish FROM channel left join profile on profile.uid = channel.channel_id WHERE channel_removed = 0 AND channel_system = 0 AND (channel_pageflags & %d) = 0",
+		$r = q("SELECT channel_id, channel_address, profile.publish FROM channel join profile on profile.uid = channel.channel_id WHERE profile.is_default = 1 and channel_removed = 0 AND channel_system = 0 AND (channel_pageflags & %d) = 0 $sql_extra",
 			intval(PAGE_HIDDEN)
 		);
 
 		if ($r) {
 			foreach ($r as $rr) {
-				if (perm_is_allowed($rr['channel_id'], $auth->observer, 'view_storage') && $rr['publish']) {
+				$publish = (($restricted) ? 1 : $rr['publish']);
+				if (perm_is_allowed($rr['channel_id'], $auth->observer, 'view_storage') && $publish) {
 					logger('found channel: /cloud/' . $rr['channel_address'], LOGGER_DATA);
 					$ret[] = new Directory($rr['channel_address'], $auth);
 				}
 			}
 		}
+
 		return $ret;
 	}
 

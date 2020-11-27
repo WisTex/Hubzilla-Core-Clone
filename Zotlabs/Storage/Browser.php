@@ -108,13 +108,18 @@ class Browser extends DAV\Browser\Plugin {
 			$parentpath['path'] = $fullPath;
 		}
 
+		$folder_list = attach_folder_select_list($this->auth->owner_id);
+
 		$f = array();
 		foreach ($files as $file) {
 			$ft = array();
 			$type = null;
 
 			// This is the current directory, we can skip it
-			if (rtrim($file['href'], '/') == $path) continue;
+			if (rtrim($file['href'], '/') == $path)
+				continue;
+
+
 
 			list(, $name) = \Sabre\Uri\split($file['href']);
 
@@ -166,7 +171,7 @@ class Browser extends DAV\Browser\Plugin {
 			$size = isset($file[200]['{DAV:}getcontentlength']) ? (int)$file[200]['{DAV:}getcontentlength'] : '';
 			$lastmodified = ((isset($file[200]['{DAV:}getlastmodified'])) ? $file[200]['{DAV:}getlastmodified']->getTime()->format('Y-m-d H:i:s') : '');
 
-			$fullPath = \Sabre\HTTP\encodePath('/' . trim($this->server->getBaseUri() . ($path ? $path . '/' : '') . $name, '/'));
+			$relPath = \Sabre\HTTP\encodePath('/' . trim($this->server->getBaseUri() . ($path ? $path . '/' : '') . $name, '/'));
 
 			$displayName = isset($file[200]['{DAV:}displayname']) ? $file[200]['{DAV:}displayname'] : $name;
 
@@ -180,7 +185,7 @@ class Browser extends DAV\Browser\Plugin {
 				$node = $this->server->tree->getNodeForPath(($path ? $path . '/' : '') . $name);
 				foreach (array_reverse($this->iconMap) as $class=>$iconName) {
 					if ($node instanceof $class) {
-						$icon = '<a href="' . $fullPath . '"><img src="' . $this->getAssetUrl($iconName . $this->iconExtension) . '" alt="" width="24"></a>';
+						$icon = '<a href="' . $relPath . '"><img src="' . $this->getAssetUrl($iconName . $this->iconExtension) . '" alt="" width="24"></a>';
 						break;
 					}
 				}
@@ -188,7 +193,7 @@ class Browser extends DAV\Browser\Plugin {
 
 			$parentHash = '';
 			$owner = $this->auth->owner_id;
-			$splitPath = explode('/', $fullPath);
+			$splitPath = explode('/', $relPath);
 			if (count($splitPath) > 3) {
 				for ($i = 3; $i < count($splitPath); $i++) {
 					$attachName = urldecode($splitPath[$i]);
@@ -209,7 +214,7 @@ class Browser extends DAV\Browser\Plugin {
 			$photo_icon = '';
 			$preview_style = intval(get_config('system','thumbnail_security',0));
 
-			$r = q("select content, creator from attach where hash = '%s' and uid = %d limit 1",
+			$r = q("select * from attach where hash = '%s' and uid = %d limit 1",
 				dbesc($attachHash),
 				intval($owner)
 			);
@@ -223,16 +228,16 @@ class Browser extends DAV\Browser\Plugin {
 			}
 
 			if(strpos($type,'image/') === 0 && $attachHash) {
-				$r = q("select resource_id, imgscale from photo where resource_id = '%s' and imgscale in ( %d, %d ) order by imgscale asc limit 1",
+				$p = q("select resource_id, imgscale from photo where resource_id = '%s' and imgscale in ( %d, %d ) order by imgscale asc limit 1",
 					dbesc($attachHash),
 					intval(PHOTO_RES_320),
 					intval(PHOTO_RES_PROFILE_80)
 				);
-				if($r) {
-					$photo_icon = 'photo/' . $r[0]['resource_id'] . '-' . $r[0]['imgscale'];				
+				if($p) {
+					$photo_icon = 'photo/' . $p[0]['resource_id'] . '-' . $p[0]['imgscale'];				
 				}
 				if($type === 'image/svg+xml' && $preview_style > 0) {
-					$photo_icon = $fullPath;
+					$photo_icon = $relPath;
 				}
 			}
 
@@ -242,23 +247,37 @@ class Browser extends DAV\Browser\Plugin {
 
 
 			$attachIcon = ""; // "<a href=\"attach/".$attachHash."\" title=\"".$displayName."\"><i class=\"fa fa-arrow-circle-o-down\"></i></a>";
+			$lockstate = (($r[0]['allow_cid'] || $r[0]['allow_gid'] || $r[0]['deny_cid'] || $r[0]['deny_gid']) ? 'lock' : 'unlock');
 
 			// put the array for this file together
 			$ft['attachId'] = $this->findAttachIdByHash($attachHash);
-			$ft['fileStorageUrl'] = substr($fullPath, 0, strpos($fullPath, "cloud/")) . "filestorage/" . $this->auth->owner_nick;
+			$ft['fileStorageUrl'] = substr($relPath, 0, strpos($relPath, "cloud/")) . "filestorage/" . $this->auth->owner_nick;
 			$ft['icon'] = $icon;
 			$ft['photo_icon'] = $photo_icon;
 			$ft['attachIcon'] = (($size) ? $attachIcon : '');
 			// @todo Should this be an item value, not a global one?
 			$ft['is_owner'] = $is_owner;
 			$ft['is_creator'] = $is_creator;
-			$ft['fullPath'] = $fullPath;
+			$ft['relPath'] = $relPath;
+			$ft['fullPath'] = z_root() . $relPath;
 			$ft['displayName'] = $displayName;
 			$ft['type'] = $type;
 			$ft['size'] = $size;
+			$ft['collection'] = (($type === 'Collection') ? true : false);
 			$ft['sizeFormatted'] = userReadableSize($size);
 			$ft['lastmodified'] = (($lastmodified) ? datetime_convert('UTC', date_default_timezone_get(), $lastmodified) : '');
 			$ft['iconFromType'] = getIconFromType($type);
+
+			$ft['allow_cid'] = acl2json($r[0]['allow_cid']);
+			$ft['allow_gid'] = acl2json($r[0]['allow_gid']);
+			$ft['deny_cid'] = acl2json($r[0]['deny_cid']);
+			$ft['deny_gid'] = acl2json($r[0]['deny_gid']);
+			$ft['lockstate'] = $lockstate;
+			$ft['resource'] = $r[0]['hash'];
+			$ft['folder'] = $r[0]['folder'];
+			$ft['revision'] = $r[0]['revision'];
+			$ft['newfilename'] = ['newfilename', t('Change filename to'), $displayName];
+			$ft['newfolder'] = ['newfolder', t('Move to directory'), $r[0]['folder'], '', $folder_list];
 
 			$f[] = $ft;
 
@@ -273,7 +292,8 @@ class Browser extends DAV\Browser\Plugin {
 		$deftiles = (($is_owner) ? 0 : 1);
 		$tiles = ((array_key_exists('cloud_tiles',$_SESSION)) ? intval($_SESSION['cloud_tiles']) : $deftiles);
 		$_SESSION['cloud_tiles'] = $tiles;
-	
+
+
 		$html .= replace_macros(get_markup_template('cloud.tpl'), array(
 				'$header' => t('Files') . ": " . $this->escapeHTML($path) . "/",
 				'$total' => t('Total'),
@@ -295,9 +315,15 @@ class Browser extends DAV\Browser\Plugin {
 				'$parent' => t('parent'),
 				'$edit' => t('Edit'),
 				'$delete' => t('Delete'),
-				'$nick' => $this->auth->getCurrentUser()
-			));
+				'$nick' => $this->auth->getCurrentUser(),
 
+				'$recurse' => array('recurse', t('Change permission fo all files and sub folders'), 0, '', array(t('No'), t('Yes'))),
+				'$notify' => array('notify_edit', t('Show in your contacts shared folder'), 0, '', array(t('No'), t('Yes'))),
+				'$cpdesc' => t('Copy/paste this code to attach file to a post'),
+				'$cpldesc' => t('Copy/paste this URL to link file from a web page'),
+
+
+			));
 
 		$a = false;
 
