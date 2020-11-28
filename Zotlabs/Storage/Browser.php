@@ -214,7 +214,7 @@ class Browser extends DAV\Browser\Plugin {
 			$photo_icon = '';
 			$preview_style = intval(get_config('system','thumbnail_security',0));
 
-			$r = q("select * from attach where hash = '%s' and uid = %d limit 1",
+			$r = q("SELECT content, creator, hash, revision, allow_cid, allow_gid, deny_cid, deny_gid FROM attach WHERE hash = '%s' AND uid = %d",
 				dbesc($attachHash),
 				intval($owner)
 			);
