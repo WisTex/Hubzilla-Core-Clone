@@ -2588,7 +2588,8 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 				if(preg_match('/(.*?)\([0-9]{1,}\)$/',$basename,$matches))
 					$basename = $matches[1];
 
-				$v = q("select filename from attach where ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
+				$v = q("select filename from attach where uid = %d and ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
+					intval($channel_id),
 					dbesc($basename . $ext),
 					dbesc($basename . '(%)' . $ext),
 					dbesc($new_folder_hash)
