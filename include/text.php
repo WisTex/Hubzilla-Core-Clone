@@ -3791,7 +3791,7 @@ function array_path_exists($str,$arr) {
 
 
 /**
- * @brief Generate a unique ID.
+ * @brief Generate a random v4 UUID.
  *
  * @return string
  */
@@ -3806,6 +3806,22 @@ function new_uuid() {
 	return $hash;
 }
 
+
+/**
+ * @brief Generate a name-based v5 UUID in the URL namespace
+ *
+ * @param string $url
+ * @return string
+ */
+function uuid_from_url($url) {
+
+	try {
+		$hash = Uuid::uuid5(Uuid::NAMESPACE_URL, $url)->toString();
+	} catch (UnsatisfiedDependencyException $e) {
+		$hash = md5($url);
+	}
+	return $hash;
+}
 
 function svg2bb($s) {
 
