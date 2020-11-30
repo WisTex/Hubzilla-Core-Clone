@@ -2552,7 +2552,8 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 		$newstorepath = 'store/' . $c['channel_address'] . '/' . $resource_id;
 	}
 
-	rename($oldstorepath,$newstorepath);
+	if (file_exists($oldstorepath))
+		rename($oldstorepath,$newstorepath);
 
 	// duplicate detection. If 'overwrite' is specified, return false because we can't yet do that.
 
@@ -2671,7 +2672,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 		);
 		if($x) {
 			foreach($x as $xv) {
-				$rs = attach_move($channel_id,$xv['hash'],$r[0]['hash']);
+				$rs = attach_move($channel_id, $xv['hash'], $r[0]['hash']);
 				if(! $rs) {
 					$move_success = false;
 					break;
