@@ -2555,69 +2555,65 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 	if (file_exists($oldstorepath))
 		rename($oldstorepath,$newstorepath);
 
-	// duplicate detection. If 'overwrite' is specified, return false because we can't yet do that.
-
  	$oldfilename = $r[0]['filename'];
 	$filename = (($newname) ? basename($newname) : $oldfilename);
 
-	// don't do duplicate check unless our parent folder has changed.
+	// duplicate detection. If 'overwrite' is specified, return false because we can't yet do that.
 
-	if($r[0]['folder'] !== $new_folder_hash) {
+	$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
+		dbesc($filename),
+		dbesc($new_folder_hash)
+	);
 
-		$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
-			dbesc($filename),
-			dbesc($new_folder_hash)
-		);
-
-		if($s) {
-			$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
-			if($overwrite) {
-				/// @fixme
-				return;
+	if($s) {
+		$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
+		if($overwrite) {
+			/// @fixme
+			return;
+		}
+		else {
+			if(strpos($filename,'.') !== false) {
+				$basename = substr($filename,0,strrpos($filename,'.'));
+				$ext = substr($filename,strrpos($filename,'.'));
 			}
 			else {
-				if(strpos($filename,'.') !== false) {
-					$basename = substr($filename,0,strrpos($filename,'.'));
-					$ext = substr($filename,strrpos($filename,'.'));
-				}
-				else {
-					$basename = $filename;
-					$ext = '';
-				}
-
-				$matches = false;
-				if(preg_match('/(.*?)\([0-9]{1,}\)$/',$basename,$matches))
-					$basename = $matches[1];
-
-				$v = q("select filename from attach where uid = %d and ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
-					intval($channel_id),
-					dbesc($basename . $ext),
-					dbesc($basename . '(%)' . $ext),
-					dbesc($new_folder_hash)
-				);
-
-				if($v) {
-					$x = 1;
-
-					do {
-						$found = false;
-						foreach($v as $vv) {
-							if($vv['filename'] === $basename . '(' . $x . ')' . $ext) {
-								$found = true;
-								break;
-							}
-						}
-						if($found)
-							$x++;
-					}
-					while($found);
-					$filename = $basename . '(' . $x . ')' . $ext;
-				}
-				else
-					$filename = $basename . $ext;
+				$basename = $filename;
+				$ext = '';
 			}
+
+			$matches = false;
+			if(preg_match('/(.*?)\([0-9]{1,}\)$/',$basename,$matches))
+				$basename = $matches[1];
+
+			$v = q("select filename from attach where uid = %d and ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
+				intval($channel_id),
+				dbesc($basename . $ext),
+				dbesc($basename . '(%)' . $ext),
+				dbesc($new_folder_hash)
+			);
+
+			if($v) {
+				$x = 1;
+
+				do {
+					$found = false;
+					foreach($v as $vv) {
+						if($vv['filename'] === $basename . '(' . $x . ')' . $ext) {
+							$found = true;
+							break;
+						}
+					}
+					if($found)
+						$x++;
+				}
+				while($found);
+				$filename = $basename . '(' . $x . ')' . $ext;
+			}
+			else
+				$filename = $basename . $ext;
 		}
 	}
+
 
 	q("update attach set content = '%s', folder = '%s', filename = '%s' where id = %d",
 		dbescbin($newstorepath),
@@ -2739,69 +2735,65 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '')
 	else
 		copy($oldstorepath,$newstorepath);
 
-	// duplicate detection. If 'overwrite' is specified, return false because we can't yet do that.
-
 	$oldfilename = $r[0]['filename'];
 	$filename = (($newname) ? basename($newname) : $oldfilename);
 
-	// don't do duplicate check unless our parent folder has changed.
+	// duplicate detection. If 'overwrite' is specified, return false because we can't yet do that.
 
-	if($r[0]['folder'] !== $new_folder_hash) {
+	$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
+		dbesc($filename),
+		dbesc($new_folder_hash)
+	);
 
-		$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
-			dbesc($filename),
-			dbesc($new_folder_hash)
-		);
-
-		if($s) {
-			$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
-			if($overwrite) {
-				/// @fixme
-				return;
+	if($s) {
+		$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
+		if($overwrite) {
+			/// @fixme
+			return;
+		}
+		else {
+			if(strpos($filename,'.') !== false) {
+				$basename = substr($filename,0,strrpos($filename,'.'));
+				$ext = substr($filename,strrpos($filename,'.'));
 			}
 			else {
-				if(strpos($filename,'.') !== false) {
-					$basename = substr($filename,0,strrpos($filename,'.'));
-					$ext = substr($filename,strrpos($filename,'.'));
-				}
-				else {
-					$basename = $filename;
-					$ext = '';
-				}
-
-				$matches = false;
-				if(preg_match('/(.*?)\([0-9]{1,}\)$/',$basename,$matches))
-					$basename = $matches[1];
-
-				$v = q("select filename from attach where uid = %d and ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
-					intval($channel_id),
-					dbesc($basename . $ext),
-					dbesc($basename . '(%)' . $ext),
-					dbesc($new_folder_hash)
-				);
-
-				if($v) {
-					$x = 1;
-
-					do {
-						$found = false;
-						foreach($v as $vv) {
-							if($vv['filename'] === $basename . '(' . $x . ')' . $ext) {
-								$found = true;
-								break;
-							}
-						}
-						if($found)
-							$x++;
-					}
-					while($found);
-					$filename = $basename . '(' . $x . ')' . $ext;
-				}
-				else
-					$filename = $basename . $ext;
+				$basename = $filename;
+				$ext = '';
 			}
+
+			$matches = false;
+			if(preg_match('/(.*?)\([0-9]{1,}\)$/',$basename,$matches))
+				$basename = $matches[1];
+
+			$v = q("select filename from attach where uid = %d and ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
+				intval($channel_id),
+				dbesc($basename . $ext),
+				dbesc($basename . '(%)' . $ext),
+				dbesc($new_folder_hash)
+			);
+
+			if($v) {
+				$x = 1;
+
+				do {
+					$found = false;
+					foreach($v as $vv) {
+						if($vv['filename'] === $basename . '(' . $x . ')' . $ext) {
+							$found = true;
+							break;
+						}
+					}
+					if($found)
+						$x++;
+				}
+				while($found);
+				$filename = $basename . '(' . $x . ')' . $ext;
+			}
+			else
+				$filename = $basename . $ext;
 		}
 	}
+
 /*
 	q("update attach set content = '%s', folder = '%s', filename = '%s' where id = %d",
 		dbescbin($newstorepath),
