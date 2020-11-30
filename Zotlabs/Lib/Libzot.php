@@ -871,7 +871,7 @@ class Libzot {
 		// what we are missing for true hub independence is for any changes in the primary hub to
 		// get reflected not only in the hublocs, but also to update the URLs and addr in the appropriate xchan
 
-		$s = Libsync::sync_locations($arr, $arr);
+		$s = Libsync::sync_locations($arr, $arr, true);
 
 		if($s) {
 			if($s['change_message'])
