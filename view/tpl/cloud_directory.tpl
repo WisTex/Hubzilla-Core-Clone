@@ -48,7 +48,7 @@
 		</tr>
 	{{if $parentpath}}
 		<tr>
-			<td><i class="fa fa-level-up"></i>{{*{{$parentpath.icon}}*}}</td>
+			<td><i class="fa fa-level-up"></i>{{*$parentpath.icon*}}</td>
 			<td><a href="{{$parentpath.path}}" title="{{$parent}}">..</a></td>
 			<td></td><td></td><td></td><td></td>
 			<td>{{*[{{$parent}}]*}}</td>

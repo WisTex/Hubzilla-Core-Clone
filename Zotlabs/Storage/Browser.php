@@ -214,7 +214,7 @@ class Browser extends DAV\Browser\Plugin {
 			$photo_icon = '';
 			$preview_style = intval(get_config('system','thumbnail_security',0));
 
-			$r = q("SELECT content, creator, hash, revision, folder, allow_cid, allow_gid, deny_cid, deny_gid FROM attach WHERE hash = '%s' AND uid = %d",
+			$r = q("SELECT content, creator, hash, revision, folder, is_dir, allow_cid, allow_gid, deny_cid, deny_gid FROM attach WHERE hash = '%s' AND uid = %d",
 				dbesc($attachHash),
 				intval($owner)
 			);
@@ -278,7 +278,13 @@ class Browser extends DAV\Browser\Plugin {
 			$ft['folder'] = $r[0]['folder'];
 			$ft['revision'] = $r[0]['revision'];
 			$ft['newfilename'] = ['newfilename_' . $id, t('Change filename to'), $displayName];
-			$ft['newfolder'] = ['newfolder_' . $id, t('Move to directory'), $r[0]['folder'], '', $folder_list];
+			// create a copy of the list which we can alter for the current resource
+			$folders = $folder_list;
+			if($r[0]['is_dir']) {
+				// can not copy a folder into itself
+				unset($folders[$parentHash]);
+			}
+			$ft['newfolder'] = ['newfolder_' . $id, t('Move to directory'), $r[0]['folder'], '', $folders];
 			$ft['copy'] = array('copy_' . $id, t('Copy instead of move'), 0, '', array(t('No'), t('Yes')));
 			$ft['recurse'] = array('recurse_' . $id, t('Change permission fo all files and sub folders'), 0, '', array(t('No'), t('Yes')));
 			$ft['notify'] = array('notify_edit_' . $id, t('Show in your contacts shared folder'), 0, '', array(t('No'), t('Yes')));
@@ -298,6 +304,9 @@ class Browser extends DAV\Browser\Plugin {
 		$tiles = ((array_key_exists('cloud_tiles',$_SESSION)) ? intval($_SESSION['cloud_tiles']) : $deftiles);
 		$_SESSION['cloud_tiles'] = $tiles;
 
+		if(get_config('system', 'cloud_disable_siteroot') && $parentpath['path'] === '/cloud') {
+			$parentpath = [];
+		}
 
 		$html .= replace_macros(get_markup_template('cloud.tpl'), array(
 				'$header' => t('Files') . ": " . $this->escapeHTML($path) . "/",
