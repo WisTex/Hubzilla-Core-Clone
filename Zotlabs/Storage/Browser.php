@@ -248,9 +248,10 @@ class Browser extends DAV\Browser\Plugin {
 
 			$attachIcon = ""; // "<a href=\"attach/".$attachHash."\" title=\"".$displayName."\"><i class=\"fa fa-arrow-circle-o-down\"></i></a>";
 			$lockstate = (($r[0]['allow_cid'] || $r[0]['allow_gid'] || $r[0]['deny_cid'] || $r[0]['deny_gid']) ? 'lock' : 'unlock');
+			$id = $this->findAttachIdByHash($attachHash);
 
 			// put the array for this file together
-			$ft['attachId'] = $this->findAttachIdByHash($attachHash);
+			$ft['attachId'] = $id;
 			$ft['fileStorageUrl'] = substr($relPath, 0, strpos($relPath, "cloud/")) . "filestorage/" . $this->auth->owner_nick;
 			$ft['icon'] = $icon;
 			$ft['photo_icon'] = $photo_icon;
@@ -276,8 +277,12 @@ class Browser extends DAV\Browser\Plugin {
 			$ft['resource'] = $r[0]['hash'];
 			$ft['folder'] = $r[0]['folder'];
 			$ft['revision'] = $r[0]['revision'];
-			$ft['newfilename'] = ['newfilename', t('Change filename to'), $displayName];
-			$ft['newfolder'] = ['newfolder', t('Move to directory'), $r[0]['folder'], '', $folder_list];
+			$ft['newfilename'] = ['newfilename_' . $id, t('Change filename to'), $displayName];
+			$ft['newfolder'] = ['newfolder_' . $id, t('Move to directory'), $r[0]['folder'], '', $folder_list];
+			$ft['copy'] = array('copy_' . $id, t('Copy instead of move'), 0, '', array(t('No'), t('Yes')));
+			$ft['recurse'] = array('recurse_' . $id, t('Change permission fo all files and sub folders'), 0, '', array(t('No'), t('Yes')));
+			$ft['notify'] = array('notify_edit_' . $id, t('Show in your contacts shared folder'), 0, '', array(t('No'), t('Yes')));
+
 
 			$f[] = $ft;
 
@@ -317,8 +322,6 @@ class Browser extends DAV\Browser\Plugin {
 				'$delete' => t('Delete'),
 				'$nick' => $this->auth->getCurrentUser(),
 
-				'$recurse' => array('recurse', t('Change permission fo all files and sub folders'), 0, '', array(t('No'), t('Yes'))),
-				'$notify' => array('notify_edit', t('Show in your contacts shared folder'), 0, '', array(t('No'), t('Yes'))),
 				'$cpdesc' => t('Copy/paste this code to attach file to a post'),
 				'$cpldesc' => t('Copy/paste this URL to link file from a web page'),
 

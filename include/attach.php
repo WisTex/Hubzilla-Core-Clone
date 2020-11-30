@@ -2634,7 +2634,6 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 		intval($r[0]['id'])
 	);
 
-
 	if($r[0]['is_photo']) {
 		q("update photo set album = '%s', filename = '%s', os_path = '%s', display_path = '%s'
 			where resource_id = '%s' and uid = %d",
@@ -2646,11 +2645,22 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 			intval($channel_id)
 		);
 
-		q("update photo set content = '%s' where resource_id = '%s' and uid = %d and imgscale = 0",
+		q("update photo set content = CASE imgscale WHEN 0 THEN '%s' ELSE CONCAT('%s', '-', imgscale) END where resource_id = '%s' and uid = %d and os_storage = 1",
+			dbescbin($newstorepath),
 			dbescbin($newstorepath),
 			dbesc($resource_id),
 			intval($channel_id)
 		);
+
+		// now rename the thumbnails in os_storage - the original should have been copied before already
+		$ps = q("SELECT content, imgscale FROM photo WHERE uid = %d AND resource_id = '%s' and imgscale > 0 and os_storage = 1",
+			intval($channel_id),
+			dbesc($resource_id)
+		);
+
+		foreach($ps as $p) {
+			rename($oldstorepath . '-' . $p['imgscale'], $p['content']);
+		}
 	}
 
 	if($r[0]['is_dir']) {
@@ -2674,6 +2684,195 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 	return true;
 }
 
+
+function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '') {
+
+	$c = channelx_by_n($channel_id);
+	if(! ($c && $resource_id))
+		return false;
+
+
+	// find the resource to be moved
+
+	$r = q("select * from attach where hash = '%s' and uid = %d limit 1",
+		dbesc($resource_id),
+		intval($channel_id)
+	);
+	if(! $r) {
+		logger('resource_id not found');
+		return false;
+	}
+
+	$a = $r[0];
+	$new_resource_id = new_uuid();
+
+	$oldstorepath = dbunescbin($r[0]['content']);
+
+	// find the resource we are copying to
+
+	if($new_folder_hash) {
+		$n = q("select * from attach where hash = '%s' and uid = %d and is_dir = 1 limit 1",
+			dbesc($new_folder_hash),
+			intval($channel_id)
+		);
+		if(! $n) {
+			logger('new_folder_hash not found');
+			return false;
+		}
+
+		$newdirname = $n[0]['filename'];
+		$newalbumname = $n[0]['display_path'];
+		$newstorepath = dbunescbin($n[0]['content']) . '/' . $new_resource_id;
+	}
+	else {
+
+		// root directory
+
+		$newdirname = EMPTY_STR;
+		$newalbumname = EMPTY_STR;
+		$newstorepath = 'store/' . $c['channel_address'] . '/' . $new_resource_id;
+	}
+
+	if(is_dir($oldstorepath))
+		os_mkdir($newstorepath,STORAGE_DEFAULT_PERMISSIONS,true);
+	else
+		copy($oldstorepath,$newstorepath);
+
+	// duplicate detection. If 'overwrite' is specified, return false because we can't yet do that.
+
+	$oldfilename = $r[0]['filename'];
+	$filename = (($newname) ? basename($newname) : $oldfilename);
+
+	// don't do duplicate check unless our parent folder has changed.
+
+	if($r[0]['folder'] !== $new_folder_hash) {
+
+		$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
+			dbesc($filename),
+			dbesc($new_folder_hash)
+		);
+
+		if($s) {
+			$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
+			if($overwrite) {
+				/// @fixme
+				return;
+			}
+			else {
+				if(strpos($filename,'.') !== false) {
+					$basename = substr($filename,0,strrpos($filename,'.'));
+					$ext = substr($filename,strrpos($filename,'.'));
+				}
+				else {
+					$basename = $filename;
+					$ext = '';
+				}
+
+				$matches = false;
+				if(preg_match('/(.*?)\([0-9]{1,}\)$/',$basename,$matches))
+					$basename = $matches[1];
+
+				$v = q("select filename from attach where uid = %d and ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
+					intval($channel_id),
+					dbesc($basename . $ext),
+					dbesc($basename . '(%)' . $ext),
+					dbesc($new_folder_hash)
+				);
+
+				if($v) {
+					$x = 1;
+
+					do {
+						$found = false;
+						foreach($v as $vv) {
+							if($vv['filename'] === $basename . '(' . $x . ')' . $ext) {
+								$found = true;
+								break;
+							}
+						}
+						if($found)
+							$x++;
+					}
+					while($found);
+					$filename = $basename . '(' . $x . ')' . $ext;
+				}
+				else
+					$filename = $basename . $ext;
+			}
+		}
+	}
+/*
+	q("update attach set content = '%s', folder = '%s', filename = '%s' where id = %d",
+		dbescbin($newstorepath),
+		dbesc($new_folder_hash),
+		dbesc($filename),
+		intval($r[0]['id'])
+	);
+*/
+
+	unset($a['id']);
+	$a['hash'] = $new_resource_id;
+	$a['content'] = $newstorepath;
+	$a['folder'] = $new_folder_hash;
+	$a['filename'] = $filename;
+
+	create_table_from_array('attach', $a, ['content']);
+
+	$x = attach_syspaths($channel_id, $new_resource_id);
+
+	q("update attach set os_path = '%s', display_path = '%s' where hash = '%s'",
+		dbesc($x['os_path']),
+		dbesc($x['path']),
+		dbesc($new_resource_id)
+	);
+
+	if($a['is_photo']) {
+
+		$ps = q("SELECT * FROM photo WHERE uid = %d AND resource_id = '%s'",
+			intval($channel_id),
+			dbesc($resource_id)
+		);
+
+		foreach($ps as $p) {
+			unset($p['id']);
+			$p['resource_id'] = $new_resource_id;
+			$p['album'] = $newalbumname;
+			$p['filename'] = $filename;
+			$p['os_path'] = $x['os_path'];
+			$p['display_path'] = $x['path'];
+			if($p['os_storage']) {
+				$p['content'] = (($p['imgscale'] == 0) ? $newstorepath : $newstorepath . '-' . $p['imgscale']);
+
+				//the original should have been copied before already
+				if($p['imgscale'] > 0)
+					copy($oldstorepath, $p['content']);
+			}
+
+			create_table_from_array('photo', $p, ['content']);
+
+		}
+	}
+
+	if($r[0]['is_dir']) {
+		$copy_success = true;
+		$x = q("select hash from attach where folder = '%s' and uid = %d",
+			dbesc($r[0]['hash']),
+			intval($channel_id)
+		);
+		if($x) {
+			foreach($x as $xv) {
+				$rs = attach_copy($channel_id,$xv['hash'],$new_resource_id);
+				if(! $rs) {
+					$copy_success = false;
+					break;
+				}
+			}
+		}
+		return $copy_success;
+	}
+
+	return true;
+}
 
 /**
  * Used to generate a select input box of all your folders

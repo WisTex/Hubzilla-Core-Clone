@@ -77,13 +77,15 @@
 		<tr id="cloud-tools-{{$item.attachId}}" class="cloud-tools">
 			<td id="attach-edit-panel-{{$item.attachId}}" colspan="9">
 				<form id="attach_edit_form_{{$item.attachId}}" action="attach_edit/{{$nick}}/{{$item.attachId}}" method="post" class="acl-form" data-form_id="attach_edit_form_{{$item.attachId}}" data-allow_cid='{{$item.allow_cid}}' data-allow_gid='{{$item.allow_gid}}' data-deny_cid='{{$item.deny_cid}}' data-deny_gid='{{$item.deny_gid}}'>
+					<input type="hidden" name="attach_id" value="{{$item.attachId}}" />
 					<input type="hidden" name="resource" value="{{$item.resource}}" />
 					<input type="hidden" name="filename" value="{{$item.displayName}}" />
 					<input type="hidden" name="folder" value="{{$item.folder}}" />
 					{{include file="field_input.tpl" field=$item.newfilename}}
 					{{include file="field_select.tpl" field=$item.newfolder}}
-					{{if !$item.collection}}{{include file="field_checkbox.tpl" field=$notify}}{{/if}}
-					{{if $item.collection}}{{include file="field_checkbox.tpl" field=$recurse}}{{/if}}
+					{{include file="field_checkbox.tpl" field=$item.copy}}
+					{{if !$item.collection}}{{include file="field_checkbox.tpl" field=$item.notify}}{{/if}}
+					{{if $item.collection}}{{include file="field_checkbox.tpl" field=$item.recurse}}{{/if}}
 					<div id="attach-edit-tools-share" class="btn-group form-group">
 						{{if !$item.collection}}
 						<a href="/rpost?attachment=[attachment]{{$item.resource}},{{$item.revision}}[/attachment]" id="attach-btn" class="btn btn-outline-secondary btn-sm" title="{{$attach_btn_title}}">
