@@ -24,7 +24,7 @@ class Attach_edit extends Controller {
 		$folder  = ((x($_POST, 'folder'))  ? notags($_POST['folder'])  : '');
 		$newfolder  = ((x($_POST, 'newfolder_' . $attach_id))  ? notags($_POST['newfolder_' . $attach_id])  : '');
 		$filename = ((x($_POST, 'filename')) ? notags($_POST['filename']) : '');
- 		$newfilename = ((x($_POST, 'newfilename_' . $attach_id)) ? notags($_POST['newfilename_' . $attach_id]) : '');
+		$newfilename = ((x($_POST, 'newfilename_' . $attach_id)) ? notags($_POST['newfilename_' . $attach_id]) : '');
 		$recurse = ((x($_POST, 'recurse_' . $attach_id)) ? intval($_POST['recurse_' . $attach_id]) : 0);
 		$notify = ((x($_POST, 'notify_edit_' . $attach_id)) ? intval($_POST['notify_edit_' . $attach_id]) : 0);
 		$copy = ((x($_POST, 'copy_' . $attach_id)) ? intval($_POST['copy_' . $attach_id]) : 0);
@@ -32,10 +32,10 @@ class Attach_edit extends Controller {
 		$channel = App::get_channel();
 
 		if ($copy) {
-			attach_copy($channel['channel_id'], $resource, $newfolder, $newfilename);		
+			attach_copy($channel['channel_id'], $resource, $newfolder, $newfilename);
 		}
- 		elseif ($folder !== $newfolder || $filename !== $newfilename) {
-			attach_move($channel['channel_id'], $resource, $newfolder, $newfilename);			
+		elseif ($folder !== $newfolder || $filename !== $newfilename) {
+			attach_move($channel['channel_id'], $resource, $newfolder, $newfilename);
 		}
 
 		$acl = new AccessList($channel);
@@ -58,7 +58,7 @@ class Attach_edit extends Controller {
 		}
 
 		goaway(dirname($url));
-		
+
 	}
 
 }
