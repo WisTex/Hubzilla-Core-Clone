@@ -1534,7 +1534,7 @@ function attach_drop_photo($channel_id,$resource) {
 		$interactive = (($x[0]['item_hidden']) ? false : true);
 		drop_item($x[0]['id'], $interactive, $stage);
 	}
-	
+
 	$r = q("SELECT content FROM photo WHERE resource_id = '%s' AND uid = %d AND os_storage = 1",
 		dbesc($resource),
 		intval($channel_id)
@@ -1544,7 +1544,7 @@ function attach_drop_photo($channel_id,$resource) {
 			@unlink(dbunescbin($i['content']));
 		}
 	}
-	
+
 	q("DELETE FROM photo WHERE uid = %d AND resource_id = '%s'",
 		intval($channel_id),
 		dbesc($resource)
