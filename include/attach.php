@@ -2708,7 +2708,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
  * @param (optional) string $newname
  * @return array Associative array with:
  *  * \e boolean \b success
- *  * \e string \b resource_id
+ *  * \e string \b resource_id of the new resource
  */
 function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '') {
 
