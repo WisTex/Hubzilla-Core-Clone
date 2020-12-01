@@ -32,11 +32,14 @@ class Attach_edit extends Controller {
 		$channel = App::get_channel();
 
 		if ($copy) {
-			attach_copy($channel['channel_id'], $resource, $newfolder, $newfilename);
+			$x = attach_copy($channel['channel_id'], $resource, $newfolder, $newfilename);
 		}
 		elseif ($folder !== $newfolder || $filename !== $newfilename) {
-			attach_move($channel['channel_id'], $resource, $newfolder, $newfilename);
+			$x = attach_move($channel['channel_id'], $resource, $newfolder, $newfilename);
 		}
+
+		if($x['success'])
+			$resource = $x['resource_id'];
 
 		$acl = new AccessList($channel);
 		$acl->set_from_array($_POST);

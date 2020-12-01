@@ -2495,7 +2495,7 @@ function copy_folder_to_cloudfiles($channel, $observer_hash, $srcpath, $cloudpat
 	return true;
 }
 /**
- * This function performs an in place directory-to-directory move of a stored attachment or photo.
+ * This function performs an in place directory-to-directory move of a stored resource.
  * The data is physically moved in the store/nickname storage location and the paths adjusted
  * in the attach structure (and if applicable the photo table). The new 'album name' is recorded
  * for photos and will show up immediately there.
@@ -2507,13 +2507,21 @@ function copy_folder_to_cloudfiles($channel, $observer_hash, $srcpath, $cloudpat
  * @param int $channel_id
  * @param int $resource_id
  * @param string $new_folder_hash
- * @return void|boolean
+ * @param (optional) string $newname
+ * @return array Associative array with:
+ *  * \e boolean \b success
+ *  * \e string \b resource_id
  */
 function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '') {
 
+	$ret = [
+		'success' => false,
+		'resource_id' => $resource_id
+	];
+
 	$c = channelx_by_n($channel_id);
 	if(! ($c && $resource_id))
-		return false;
+		return $ret;
 
 
 	// find the resource to be moved
@@ -2524,7 +2532,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 	);
 	if(! $r) {
 		logger('resource_id not found');
-		return false;
+		return $ret;
 	}
 
 	$oldstorepath = dbunescbin($r[0]['content']);
@@ -2537,7 +2545,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 			intval($channel_id)
 		);
 		if(! $n)
-			return false;
+			return $ret;
 
 		$newdirname = $n[0]['filename'];
 		$newalbumname = $n[0]['display_path'];
@@ -2569,7 +2577,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 		$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
 		if($overwrite) {
 			/// @fixme
-			return;
+			return $ret;
 		}
 		else {
 			if(strpos($filename,'.') !== false) {
@@ -2669,25 +2677,49 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 		if($x) {
 			foreach($x as $xv) {
 				$rs = attach_move($channel_id, $xv['hash'], $r[0]['hash']);
-				if(! $rs) {
+				if(! $rs['success']) {
 					$move_success = false;
 					break;
 				}
 			}
 		}
-		return $move_success;
+
+		$ret['success'] = $move_success;
+		return $ret;
 	}
 
-	return true;
+	$ret['success'] = true;
+	return $ret;
 }
 
-
+/**
+ * This function performs an in place directory-to-directory copy of a stored resource.
+ * The data is physically copyed in the store/nickname storage location and the paths adjusted
+ * in the attach structure (and if applicable the photo table). The new 'album name' is recorded
+ * for photos and will show up immediately there.
+ * This takes a channel_id, attach.hash of the file to copy (this is the same as a photo resource_id), and
+ * the attach.hash of the new parent folder, which must already exist. If $new_folder_hash is blank or empty,
+ * the new file is copyed to the root of the channel's storage area.
+ *
+ *
+ * @param int $channel_id
+ * @param int $resource_id
+ * @param string $new_folder_hash
+ * @param (optional) string $newname
+ * @return array Associative array with:
+ *  * \e boolean \b success
+ *  * \e string \b resource_id
+ */
 function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '') {
+
+	$ret = [
+		'success' => false,
+		'resource_id' => ''
+	];
 
 	$c = channelx_by_n($channel_id);
 	if(! ($c && $resource_id))
-		return false;
-
+		return $ret;
 
 	// find the resource to be moved
 
@@ -2697,11 +2729,13 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '')
 	);
 	if(! $r) {
 		logger('resource_id not found');
-		return false;
+		return $ret;
 	}
 
 	$a = $r[0];
 	$new_resource_id = new_uuid();
+
+	$ret['resource_id'] = $new_resource_id;
 
 	$oldstorepath = dbunescbin($r[0]['content']);
 
@@ -2714,7 +2748,7 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '')
 		);
 		if(! $n) {
 			logger('new_folder_hash not found');
-			return false;
+			return $ret;
 		}
 
 		$newdirname = $n[0]['filename'];
@@ -2749,7 +2783,7 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '')
 		$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
 		if($overwrite) {
 			/// @fixme
-			return;
+			return $ret;
 		}
 		else {
 			if(strpos($filename,'.') !== false) {
@@ -2793,15 +2827,6 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '')
 				$filename = $basename . $ext;
 		}
 	}
-
-/*
-	q("update attach set content = '%s', folder = '%s', filename = '%s' where id = %d",
-		dbescbin($newstorepath),
-		dbesc($new_folder_hash),
-		dbesc($filename),
-		intval($r[0]['id'])
-	);
-*/
 
 	unset($a['id']);
 	$a['hash'] = $new_resource_id;
@@ -2855,16 +2880,19 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '')
 		if($x) {
 			foreach($x as $xv) {
 				$rs = attach_copy($channel_id,$xv['hash'],$new_resource_id);
-				if(! $rs) {
+				if(! $rs['success']) {
 					$copy_success = false;
 					break;
 				}
 			}
 		}
-		return $copy_success;
+
+		$ret['success'] = $copy_success;
+		return $ret;
 	}
 
-	return true;
+	$ret['success'] = true;
+	return $ret;
 }
 
 /**

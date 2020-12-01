@@ -484,7 +484,8 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 			return false;
 		}
 
-		return attach_move($this->auth->owner_id, $sourceNode->data->hash, $this->folder_hash);
+		$ret = attach_move($this->auth->owner_id, $sourceNode->data->hash, $this->folder_hash);
+		return $ret['success'];
 
 	}
 
