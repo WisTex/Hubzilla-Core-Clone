@@ -1,8 +1,7 @@
 #files-mkdir-tools,
 #files-upload-tools,
-.cloud-tools,
 .link-code,
-[id^="perms-panel-"] {
+.cloud-tool {
 	display: none;
 }
 
@@ -35,20 +34,20 @@
 	word-break: break-all;
 }
 
-#cloud-index th:nth-child(8),
-#cloud-index td:nth-child(8){
-	padding: 7px 3px;
+#cloud-index th:nth-child(5),
+#cloud-index td:nth-child(5){
+	padding: 7px 0px;
 	white-space: nowrap;
 }
 
-#cloud-index th:nth-child(9),
-#cloud-index td:nth-child(9){
-	padding: 7px 10px 7px 7px;
+#cloud-index th:nth-child(6),
+#cloud-index td:nth-child(6){
+	padding: 7px 0px;
 	white-space: nowrap;
 }
 
 .cloud-index-tool {
-	padding: 7px 10px;
+	padding: 7px 0px;
 }
 
 #files-upload {

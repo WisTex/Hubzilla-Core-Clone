@@ -7,9 +7,53 @@ $(document).ready(function () {
 	if (window.File && window.FileList && window.FileReader) {
 		UploadInit();
 	}
+
+	$('.cloud-tool-perms-btn').on('click', function (e) {
+		e.preventDefault();
+		let id = $(this).data('id');
+		$('.cloud-tool').hide();
+		$('.cloud-index').removeClass('cloud-index-active');
+
+		$('#cloud-tool-submit-' + id).show();
+		$('#cloud-index-' + id).addClass('cloud-index-active');
+	});
+
+	$('.cloud-tool-rename-btn').on('click', function (e) {
+		e.preventDefault();
+		let id = $(this).data('id');
+
+		$('.cloud-tool').hide();
+		$('.cloud-index').removeClass('cloud-index-active');
+
+		$('#cloud-tool-rename-' + id + ', #cloud-tool-submit-' + id).show();
+		$('#cloud-index-' + id).addClass('cloud-index-active');
+	});
+
+	$('.cloud-tool-move-btn').on('click', function (e) {
+		e.preventDefault();
+		let id = $(this).data('id');
+		$('.cloud-tool').hide();
+		$('.cloud-index').removeClass('cloud-index-active');
+
+		$('#cloud-tool-move-' + id + ', #cloud-tool-submit-' + id).show();
+		$('#cloud-index-' + id).addClass('cloud-index-active');
+	});
+
+	$('.cloud-tool-download-btn').on('click', function (e) {
+		let id = $(this).data('id');
+		$('.cloud-tool').hide();
+	});
+
+	$('.cloud-tool-cancel-btn').on('click', function (e) {
+		e.preventDefault();
+		let id = $(this).data('id');
+		$('.cloud-tool').hide();
+		$('#cloud-index-' + id).removeClass('cloud-index-active');
+		$('#attach_edit_form_' + id).trigger('reset');
+	});
+
 });
 
-//
 // initialize
 function UploadInit() {
 
@@ -18,7 +62,6 @@ function UploadInit() {
 	var submit = $("#upload-submit");
 	var count = 1;
 
- 
 	$('#invisible-cloud-file-upload').fileupload({
 			url: 'file_upload',
 			dataType: 'json',
@@ -26,8 +69,8 @@ function UploadInit() {
 			maxChunkSize: 4 * 1024 * 1024,
 
 			add: function(e,data) {
-				$(data.files).each( function() { this.count = ++ count; prepareHtml(this); }); 
-				
+				$(data.files).each( function() { this.count = ++ count; prepareHtml(this); });
+
 				var allow_cid = ($('#ajax-upload-files').data('allow_cid') || []);
 				var allow_gid = ($('#ajax-upload-files').data('allow_gid') || []);
 				var deny_cid  = ($('#ajax-upload-files').data('deny_cid') || []);
@@ -58,7 +101,7 @@ function UploadInit() {
 
 				// there will only be one file, the one we are looking for
 
-				$(data.files).each( function() { 
+				$(data.files).each( function() {
 					var idx = this.count;
 
 					// Dynamically update the percentage complete displayed in the file upload list
@@ -246,7 +289,7 @@ function UploadFile(file, idx) {
 		$('#upload-progress-' + idx).html('<span style="color: red;">ERROR</span>');
 	});
 
-	// POST to the entire cloud path 
+	// POST to the entire cloud path
 //	xhr.open('post', 'file_upload', true);
 
 //	var formfields = $("#ajax-upload-files").serializeArray();

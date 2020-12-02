@@ -203,12 +203,12 @@ class Browser extends DAV\Browser\Plugin {
 			}
 
 
-			// generate preview icons for tile view. 
+			// generate preview icons for tile view.
 			// Currently we only handle images, but this could potentially be extended with plugins
-			// to provide document and video thumbnails. SVG, PDF and office documents have some 
+			// to provide document and video thumbnails. SVG, PDF and office documents have some
 			// security concerns and should only be allowed on single-user sites with tightly controlled
-			// upload access. system.thumbnail_security should be set to 1 if you want to include these 
-			// types 
+			// upload access. system.thumbnail_security should be set to 1 if you want to include these
+			// types
 
 			$is_creator = false;
 			$photo_icon = '';
@@ -234,7 +234,7 @@ class Browser extends DAV\Browser\Plugin {
 					intval(PHOTO_RES_PROFILE_80)
 				);
 				if($p) {
-					$photo_icon = 'photo/' . $p[0]['resource_id'] . '-' . $p[0]['imgscale'];				
+					$photo_icon = 'photo/' . $p[0]['resource_id'] . '-' . $p[0]['imgscale'];
 				}
 				if($type === 'image/svg+xml' && $preview_style > 0) {
 					$photo_icon = $relPath;
@@ -273,6 +273,12 @@ class Browser extends DAV\Browser\Plugin {
 			$ft['allow_gid'] = acl2json($r[0]['allow_gid']);
 			$ft['deny_cid'] = acl2json($r[0]['deny_cid']);
 			$ft['deny_gid'] = acl2json($r[0]['deny_gid']);
+
+			$ft['raw_allow_cid'] = $r[0]['allow_cid'];
+			$ft['raw_allow_gid'] = $r[0]['allow_gid'];
+			$ft['raw_deny_cid'] = $r[0]['deny_cid'];
+			$ft['raw_deny_gid'] = $r[0]['deny_gid'];
+
 			$ft['lockstate'] = $lockstate;
 			$ft['resource'] = $r[0]['hash'];
 			$ft['folder'] = $r[0]['folder'];
@@ -284,16 +290,15 @@ class Browser extends DAV\Browser\Plugin {
 				// can not copy a folder into itself
 				unset($folders[$parentHash]);
 			}
-			$ft['newfolder'] = ['newfolder_' . $id, t('Move to directory'), $r[0]['folder'], '', $folders];
-			$ft['copy'] = array('copy_' . $id, t('Copy instead of move'), 0, '', array(t('No'), t('Yes')));
-			$ft['recurse'] = array('recurse_' . $id, t('Change permission fo all files and sub folders'), 0, '', array(t('No'), t('Yes')));
-			$ft['notify'] = array('notify_edit_' . $id, t('Show in your contacts shared folder'), 0, '', array(t('No'), t('Yes')));
 
+			$ft['newfolder'] = ['newfolder_' . $id, t('Select a target location'), $r[0]['folder'], '', $folders];
+			$ft['copy'] = array('copy_' . $id, t('Copy to target location'), 0, '', array(t('No'), t('Yes')));
+			$ft['recurse'] = array('recurse_' . $id, t('Set permissions for all files and sub folders'), 0, '', array(t('No'), t('Yes')));
+			$ft['notify'] = array('notify_edit_' . $id, t('Notify your contacts about this file'), 0, '', array(t('No'), t('Yes')));
 
 			$f[] = $ft;
 
 		}
-
 
 		$output = '';
 		if ($this->enablePost) {
@@ -327,7 +332,7 @@ class Browser extends DAV\Browser\Plugin {
 				'$size' => t('Size'),
 				'$lastmod' => t('Last Modified'),
 				'$parent' => t('parent'),
-				'$edit' => t('Edit'),
+				'$edit' => t('Submit'),
 				'$delete' => t('Delete'),
 				'$nick' => $this->auth->getCurrentUser(),
 
