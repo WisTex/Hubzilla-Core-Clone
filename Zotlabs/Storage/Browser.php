@@ -269,19 +269,22 @@ class Browser extends DAV\Browser\Plugin {
 				intval(TERM_OBJ_FILE)
 			);
 
+			$categories = [];
 			if($terms) {
 				foreach($terms as $t) {
 					$term = htmlspecialchars($t['term'],ENT_COMPAT,'UTF-8',false) ;
 					if(! trim($term))
 						continue;
 					$categories[] = array('term' => $term, 'url' => $t['url']);
+					if ($terms_str)
+						$terms_str .= ',';
+					$terms_str .= $term;
 				}
 				$ft['terms'] = replace_macros(get_markup_template('item_categories.tpl'),array(
 					'$categories' => $categories
 				));
-				unset($categories);
-
 			}
+
 			// put the array for this file together
 			$ft['attachId'] = $id;
 			$ft['fileStorageUrl'] = substr($relPath, 0, strpos($relPath, "cloud/")) . "filestorage/" . $this->auth->owner_nick;
@@ -316,7 +319,7 @@ class Browser extends DAV\Browser\Plugin {
 			$ft['folder'] = $r[0]['folder'];
 			$ft['revision'] = $r[0]['revision'];
 			$ft['newfilename'] = ['newfilename_' . $id, t('Change filename to'), $displayName];
-			$ft['categories'] = ['categories_' . $id, t('Add categories'), ''];
+			$ft['categories'] = ['categories_' . $id, t('Categories'), $terms_str];
 
 			// create a copy of the list which we can alter for the current resource
 			$folders = $folder_list;
