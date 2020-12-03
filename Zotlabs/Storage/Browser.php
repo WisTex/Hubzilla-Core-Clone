@@ -76,8 +76,11 @@ class Browser extends DAV\Browser\Plugin {
 	 * @param string $path which should be displayed
 	 */
 	public function generateDirectoryIndex($path) {
+
+
 		// (owner_id = channel_id) is visitor owner of this directory?
 		$is_owner = ((local_channel() && $this->auth->owner_id == local_channel()) ? true : false);
+		$cat = $_REQUEST['cat'];
 
 		if ($this->auth->getTimezone())
 			date_default_timezone_set($this->auth->getTimezone());
@@ -88,13 +91,14 @@ class Browser extends DAV\Browser\Plugin {
 			$html = '';
 		}
 
-		$files = $this->server->getPropertiesForPath($path, array(
+		$files = $this->server->getPropertiesForPath($path, [
 			'{DAV:}displayname',
 			'{DAV:}resourcetype',
 			'{DAV:}getcontenttype',
 			'{DAV:}getcontentlength',
 			'{DAV:}getlastmodified',
-			), 1);
+			'{DAV:}getetag'
+			], 1);
 
 		$parent = $this->server->tree->getNodeForPath($path);
 
@@ -193,15 +197,26 @@ class Browser extends DAV\Browser\Plugin {
 
 			$parentHash = '';
 			$owner = $this->auth->owner_id;
-			$splitPath = explode('/', $relPath);
-			if (count($splitPath) > 3) {
-				for ($i = 3; $i < count($splitPath); $i++) {
-					$attachName = urldecode($splitPath[$i]);
-					$attachHash = $this->findAttachHash($owner, $parentHash, $attachName);
-					$parentHash = $attachHash;
-				}
-			}
 
+			if (isset($file[200]['{DAV:}getetag'])) {
+				$attachHash = trim($file[200]['{DAV:}getetag'], '"');
+				$parentHash	= $parent->folder_hash;
+			}
+			else {
+				// folders don't have an etag - can we get the folder hash in an other way?
+				$splitPath = explode('/', $relPath);
+				if (count($splitPath) > 3) {
+					for ($i = 3; $i < count($splitPath); $i++) {
+						$attachName = urldecode($splitPath[$i]);
+						if($cat)
+							$attachHash = $this->findAttachHashFlat($owner, $attachName);
+						else
+							$attachHash = $this->findAttachHash($owner, $parentHash, $attachName);
+						$parentHash = $attachHash;
+					}
+				}
+
+			}
 
 			// generate preview icons for tile view.
 			// Currently we only handle images, but this could potentially be extended with plugins
@@ -214,11 +229,10 @@ class Browser extends DAV\Browser\Plugin {
 			$photo_icon = '';
 			$preview_style = intval(get_config('system','thumbnail_security',0));
 
-			$r = q("SELECT content, creator, hash, revision, folder, is_dir, allow_cid, allow_gid, deny_cid, deny_gid FROM attach WHERE hash = '%s' AND uid = %d",
+			$r = q("SELECT id, content, creator, hash, revision, folder, display_path, is_dir, allow_cid, allow_gid, deny_cid, deny_gid FROM attach WHERE hash = '%s' AND uid = %d",
 				dbesc($attachHash),
 				intval($owner)
 			);
-
 			if($r) {
 				$is_creator = (($r[0]['creator'] === get_observer_hash()) ? true : false);
 			 	if(file_exists(dbunescbin($r[0]['content']) . '.thumb')) {
@@ -248,8 +262,26 @@ class Browser extends DAV\Browser\Plugin {
 
 			$attachIcon = ""; // "<a href=\"attach/".$attachHash."\" title=\"".$displayName."\"><i class=\"fa fa-arrow-circle-o-down\"></i></a>";
 			$lockstate = (($r[0]['allow_cid'] || $r[0]['allow_gid'] || $r[0]['deny_cid'] || $r[0]['deny_gid']) ? 'lock' : 'unlock');
-			$id = $this->findAttachIdByHash($attachHash);
+			$id = $r[0]['id'];
 
+			$terms = q("select * from term where oid = %d AND otype = %d",
+				intval($id),
+				intval(TERM_OBJ_FILE)
+			);
+
+			if($terms) {
+				foreach($terms as $t) {
+					$term = htmlspecialchars($t['term'],ENT_COMPAT,'UTF-8',false) ;
+					if(! trim($term))
+						continue;
+					$categories[] = array('term' => $term, 'url' => $t['url']);
+				}
+				$ft['terms'] = replace_macros(get_markup_template('item_categories.tpl'),array(
+					'$categories' => $categories
+				));
+				unset($categories);
+
+			}
 			// put the array for this file together
 			$ft['attachId'] = $id;
 			$ft['fileStorageUrl'] = substr($relPath, 0, strpos($relPath, "cloud/")) . "filestorage/" . $this->auth->owner_nick;
@@ -259,8 +291,8 @@ class Browser extends DAV\Browser\Plugin {
 			// @todo Should this be an item value, not a global one?
 			$ft['is_owner'] = $is_owner;
 			$ft['is_creator'] = $is_creator;
-			$ft['relPath'] = $relPath;
-			$ft['fullPath'] = z_root() . $relPath;
+			$ft['relPath'] = '/cloud/' . $this->auth->getCurrentUser() .'/' . $r[0]['display_path'];
+			$ft['fullPath'] = z_root() . '/cloud/' . $this->auth->getCurrentUser() .'/' . $r[0]['display_path'];
 			$ft['displayName'] = $displayName;
 			$ft['type'] = $type;
 			$ft['size'] = $size;
@@ -284,6 +316,8 @@ class Browser extends DAV\Browser\Plugin {
 			$ft['folder'] = $r[0]['folder'];
 			$ft['revision'] = $r[0]['revision'];
 			$ft['newfilename'] = ['newfilename_' . $id, t('Change filename to'), $displayName];
+			$ft['categories'] = ['categories_' . $id, t('Add categories'), ''];
+
 			// create a copy of the list which we can alter for the current resource
 			$folders = $folder_list;
 			if($r[0]['is_dir']) {
@@ -313,8 +347,10 @@ class Browser extends DAV\Browser\Plugin {
 			$parentpath = [];
 		}
 
+		$header = (($cat) ? t('File categories') . ": " . $this->escapeHTML($path) . "/" : t('Files') . ": " . $this->escapeHTML($path) . "/");
+
 		$html .= replace_macros(get_markup_template('cloud.tpl'), array(
-				'$header' => t('Files') . ": " . $this->escapeHTML($path) . "/",
+				'$header' => $header,
 				'$total' => t('Total'),
 				'$actionspanel' => $output,
 				'$shared' => t('Shared'),
@@ -484,6 +520,21 @@ class Browser extends DAV\Browser\Plugin {
 		$r = q("SELECT hash FROM attach WHERE uid = %d AND folder = '%s' AND filename = '%s' ORDER BY edited DESC LIMIT 1",
 			intval($owner),
 			dbesc($parentHash),
+			dbesc($attachName)
+		);
+		$hash = '';
+		if ($r) {
+			foreach ($r as $rr) {
+				$hash = $rr['hash'];
+			}
+		}
+
+		return $hash;
+	}
+
+	protected function findAttachHashFlat($owner, $attachName) {
+		$r = q("SELECT hash FROM attach WHERE uid = %d AND filename = '%s' ORDER BY edited DESC LIMIT 1",
+			intval($owner),
 			dbesc($attachName)
 		);
 		$hash = '';

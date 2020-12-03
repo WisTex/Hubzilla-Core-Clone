@@ -1,6 +1,5 @@
 #files-mkdir-tools,
 #files-upload-tools,
-.link-code,
 .cloud-tool {
 	display: none;
 }
@@ -22,27 +21,35 @@
 	width: 100%;
 }
 
-#cloud-index td a {
+#cloud-index td:nth-child(2) a {
 	display: block;
 }
 
-#cloud-index td:nth-child(1){
+#cloud-index td:nth-child(1) {
 	padding: 7px 3px 7px 10px;
 }
 
-#cloud-index td:nth-child(2){
+#cloud-index td:nth-child(4) {
+	padding: 7px 10px 7px 3px;
+}
+
+#cloud-index td:nth-child(2) {
 	word-break: break-all;
 }
 
-#cloud-index th:nth-child(5),
-#cloud-index td:nth-child(5){
-	padding: 7px 0px;
+#cloud-index td:nth-child(3) {
 	white-space: nowrap;
 }
 
 #cloud-index th:nth-child(6),
-#cloud-index td:nth-child(6){
-	padding: 7px 0px;
+#cloud-index td:nth-child(6) {
+	padding: 7px 3px;
+	white-space: nowrap;
+}
+
+#cloud-index th:nth-child(7),
+#cloud-index td:nth-child(7) {
+	padding: 7px 10px;
 	white-space: nowrap;
 }
 

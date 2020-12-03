@@ -109,13 +109,13 @@ class Cloud extends Controller {
 
 		if($browser->build_page)
 			construct_page();
-		
+
 		killme();
 	}
 
 
 	function DAVException($err) {
-			
+
 		if($err instanceof \Sabre\DAV\Exception\NotFound) {
 			notice( t('Not found') . EOL);
 		}
@@ -130,7 +130,7 @@ class Cloud extends Controller {
 		}
 
 		construct_page();
-			
+
 		killme();
 	}
 

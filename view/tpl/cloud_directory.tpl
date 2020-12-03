@@ -46,7 +46,8 @@
 	<table id="cloud-index">
 		<tr>
 			<th width="1%">{{* icon *}}</th>
-			<th width="95%">{{$name}}</th>
+			<th width="94%">{{$name}}</th>
+			<th width="1%">{{* categories *}}</th>
 			<th width="1%">{{* lock icon *}}</th>
 			<th width="1%">{{* tools icon *}}</th>
 			<th width="1%" class="d-none d-md-table-cell">{{$size}}</th>
@@ -55,7 +56,7 @@
 		{{if $parentpath}}
 		<tr id="cloud-index-0">
 			<td><i class="fa fa-level-up"></i>{{*$parentpath.icon*}}</td>
-			<td colspan="5"><a href="{{$parentpath.path}}" title="{{$parent}}">..</a></td>
+			<td colspan="7"><a href="{{$parentpath.path}}" title="{{$parent}}">..</a></td>
 		</tr>
 		{{/if}}
 		<tr id="new-upload-progress-bar-1"></tr> {{* this is needed to append the upload files in the right order *}}
@@ -63,6 +64,7 @@
 		<tr id="cloud-index-{{$item.attachId}}" class="cloud-index">
 			<td><i class="fa {{$item.iconFromType}}" title="{{$item.type}}"></i></td>
 			<td><a href="{{$item.relPath}}" class="p-2">{{$item.displayName}}</a></td>
+			<td>{{$item.terms}}</td>
 			<td class="cloud-index-tool p-2">{{if $item.lockstate == 'lock'}}<i class="fa fa-fw fa-{{$item.lockstate}}"></i>{{/if}}</td>
 			{{if $item.is_owner}}
 			<td class="cloud-index-tool">
@@ -105,7 +107,7 @@
 			<td class="d-none d-md-table-cell p-2">{{$item.lastmodified}}</td>
 		</tr>
 		<tr id="cloud-tools-{{$item.attachId}}" class="cloud-tools">
-			<td id="attach-edit-panel-{{$item.attachId}}" colspan="6">
+			<td id="attach-edit-panel-{{$item.attachId}}" colspan="7">
 				<form id="attach_edit_form_{{$item.attachId}}" action="attach_edit/{{$nick}}/{{$item.attachId}}" method="post" class="acl-form" data-form_id="attach_edit_form_{{$item.attachId}}" data-allow_cid='{{$item.allow_cid}}' data-allow_gid='{{$item.allow_gid}}' data-deny_cid='{{$item.deny_cid}}' data-deny_gid='{{$item.deny_gid}}'>
 					<input type="hidden" name="attach_id" value="{{$item.attachId}}" />
 					<input type="hidden" name="resource" value="{{$item.resource}}" />
@@ -121,6 +123,7 @@
 					<div id="cloud-tool-submit-{{$item.attachId}}" class="cloud-tool">
 						{{if !$item.collection}}{{include file="field_checkbox.tpl" field=$item.notify}}{{/if}}
 						{{if $item.collection}}{{include file="field_checkbox.tpl" field=$item.recurse}}{{/if}}
+						{{include file="field_input.tpl" field=$item.categories}}
 						<div id="attach-submit-{{$item.attachId}}" class="form-group">
 							<button id="cloud-tool-cancel-btn-{{$item.attachId}}" class="btn btn-outline-secondary btn-sm cloud-tool-cancel-btn" type="button" data-id="{{$item.attachId}}">
 									Cancel
@@ -134,6 +137,9 @@
 								</button>
 							</div>
 						</div>
+					</div>
+					<div id="cloud-tool-categories-{{$item.attachId}}" class="">
+
 					</div>
 					<!--div id="cloud-tool-share-{{$item.attachId}}" class="">
 						<div id="attach-edit-tools-share-{{$item.attachId}}" class="btn-group form-group">
