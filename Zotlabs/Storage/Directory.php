@@ -478,15 +478,15 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 
 	public function moveInto($targetName,$sourcePath, DAV\INode $sourceNode) {
 
-		if(! $this->auth->owner_id) {
-			return false;
-		}
+		$channel_id = $this->auth->owner_id;
+		// Files have $sourceNode->data['hash'] set. For directories rely on $sourceNode->folder_hash.
+		$resource_id = ((isset($sourceNode->data['hash'])) ? $sourceNode->data['hash'] : $sourceNode->folder_hash);
+		$new_folder_hash = $this->folder_hash;
 
-		if(! ($sourceNode->data && $sourceNode->data['hash'])) {
+		if(!$channel_id && !$resource_id)
 			return false;
-		}
 
-		$ret = attach_move($this->auth->owner_id, $sourceNode->data['hash'], $this->folder_hash);
+		$ret = attach_move($channel_id, $resource_id, $new_folder_hash);
 		return $ret['success'];
 
 	}
