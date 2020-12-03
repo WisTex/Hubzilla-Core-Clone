@@ -67,6 +67,13 @@ class Attach_edit extends Controller {
 				}
 			}
 		}
+		else {
+			q("DELETE FROM term WHERE uid = %d AND oid = %d AND otype = %d",
+				intval($channel['channel_id']),
+				intval($attach_id),
+				intval(TERM_OBJ_FILE)
+			);
+		}
 
 		$sync = attach_export_data($channel, $resource, false);
 
