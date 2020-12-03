@@ -53,7 +53,6 @@ class Attach_edit extends Controller {
 		if ($categories) {
 
 			$cat = explode(',', $categories);
-			hz_syslog(print_r($cat,true));
 
 			if ($cat) {
 				foreach($cat as $term) {
