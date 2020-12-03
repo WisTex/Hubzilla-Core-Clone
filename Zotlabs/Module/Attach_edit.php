@@ -51,6 +51,11 @@ class Attach_edit extends Controller {
 		attach_change_permissions($channel['channel_id'], $resource, $x['allow_cid'], $x['allow_gid'], $x['deny_cid'], $x['deny_gid'], $recurse, true);
 
 		if ($categories) {
+			q("DELETE FROM term WHERE uid = %d AND oid = %d AND otype = %d",
+				intval($channel['channel_id']),
+				intval($attach_id),
+				intval(TERM_OBJ_FILE)
+			);
 			$cat = explode(',', $categories);
 			if ($cat) {
 				foreach($cat as $term) {
@@ -61,13 +66,6 @@ class Attach_edit extends Controller {
 					}
 				}
 			}
-		}
-		else {
-			q("DELETE FROM term WHERE uid = %d AND oid = %d AND otype = %d",
-				intval($channel['channel_id']),
-				intval($attach_id),
-				intval(TERM_OBJ_FILE)
-			);
 		}
 
 		$sync = attach_export_data($channel, $resource, false);

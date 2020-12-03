@@ -39,6 +39,16 @@ $(document).ready(function () {
 		$('#cloud-index-' + id).addClass('cloud-index-active');
 	});
 
+	$('.cloud-tool-categories-btn').on('click', function (e) {
+		e.preventDefault();
+		let id = $(this).data('id');
+		$('.cloud-tool').hide();
+		$('.cloud-index').removeClass('cloud-index-active');
+
+		$('#cloud-tool-categories-' + id + ', #cloud-tool-submit-' + id).show();
+		$('#cloud-index-' + id).addClass('cloud-index-active');
+	});
+
 	$('.cloud-tool-download-btn').on('click', function (e) {
 		let id = $(this).data('id');
 		$('.cloud-tool').hide();
