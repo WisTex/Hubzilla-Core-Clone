@@ -76,7 +76,7 @@
 						<a id="cloud-tool-perms-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-perms-btn" href="#" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-{{$item.lockstate}}"></i> Adjust permissions</a>
 						<a id="cloud-tool-rename-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-rename-btn" href="#" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-pencil"></i> Rename</a>
 						<a id="cloud-tool-move-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-move-btn" href="#" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-copy"></i> Move or copy</a>
-						<a id="cloud-tool-categories-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-categories-btn" href="#" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-asterisk"></i> File categories</a>
+						<a id="cloud-tool-categories-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-categories-btn" href="#" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-asterisk"></i> Categories</a>
 						{{if !$item.collection}}
 						<a id="cloud-tool-share-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-share-btn" href="/rpost?attachment=[attachment]{{$item.resource}},{{$item.revision}}[/attachment]&acl[allow_cid]={{$item.raw_allow_cid}}&acl[allow_gid]={{$item.raw_allow_gid}}&acl[deny_cid]={{$item.raw_deny_cid}}&acl[deny_gid]={{$item.raw_deny_gid}}" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-share-square-o"></i> Post</a>
 						<a id="cloud-tool-download-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-download-btn" href="/attach/{{$item.resource}}" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-cloud-download"></i> Download</a>
