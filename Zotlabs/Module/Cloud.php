@@ -76,7 +76,7 @@ class Cloud extends Controller {
 		if($x !== \App::$query_string)
 			goaway(z_root() . '/' . $x);
 
-		$rootDirectory = new Directory('/', $auth);
+		$rootDirectory = new Directory('/', [], $auth);
 
 		// A SabreDAV server-object
 		$server = new SDAV\Server($rootDirectory);

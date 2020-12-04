@@ -26,6 +26,8 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 	 */
 	private $red_path;
 	public $folder_hash;
+	public $data;
+
 
 	/**
 	 * @brief The full path as seen in the browser.
@@ -50,7 +52,7 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 	 * @param string $ext_path a full path
 	 * @param BasicAuth &$auth_plugin
 	 */
-	public function __construct($ext_path, &$auth_plugin) {
+	public function __construct($ext_path, $data, &$auth_plugin) {
 		//		$ext_path = urldecode($ext_path);
 		logger('directory ' . $ext_path, LOGGER_DATA);
 		$this->ext_path = $ext_path;
@@ -62,6 +64,8 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 		}
 		$this->auth = $auth_plugin;
 		$this->folder_hash = '';
+		$this->data = $data;
+
 		$this->getDir();
 
 		if($this->auth->browser) {
@@ -117,7 +121,7 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 
 		$modulename = \App::$module;
 		if ($this->red_path === '/' && $name === $modulename) {
-			return new Directory('/' . $modulename, $this->auth);
+			return new Directory('/' . $modulename, [], $this->auth);
 		}
 
 		$x = $this->FileData($this->ext_path . '/' . $name, $this->auth);
@@ -699,7 +703,10 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 		}
 
 		if ($cat) {
-			$r = q("select $prefix attach.id, attach.uid, attach.hash, attach.filename, attach.filetype, attach.filesize, attach.revision, attach.folder, attach.flags, attach.is_dir, attach.created, attach.edited from attach
+			$r = q("select $prefix attach.id, attach.uid, attach.hash, attach.filename,
+					attach.filetype, attach.filesize, attach.revision, attach.folder, attach.creator,
+					attach.flags, attach.is_dir, attach.created, attach.edited, attach.display_path,
+					attach.allow_cid, attach.allow_gid, attach.deny_cid, attach.deny_gid from attach
 					left join term on attach.id = term.oid
 					where term.term = '%s' and attach.uid = %d $perms $suffix",
 				dbesc($cat),
@@ -707,7 +714,11 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 			);
 		}
 		else {
-			$r = q("select $prefix id, uid, hash, filename, filetype, filesize, revision, folder, flags, is_dir, created, edited from attach where folder = '%s' and uid = %d $perms $suffix",
+			$r = q("select $prefix attach.id, attach.uid, attach.hash, attach.filename,
+					attach.filetype, attach.filesize, attach.revision, attach.folder, attach.creator,
+					attach.flags, attach.is_dir, attach.created, attach.edited, attach.display_path,
+					attach.allow_cid, attach.allow_gid, attach.deny_cid, attach.deny_gid from attach
+					where folder = '%s' and uid = %d $perms $suffix",
 				dbesc($folder),
 				intval($channel_id)
 			);
@@ -726,7 +737,7 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 
 			//logger('filename: ' . $rr['filename'], LOGGER_DEBUG);
 			if (intval($rr['is_dir'])) {
-				$ret[] = new Directory($path . '/' . $rr['filename'], $auth);
+				$ret[] = new Directory($path . '/' . $rr['filename'], $rr, $auth);
 			}
 			else {
 				$ret[] = new File($path . '/' . $rr['filename'], $rr, $auth);
@@ -761,7 +772,7 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 			foreach ($r as $rr) {
 				if (perm_is_allowed($rr['channel_id'], $auth->observer, 'view_storage') && $rr['publish']) {
 					logger('found channel: /cloud/' . $rr['channel_address'], LOGGER_DATA);
-					$ret[] = new Directory($rr['channel_address'], $auth);
+					$ret[] = new Directory($rr['channel_address'], [], $auth);
 				}
 			}
 		}
@@ -793,7 +804,7 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 		}
 
 		if ((! $file) || ($file === '/')) {
-			return new Directory('/', $auth);
+			return new Directory('/', [], $auth);
 		}
 
 		$file = trim($file, '/');
@@ -863,7 +874,7 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 			if ($test)
 				return true;
 			// final component was a directory.
-			return new Directory($file, $auth);
+			return new Directory($file, [], $auth);
 		}
 
 		if ($errors) {
@@ -882,7 +893,7 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 				return true;
 
 			if (intval($r[0]['is_dir'])) {
-				return new Directory($path . '/' . $r[0]['filename'], $auth);
+				return new Directory($path . '/' . $r[0]['filename'], [], $auth);
 			}
 			else {
 				return new File($path . '/' . $r[0]['filename'], $r[0], $auth);
