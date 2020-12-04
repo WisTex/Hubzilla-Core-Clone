@@ -249,7 +249,7 @@ class Browser extends DAV\Browser\Plugin {
 
 			// put the array for this file together
 			$ft['attachId'] = $id;
-			$ft['fileStorageUrl'] = substr($href, 0, strpos($href, "/cloud")) . "/filestorage" . $this->auth->owner_nick;
+			$ft['fileStorageUrl'] = substr($href, 0, strpos($href, "/cloud/")) . "/filestorage/" . $this->auth->owner_nick;
 			$ft['icon'] = $icon;
 			$ft['photo_icon'] = $photo_icon;
 			$ft['attachIcon'] = (($size) ? $attachIcon : '');
@@ -312,7 +312,7 @@ class Browser extends DAV\Browser\Plugin {
 			$parentpath = [];
 		}
 
-		$header = (($cat) ? t('File categories') . ": " . $this->escapeHTML($path) . "/" : t('Files') . ": " . $this->escapeHTML($path) . "/");
+		$header = (($cat) ? t('File category') . ": " . $this->escapeHTML($cat) : t('Files') . ": " . $this->escapeHTML($path) . "/");
 
 		$html .= replace_macros(get_markup_template('cloud.tpl'), array(
 				'$header' => $header,
@@ -339,7 +339,6 @@ class Browser extends DAV\Browser\Plugin {
 
 				'$cpdesc' => t('Copy/paste this code to attach file to a post'),
 				'$cpldesc' => t('Copy/paste this URL to link file from a web page'),
-
 
 			));
 
