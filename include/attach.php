@@ -2508,11 +2508,12 @@ function copy_folder_to_cloudfiles($channel, $observer_hash, $srcpath, $cloudpat
  * @param int $resource_id
  * @param string $new_folder_hash
  * @param (optional) string $newname
+ * @param (optional) boolean $check_dupes
  * @return array Associative array with:
  *  * \e boolean \b success
  *  * \e string \b resource_id
  */
-function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '') {
+function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '', $check_dupes = true) {
 
 	$ret = [
 		'success' => false,
@@ -2566,60 +2567,65 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
  	$oldfilename = $r[0]['filename'];
 	$filename = (($newname) ? basename($newname) : $oldfilename);
 
-	// duplicate detection. If 'overwrite' is specified, return false because we can't yet do that.
+	// duplicate detection.
 
-	$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
-		dbesc($filename),
-		dbesc($new_folder_hash)
-	);
+	if($check_dupes) {
 
-	if($s && $filename !== $oldfilename) {
-		$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
-		if($overwrite) {
-			/// @fixme
-			return $ret;
-		}
-		else {
-			if(strpos($filename,'.') !== false) {
-				$basename = substr($filename,0,strrpos($filename,'.'));
-				$ext = substr($filename,strrpos($filename,'.'));
+		$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
+			dbesc($filename),
+			dbesc($new_folder_hash)
+		);
+
+		if($s) {
+			$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
+			// If 'overwrite' is specified, return false because we can't yet do that.
+			if($overwrite) {
+				/// @fixme
+				return $ret;
 			}
 			else {
-				$basename = $filename;
-				$ext = '';
-			}
-
-			$matches = false;
-			if(preg_match('/(.*?)\([0-9]{1,}\)$/',$basename,$matches))
-				$basename = $matches[1];
-
-			$v = q("select filename from attach where uid = %d and ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
-				intval($channel_id),
-				dbesc($basename . $ext),
-				dbesc($basename . '(%)' . $ext),
-				dbesc($new_folder_hash)
-			);
-
-			if($v) {
-				$x = 1;
-
-				do {
-					$found = false;
-					foreach($v as $vv) {
-						if($vv['filename'] === $basename . '(' . $x . ')' . $ext) {
-							$found = true;
-							break;
-						}
-					}
-					if($found)
-						$x++;
+				if(strpos($filename,'.') !== false) {
+					$basename = substr($filename,0,strrpos($filename,'.'));
+					$ext = substr($filename,strrpos($filename,'.'));
 				}
-				while($found);
-				$filename = $basename . '(' . $x . ')' . $ext;
+				else {
+					$basename = $filename;
+					$ext = '';
+				}
+
+				$matches = false;
+				if(preg_match('/(.*?)\([0-9]{1,}\)$/',$basename,$matches))
+					$basename = $matches[1];
+
+				$v = q("select filename from attach where uid = %d and ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
+					intval($channel_id),
+					dbesc($basename . $ext),
+					dbesc($basename . '(%)' . $ext),
+					dbesc($new_folder_hash)
+				);
+
+				if($v) {
+					$x = 1;
+
+					do {
+						$found = false;
+						foreach($v as $vv) {
+							if($vv['filename'] === $basename . '(' . $x . ')' . $ext) {
+								$found = true;
+								break;
+							}
+						}
+						if($found)
+							$x++;
+					}
+					while($found);
+					$filename = $basename . '(' . $x . ')' . $ext;
+				}
+				else
+					$filename = $basename . $ext;
 			}
-			else
-				$filename = $basename . $ext;
 		}
+
 	}
 
 
@@ -2676,7 +2682,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 		);
 		if($x) {
 			foreach($x as $xv) {
-				$rs = attach_move($channel_id, $xv['hash'], $r[0]['hash']);
+				$rs = attach_move($channel_id, $xv['hash'], $r[0]['hash'], '', false);
 				if(! $rs['success']) {
 					$move_success = false;
 					break;
@@ -2706,11 +2712,12 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
  * @param int $resource_id
  * @param string $new_folder_hash
  * @param (optional) string $newname
+ * @param (optional) boolean $check_dupes
  * @return array Associative array with:
  *  * \e boolean \b success
  *  * \e string \b resource_id of the new resource
  */
-function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '') {
+function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '', $check_dupes = true) {
 
 	$ret = [
 		'success' => false,
@@ -2774,57 +2781,59 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '')
 
 	// duplicate detection. If 'overwrite' is specified, return false because we can't yet do that.
 
-	$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
-		dbesc($filename),
-		dbesc($new_folder_hash)
-	);
+	if($check_dupes) {
+		$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
+			dbesc($filename),
+			dbesc($new_folder_hash)
+		);
 
-	if($s) {
-		$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
-		if($overwrite) {
-			/// @fixme
-			return $ret;
-		}
-		else {
-			if(strpos($filename,'.') !== false) {
-				$basename = substr($filename,0,strrpos($filename,'.'));
-				$ext = substr($filename,strrpos($filename,'.'));
+		if($s) {
+			$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
+			if($overwrite) {
+				/// @fixme
+				return $ret;
 			}
 			else {
-				$basename = $filename;
-				$ext = '';
-			}
-
-			$matches = false;
-			if(preg_match('/(.*?)\([0-9]{1,}\)$/',$basename,$matches))
-				$basename = $matches[1];
-
-			$v = q("select filename from attach where uid = %d and ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
-				intval($channel_id),
-				dbesc($basename . $ext),
-				dbesc($basename . '(%)' . $ext),
-				dbesc($new_folder_hash)
-			);
-
-			if($v) {
-				$x = 1;
-
-				do {
-					$found = false;
-					foreach($v as $vv) {
-						if($vv['filename'] === $basename . '(' . $x . ')' . $ext) {
-							$found = true;
-							break;
-						}
-					}
-					if($found)
-						$x++;
+				if(strpos($filename,'.') !== false) {
+					$basename = substr($filename,0,strrpos($filename,'.'));
+					$ext = substr($filename,strrpos($filename,'.'));
 				}
-				while($found);
-				$filename = $basename . '(' . $x . ')' . $ext;
+				else {
+					$basename = $filename;
+					$ext = '';
+				}
+
+				$matches = false;
+				if(preg_match('/(.*?)\([0-9]{1,}\)$/',$basename,$matches))
+					$basename = $matches[1];
+
+				$v = q("select filename from attach where uid = %d and ( filename = '%s' OR filename like '%s' ) and folder = '%s' ",
+					intval($channel_id),
+					dbesc($basename . $ext),
+					dbesc($basename . '(%)' . $ext),
+					dbesc($new_folder_hash)
+				);
+
+				if($v) {
+					$x = 1;
+
+					do {
+						$found = false;
+						foreach($v as $vv) {
+							if($vv['filename'] === $basename . '(' . $x . ')' . $ext) {
+								$found = true;
+								break;
+							}
+						}
+						if($found)
+							$x++;
+					}
+					while($found);
+					$filename = $basename . '(' . $x . ')' . $ext;
+				}
+				else
+					$filename = $basename . $ext;
 			}
-			else
-				$filename = $basename . $ext;
 		}
 	}
 
@@ -2879,7 +2888,7 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '')
 		);
 		if($x) {
 			foreach($x as $xv) {
-				$rs = attach_copy($channel_id,$xv['hash'],$new_resource_id);
+				$rs = attach_copy($channel_id,$xv['hash'],$new_resource_id, '', false);
 				if(! $rs['success']) {
 					$copy_success = false;
 					break;
