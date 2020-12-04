@@ -2573,7 +2573,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '')
 		dbesc($new_folder_hash)
 	);
 
-	if($s) {
+	if($s && $filename !== $oldfilename) {
 		$overwrite = get_pconfig($channel_id,'system','overwrite_dup_files');
 		if($overwrite) {
 			/// @fixme
