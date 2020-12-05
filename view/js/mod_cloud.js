@@ -43,6 +43,7 @@ $(document).ready(function () {
 		e.preventDefault();
 		let id = $(this).data('id');
 		$('.cloud-tool').hide();
+		$('.cloud-index').removeClass('cloud-index-active');
 
 		$('#id_categories_' + id).tagsinput({
 			tagClass: 'badge badge-pill badge-warning text-dark'
