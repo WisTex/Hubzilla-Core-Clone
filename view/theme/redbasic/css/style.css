@@ -1818,4 +1818,9 @@ span.default-highlight {
 
 .bootstrap-tagsinput {
 	width: 100%;
+	height: unset;
+}
+
+.bootstrap-tagsinput input {
+	height: unset;
 }

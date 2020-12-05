@@ -37,10 +37,6 @@
 	word-break: break-all;
 }
 
-#cloud-index td:nth-child(3) {
-	white-space: nowrap;
-}
-
 #cloud-index th:nth-child(6),
 #cloud-index td:nth-child(6) {
 	padding: 7px 3px;

@@ -115,6 +115,8 @@ class Browser extends DAV\Browser\Plugin {
 		$f = [];
 
 		foreach ($files as $file) {
+
+
 			$ft = [];
 			$type = null;
 
@@ -251,8 +253,8 @@ class Browser extends DAV\Browser\Plugin {
 			$ft['photo_icon'] = $photo_icon;
 			$ft['is_owner'] = $is_owner;
 			$ft['is_creator'] = $is_creator;
-			$ft['rel_path'] = '/cloud/' . $nick .'/' . $data['display_path'];
-			$ft['full_path'] = z_root() . '/cloud/' . $nick .'/' . $data['display_path'];
+			$ft['rel_path'] = (($data) ? '/cloud/' . $nick .'/' . $data['display_path'] : $href);
+			$ft['full_path'] = z_root() . (($data) ? '/cloud/' . $nick .'/' . $data['display_path'] : $href);
 			$ft['name'] = $name;
 			$ft['type'] = $type;
 			$ft['size'] = $size;
