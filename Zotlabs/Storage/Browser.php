@@ -223,7 +223,7 @@ class Browser extends DAV\Browser\Plugin {
 			$lockstate = (($data['allow_cid'] || $data['allow_gid'] || $data['deny_cid'] || $data['deny_gid']) ? 'lock' : 'unlock');
 			$id = $data['id'];
 
-			$terms = q("select * from term where oid = %d AND otype = %d order by term",
+			$terms = q("select * from term where oid = %d AND otype = %d",
 				intval($id),
 				intval(TERM_OBJ_FILE)
 			);
