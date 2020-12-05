@@ -45,6 +45,10 @@ $(document).ready(function () {
 		$('.cloud-tool').hide();
 		$('.cloud-index').removeClass('cloud-index-active');
 
+		$('#id_categories_' + id).tagsinput({
+			tagClass: 'badge badge-pill badge-warning text-dark'
+		});
+
 		$('#cloud-tool-categories-' + id + ', #cloud-tool-submit-' + id).show();
 		$('#cloud-index-' + id).addClass('cloud-index-active');
 	});
@@ -60,6 +64,8 @@ $(document).ready(function () {
 		$('.cloud-tool').hide();
 		$('#cloud-index-' + id).removeClass('cloud-index-active');
 		$('#attach_edit_form_' + id).trigger('reset');
+		$('#id_categories_' + id).tagsinput('destroy');
+
 	});
 
 });

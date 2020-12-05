@@ -84,7 +84,7 @@ class Browser extends DAV\Browser\Plugin {
 		// (owner_id = channel_id) is visitor owner of this directory?
 		$is_owner = ((local_channel() && $this->auth->owner_id == local_channel()) ? true : false);
 
-		$cat = $_REQUEST['cat'];
+		$cat = ((x($_REQUEST,'cat')) ? $cat : '');
 
 		if ($this->auth->getTimezone()) {
 			date_default_timezone_set($this->auth->getTimezone());
@@ -223,7 +223,7 @@ class Browser extends DAV\Browser\Plugin {
 			$lockstate = (($data['allow_cid'] || $data['allow_gid'] || $data['deny_cid'] || $data['deny_gid']) ? 'lock' : 'unlock');
 			$id = $data['id'];
 
-			$terms = q("select * from term where oid = %d AND otype = %d",
+			$terms = q("select * from term where oid = %d AND otype = %d order by term",
 				intval($id),
 				intval(TERM_OBJ_FILE)
 			);
