@@ -21,18 +21,18 @@
 
 	{{foreach $entries as $item}}
 	<div class="cloud-container">
-		<div class="cloud-icon tiles"><a href="{{$item.relPath}}">
+		<div class="cloud-icon tiles"><a href="{{$item.rel_path}}">
 		{{if $item.photo_icon}}
 		<img src="{{$item.photo_icon}}" title="{{$item.type}}" >
 		{{else}}
 		<div class="cloud-icon-container">
-			<i class="fa fa-fw {{$item.iconFromType}}" title="{{$item.type}}"></i>
+			<i class="fa fa-fw {{$item.icon_from_type}}" title="{{$item.type}}"></i>
 		</div>
 		{{/if}}
 		</div>
 		<div class="cloud-title">
-			<a href="{{$item.relPath}}">
-				{{$item.displayName}}
+			<a href="{{$item.rel_path}}">
+				{{$item.name}}
 			</a>
 		</div>
 		{{if $item.is_owner}}
@@ -61,89 +61,87 @@
 		{{/if}}
 		<tr id="new-upload-progress-bar-1"></tr> {{* this is needed to append the upload files in the right order *}}
 		{{foreach $entries as $item}}
-		<tr id="cloud-index-{{$item.attachId}}" class="cloud-index">
-			<td><i class="fa {{$item.iconFromType}}" title="{{$item.type}}"></i></td>
-			<td><a href="{{$item.relPath}}" class="p-2">{{$item.displayName}}</a></td>
+		<tr id="cloud-index-{{$item.attach_id}}" class="cloud-index">
+			<td><i class="fa {{$item.icon_from_type}}" title="{{$item.type}}"></i></td>
+			<td><a href="{{$item.rel_path}}" class="p-2">{{$item.name}}</a></td>
 			<td>{{$item.terms}}</td>
 			<td class="cloud-index-tool p-2">{{if $item.lockstate == 'lock'}}<i class="fa fa-fw fa-{{$item.lockstate}}"></i>{{/if}}</td>
-			{{if $item.is_owner}}
 			<td class="cloud-index-tool">
+				{{if $item.is_owner && $item.attach_id}}
 				<div class="dropdown">
-					<button class="btn btn-link btn-sm" id="dropdown-button-{{$item.attachId}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<button class="btn btn-link btn-sm" id="dropdown-button-{{$item.attach_id}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 						<i class="fa fa-ellipsis-v"></i>
 					</button>
-					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-button-{{$item.attachId}}">
-						<a id="cloud-tool-perms-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-perms-btn" href="#" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-{{$item.lockstate}}"></i> Adjust permissions</a>
-						<a id="cloud-tool-rename-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-rename-btn" href="#" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-pencil"></i> Rename</a>
-						<a id="cloud-tool-move-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-move-btn" href="#" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-copy"></i> Move or copy</a>
-						<a id="cloud-tool-categories-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-categories-btn" href="#" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-asterisk"></i> Categories</a>
+					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-button-{{$item.attach_id}}">
+						<a id="cloud-tool-perms-btn-{{$item.attach_id}}" class="dropdown-item cloud-tool-perms-btn" href="#" data-id="{{$item.attach_id}}"><i class="fa fa-fw fa-{{$item.lockstate}}"></i> Adjust permissions</a>
+						<a id="cloud-tool-rename-btn-{{$item.attach_id}}" class="dropdown-item cloud-tool-rename-btn" href="#" data-id="{{$item.attach_id}}"><i class="fa fa-fw fa-pencil"></i> Rename</a>
+						<a id="cloud-tool-move-btn-{{$item.attach_id}}" class="dropdown-item cloud-tool-move-btn" href="#" data-id="{{$item.attach_id}}"><i class="fa fa-fw fa-copy"></i> Move or copy</a>
+						<a id="cloud-tool-categories-btn-{{$item.attach_id}}" class="dropdown-item cloud-tool-categories-btn" href="#" data-id="{{$item.attach_id}}"><i class="fa fa-fw fa-asterisk"></i> Categories</a>
 						{{if !$item.collection}}
-						<a id="cloud-tool-share-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-share-btn" href="/rpost?attachment=[attachment]{{$item.resource}},{{$item.revision}}[/attachment]&acl[allow_cid]={{$item.raw_allow_cid}}&acl[allow_gid]={{$item.raw_allow_gid}}&acl[deny_cid]={{$item.raw_deny_cid}}&acl[deny_gid]={{$item.raw_deny_gid}}" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-share-square-o"></i> Post</a>
-						<a id="cloud-tool-download-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-download-btn" href="/attach/{{$item.resource}}" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-cloud-download"></i> Download</a>
+						<a id="cloud-tool-share-btn-{{$item.attach_id}}" class="dropdown-item cloud-tool-share-btn" href="/rpost?attachment=[attachment]{{$item.resource}},{{$item.revision}}[/attachment]&acl[allow_cid]={{$item.raw_allow_cid}}&acl[allow_gid]={{$item.raw_allow_gid}}&acl[deny_cid]={{$item.raw_deny_cid}}&acl[deny_gid]={{$item.raw_deny_gid}}" data-id="{{$item.attach_id}}"><i class="fa fa-fw fa-share-square-o"></i> Post</a>
+						<a id="cloud-tool-download-btn-{{$item.attach_id}}" class="dropdown-item cloud-tool-download-btn" href="/attach/{{$item.resource}}" data-id="{{$item.attach_id}}"><i class="fa fa-fw fa-cloud-download"></i> Download</a>
 						{{/if}}
-						<a id="cloud-tool-delete-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-delete-btn" href="#" data-id="{{$item.attachId}}" onclick="dropItem('{{$item.fileStorageUrl}}/{{$item.attachId}}/delete/json', '#cloud-index-{{$item.attachId}},#cloud-tools-{{$item.attachId}}'); return false;"><i class="fa fa-fw fa-trash-o"></i> {{$delete}}</a>
+						<a id="cloud-tool-delete-btn-{{$item.attach_id}}" class="dropdown-item cloud-tool-delete-btn" href="#" data-id="{{$item.attach_id}}" onclick="dropItem('{{$item.fileStorageUrl}}/{{$item.attach_id}}/delete/json', '#cloud-index-{{$item.attach_id}},#cloud-tools-{{$item.attach_id}}'); return false;"><i class="fa fa-fw fa-trash-o"></i> {{$delete}}</a>
 					</div>
 				</div>
-			</td>
-			{{else}}
-			<td class="cloud-index-tool">
-				{{if $item.is_creator || $is_admin || !$item.collection}}
+				{{else}}
+				{{if ($item.is_creator || $is_admin || !$item.collection) && $item.attach_id}}
 				<div class="dropdown">
-					<button class="btn btn-link btn-sm" id="dropdown-button-{{$item.attachId}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<button class="btn btn-link btn-sm" id="dropdown-button-{{$item.attach_id}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 						<i class="fa fa-ellipsis-v"></i>
 					</button>
-					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-button-{{$item.attachId}}">
+					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-button-{{$item.attach_id}}">
 						{{if !$item.collection}}
-						<a id="cloud-tool-download-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-download-btn" href="/attach/{{$item.resource}}" data-id="{{$item.attachId}}"><i class="fa fa-fw fa-cloud-download"></i> Download</a>
+						<a id="cloud-tool-download-btn-{{$item.attach_id}}" class="dropdown-item cloud-tool-download-btn" href="/attach/{{$item.resource}}" data-id="{{$item.attach_id}}"><i class="fa fa-fw fa-cloud-download"></i> Download</a>
 						{{/if}}
 						{{if $item.is_creator || $is_admin}}
-						<a id="cloud-tool-delete-btn-{{$item.attachId}}" class="dropdown-item cloud-tool-delete-btn" href="#" data-id="{{$item.attachId}}" onclick="dropItem('{{$item.fileStorageUrl}}/{{$item.attachId}}/delete/json', '#cloud-index-{{$item.attachId}},#cloud-tools-{{$item.attachId}}'); return false;"><i class="fa fa-fw fa-trash-o"></i> {{if $item.is_creator}}{{$delete}}{{else}}{{$admin_delete}}{{/if}}</a>
+						<a id="cloud-tool-delete-btn-{{$item.attach_id}}" class="dropdown-item cloud-tool-delete-btn" href="#" data-id="{{$item.attach_id}}" onclick="dropItem('{{$item.fileStorageUrl}}/{{$item.attach_id}}/delete/json', '#cloud-index-{{$item.attach_id}},#cloud-tools-{{$item.attach_id}}'); return false;"><i class="fa fa-fw fa-trash-o"></i> {{if $item.is_creator}}{{$delete}}{{else}}{{$admin_delete}}{{/if}}</a>
 						{{/if}}
 					</div>
 				</div>
 				{{/if}}
 			</td>
 			{{/if}}
-			<td class="d-none d-md-table-cell p-2">{{$item.sizeFormatted}}</td>
-			<td class="d-none d-md-table-cell p-2">{{$item.lastmodified}}</td>
+			<td class="d-none d-md-table-cell p-2">{{$item.size_formatted}}</td>
+			<td class="d-none d-md-table-cell p-2">{{$item.last_modified}}</td>
 		</tr>
-		<tr id="cloud-tools-{{$item.attachId}}" class="cloud-tools">
-			<td id="attach-edit-panel-{{$item.attachId}}" colspan="7">
-				<form id="attach_edit_form_{{$item.attachId}}" action="attach_edit/{{$nick}}/{{$item.attachId}}" method="post" class="acl-form" data-form_id="attach_edit_form_{{$item.attachId}}" data-allow_cid='{{$item.allow_cid}}' data-allow_gid='{{$item.allow_gid}}' data-deny_cid='{{$item.deny_cid}}' data-deny_gid='{{$item.deny_gid}}'>
-					<input type="hidden" name="attach_id" value="{{$item.attachId}}" />
+		<tr id="cloud-tools-{{$item.attach_id}}" class="cloud-tools">
+			<td id="attach-edit-panel-{{$item.attach_id}}" colspan="7">
+				<form id="attach_edit_form_{{$item.attach_id}}" action="attach_edit/{{$nick}}/{{$item.attach_id}}" method="post" class="acl-form" data-form_id="attach_edit_form_{{$item.attach_id}}" data-allow_cid='{{$item.allow_cid}}' data-allow_gid='{{$item.allow_gid}}' data-deny_cid='{{$item.deny_cid}}' data-deny_gid='{{$item.deny_gid}}'>
+					<input type="hidden" name="attach_id" value="{{$item.attach_id}}" />
 					<input type="hidden" name="resource" value="{{$item.resource}}" />
-					<input type="hidden" name="filename" value="{{$item.displayName}}" />
+					<input type="hidden" name="filename" value="{{$item.name}}" />
 					<input type="hidden" name="folder" value="{{$item.folder}}" />
-					<div id="cloud-tool-rename-{{$item.attachId}}" class="cloud-tool">
+					<div id="cloud-tool-rename-{{$item.attach_id}}" class="cloud-tool">
 						{{include file="field_input.tpl" field=$item.newfilename}}
 					</div>
-					<div id="cloud-tool-move-{{$item.attachId}}" class="cloud-tool">
+					<div id="cloud-tool-move-{{$item.attach_id}}" class="cloud-tool">
 						{{include file="field_select.tpl" field=$item.newfolder}}
 						{{include file="field_checkbox.tpl" field=$item.copy}}
 					</div>
-					<div id="cloud-tool-categories-{{$item.attachId}}" class="cloud-tool">
+					<div id="cloud-tool-categories-{{$item.attach_id}}" class="cloud-tool">
 						{{include file="field_input.tpl" field=$item.categories}}
 					</div>
-					<div id="cloud-tool-submit-{{$item.attachId}}" class="cloud-tool">
+					<div id="cloud-tool-submit-{{$item.attach_id}}" class="cloud-tool">
 						{{if !$item.collection}}{{include file="field_checkbox.tpl" field=$item.notify}}{{/if}}
 						{{if $item.collection}}{{include file="field_checkbox.tpl" field=$item.recurse}}{{/if}}
-						<div id="attach-submit-{{$item.attachId}}" class="form-group">
-							<button id="cloud-tool-cancel-btn-{{$item.attachId}}" class="btn btn-outline-secondary btn-sm cloud-tool-cancel-btn" type="button" data-id="{{$item.attachId}}">
+						<div id="attach-submit-{{$item.attach_id}}" class="form-group">
+							<button id="cloud-tool-cancel-btn-{{$item.attach_id}}" class="btn btn-outline-secondary btn-sm cloud-tool-cancel-btn" type="button" data-id="{{$item.attach_id}}">
 									Cancel
 							</button>
-							<div id="attach-edit-perms-{{$item.attachId}}" class="btn-group float-right">
-								<button id="dbtn-acl-{{$item.attachId}}" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#aclModal" title="{{$permset}}" type="button">
-									<i id="jot-perms-icon-{{$item.attachId}}" class="fa fa-{{$item.lockstate}} jot-icons jot-perms-icon"></i>
+							<div id="attach-edit-perms-{{$item.attach_id}}" class="btn-group float-right">
+								<button id="dbtn-acl-{{$item.attach_id}}" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#aclModal" title="{{$permset}}" type="button">
+									<i id="jot-perms-icon-{{$item.attach_id}}" class="fa fa-{{$item.lockstate}} jot-icons jot-perms-icon"></i>
 								</button>
-								<button id="dbtn-submit-{{$item.attachId}}" class="btn btn-primary btn-sm" type="submit" name="submit">
+								<button id="dbtn-submit-{{$item.attach_id}}" class="btn btn-primary btn-sm" type="submit" name="submit">
 									{{$edit}}
 								</button>
 							</div>
 						</div>
 					</div>
-					<!--div id="cloud-tool-share-{{$item.attachId}}" class="">
-						<div id="attach-edit-tools-share-{{$item.attachId}}" class="btn-group form-group">
-							<button id="link-btn-{{$item.attachId}}" class="btn btn-outline-secondary btn-sm" type="button" onclick="openClose('link-code-{{$item.attachId}}');" title="{{$link_btn_title}}">
+					<!--div id="cloud-tool-share-{{$item.attach_id}}" class="">
+						<div id="attach-edit-tools-share-{{$item.attach_id}}" class="btn-group form-group">
+							<button id="link-btn-{{$item.attach_id}}" class="btn btn-outline-secondary btn-sm" type="button" onclick="openClose('link-code-{{$item.attach_id}}');" title="{{$link_btn_title}}">
 								<i class="fa fa-link jot-icons"></i>
 							</button>
 						</div>
@@ -153,9 +151,9 @@
 						<i class="fa fa-share-square-o jot-icons"></i>
 					</a>
 					{{/if}}
-					<div id="link-code-{{$item.attachId}}" class="form-group link-code">
-						<label for="linkpasteinput-{{$item.attachId}}">{{$cpldesc}}</label>
-						<input type="text" class="form-control" id="linkpasteinput-{{$item.attachId}}" name="linkpasteinput-{{$item.attachId}}" value="{{$item.fullPath}}" onclick="this.select();"/>
+					<div id="link-code-{{$item.attach_id}}" class="form-group link-code">
+						<label for="linkpasteinput-{{$item.attach_id}}">{{$cpldesc}}</label>
+						<input type="text" class="form-control" id="linkpasteinput-{{$item.attach_id}}" name="linkpasteinput-{{$item.attach_id}}" value="{{$item.full_path}}" onclick="this.select();"/>
 					</div-->
 				</form>
 			</td>

@@ -97,15 +97,15 @@ class Browser extends DAV\Browser\Plugin {
 		$files = $this->server->getPropertiesForPath($path, [], 1);
 		$parent = $this->server->tree->getNodeForPath($path);
 
-		$parentpath = [];
+		$parent_path = [];
 
 		// only show parent if not leaving /cloud/; TODO how to improve this?
 		if ($path && $path !== 'cloud') {
-			list($parentUri) = \Sabre\Uri\split($path);
-			$fullPath = \Sabre\HTTP\encodePath($this->server->getBaseUri() . $parentUri);
+			list($parent_uri) = \Sabre\Uri\split($path);
+			$full_path = \Sabre\HTTP\encodePath($this->server->getBaseUri() . $parent_uri);
 
-			$parentpath['icon'] = $this->enableAssets ? '<a href="' . $fullPath . '"><img src="' . $this->getAssetUrl('icons/parent' . $this->iconExtension) . '" width="24" alt="' . t('parent') . '"></a>' : '';
-			$parentpath['path'] = $fullPath;
+			$parent_path['icon'] = $this->enableAssets ? '<a href="' . $full_path . '"><img src="' . $this->getAssetUrl('icons/parent' . $this->iconExtension) . '" width="24" alt="' . t('parent') . '"></a>' : '';
+			$parent_path['path'] = $full_path;
 		}
 
 		$folder_list = attach_folder_select_list($this->auth->owner_id);
@@ -125,12 +125,9 @@ class Browser extends DAV\Browser\Plugin {
 				continue;
 
 			$node = $this->server->tree->getNodeForPath($href);
-
 			$data = $node->data;
-
-			$attachHash = $data['hash'];
-
-			$parentHash = $node->folder_hash;
+			$attach_hash = $data['hash'];
+			$parent_hash = $node->folder_hash;
 
 			list(, $filename) = \Sabre\Uri\split($href);
 
@@ -205,9 +202,9 @@ class Browser extends DAV\Browser\Plugin {
 
 			$is_creator = (($data['creator'] === get_observer_hash()) ? true : false);
 
-			if(strpos($type,'image/') === 0 && $attachHash) {
+			if(strpos($type,'image/') === 0 && $attach_hash) {
 				$p = q("select resource_id, imgscale from photo where resource_id = '%s' and imgscale in ( %d, %d ) order by imgscale asc limit 1",
-					dbesc($attachHash),
+					dbesc($attach_hash),
 					intval(PHOTO_RES_320),
 					intval(PHOTO_RES_PROFILE_80)
 				);
@@ -219,7 +216,7 @@ class Browser extends DAV\Browser\Plugin {
 				}
 			}
 
-			$g = [ 'resource_id' => $attachHash, 'thumbnail' => $photo_icon, 'security' => $preview_style ];
+			$g = [ 'resource_id' => $attach_hash, 'thumbnail' => $photo_icon, 'security' => $preview_style ];
 			call_hooks('file_thumbnail', $g);
 			$photo_icon = $g['thumbnail'];
 
@@ -248,22 +245,21 @@ class Browser extends DAV\Browser\Plugin {
 			}
 
 			// put the array for this file together
-			$ft['attachId'] = $id;
+			$ft['attach_id'] = $id;
 			$ft['fileStorageUrl'] = substr($href, 0, strpos($href, "/cloud/")) . "/filestorage/" . $this->auth->owner_nick;
 			$ft['icon'] = $icon;
 			$ft['photo_icon'] = $photo_icon;
-			$ft['attachIcon'] = (($size) ? $attachIcon : '');
 			$ft['is_owner'] = $is_owner;
 			$ft['is_creator'] = $is_creator;
-			$ft['relPath'] = '/cloud/' . $nick .'/' . $data['display_path'];
-			$ft['fullPath'] = z_root() . '/cloud/' . $nick .'/' . $data['display_path'];
-			$ft['displayName'] = $name;
+			$ft['rel_path'] = '/cloud/' . $nick .'/' . $data['display_path'];
+			$ft['full_path'] = z_root() . '/cloud/' . $nick .'/' . $data['display_path'];
+			$ft['name'] = $name;
 			$ft['type'] = $type;
 			$ft['size'] = $size;
 			$ft['collection'] = (($type === 'Collection') ? true : false);
-			$ft['sizeFormatted'] = userReadableSize($size);
-			$ft['lastmodified'] = (($lastmodified) ? datetime_convert('UTC', date_default_timezone_get(), $lastmodified) : '');
-			$ft['iconFromType'] = getIconFromType($type);
+			$ft['size_formatted'] = userReadableSize($size);
+			$ft['last_modified'] = (($lastmodified) ? datetime_convert('UTC', date_default_timezone_get(), $lastmodified) : '');
+			$ft['icon_from_type'] = getIconFromType($type);
 
 			$ft['allow_cid'] = acl2json($data['allow_cid']);
 			$ft['allow_gid'] = acl2json($data['allow_gid']);
@@ -286,7 +282,7 @@ class Browser extends DAV\Browser\Plugin {
 			$folders = $folder_list;
 			if($data['is_dir']) {
 				// can not copy a folder into itself
-				unset($folders[$parentHash]);
+				unset($folders[$parent_hash]);
 			}
 
 			$ft['newfolder'] = ['newfolder_' . $id, t('Select a target location'), $data['folder'], '', $folders];
@@ -308,8 +304,8 @@ class Browser extends DAV\Browser\Plugin {
 		$tiles = ((array_key_exists('cloud_tiles',$_SESSION)) ? intval($_SESSION['cloud_tiles']) : $deftiles);
 		$_SESSION['cloud_tiles'] = $tiles;
 
-		if(get_config('system', 'cloud_disable_siteroot') && $parentpath['path'] === '/cloud') {
-			$parentpath = [];
+		if(get_config('system', 'cloud_disable_siteroot') && $parent_path['path'] === '/cloud') {
+			$parent_path = [];
 		}
 
 		$header = (($cat) ? t('File category') . ": " . $this->escapeHTML($cat) : t('Files') . ": " . $this->escapeHTML($path) . "/");
@@ -324,7 +320,7 @@ class Browser extends DAV\Browser\Plugin {
 				'$is_owner' => $is_owner,
 				'$is_admin' => is_site_admin(),
 				'$admin_delete' => t('Admin Delete'),
-				'$parentpath' => $parentpath,
+				'$parentpath' => $parent_path,
 				'$cpath' => bin2hex(App::$query_string),
 				'$tiles' => intval($_SESSION['cloud_tiles']),
 				'$entries' => $f,
