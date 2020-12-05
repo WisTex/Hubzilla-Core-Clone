@@ -109,6 +109,7 @@ class Browser extends DAV\Browser\Plugin {
 		}
 
 		$folder_list = attach_folder_select_list($this->auth->owner_id);
+
 		$nick = $this->auth->owner_nick;
 		$owner = $this->auth->owner_id;
 
@@ -231,6 +232,7 @@ class Browser extends DAV\Browser\Plugin {
 			);
 
 			$categories = [];
+			$terms_str = '';
 			if($terms) {
 				foreach($terms as $t) {
 					$term = htmlspecialchars($t['term'],ENT_COMPAT,'UTF-8',false) ;
@@ -334,7 +336,6 @@ class Browser extends DAV\Browser\Plugin {
 				'$edit' => t('Submit'),
 				'$delete' => t('Delete'),
 				'$nick' => $nick,
-
 				'$cpdesc' => t('Copy/paste this code to attach file to a post'),
 				'$cpldesc' => t('Copy/paste this URL to link file from a web page'),
 

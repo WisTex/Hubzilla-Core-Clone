@@ -43,7 +43,6 @@ $(document).ready(function () {
 		e.preventDefault();
 		let id = $(this).data('id');
 		$('.cloud-tool').hide();
-		$('.cloud-index').removeClass('cloud-index-active');
 
 		$('#id_categories_' + id).tagsinput({
 			tagClass: 'badge badge-pill badge-warning text-dark'
@@ -57,6 +56,35 @@ $(document).ready(function () {
 		let id = $(this).data('id');
 		$('.cloud-tool').hide();
 	});
+
+	$('.cloud-tool-delete-btn').on('click', function (e) {
+		e.preventDefault();
+		let id = $(this).data('id');
+
+		$('.cloud-tool').hide();
+		$('.cloud-index').removeClass('cloud-index-active');
+		$('#cloud-index-' + id).addClass('cloud-index-active');
+
+		let confirm = confirmDelete();
+		if (confirm) {
+			$('body').css('cursor', 'wait');
+			$('#cloud-index-' + id).css('opacity', 0.33);
+
+			let form = $('#attach_edit_form_' + id).serializeArray();
+			form.push({name: 'delete', value: 1});
+
+			$.post('attach_edit', form, function (data) {
+				if (data.success) {
+					$('#cloud-index-' + id).remove();
+					$('body').css('cursor', 'auto');
+				}
+				return true;
+			});
+
+		}
+		return false;
+	});
+
 
 	$('.cloud-tool-cancel-btn').on('click', function (e) {
 		e.preventDefault();
