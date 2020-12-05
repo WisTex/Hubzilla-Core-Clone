@@ -207,7 +207,6 @@ function articlecategories_widget($baseurl,$selected = '') {
 }
 
 function filecategories_widget($baseurl,$selected = '') {
-	hz_syslog(print_r('gothere',true));
 
 	$perms = permissions_sql(App::$profile['profile_uid']);
 
@@ -224,7 +223,7 @@ function filecategories_widget($baseurl,$selected = '') {
 			intval(TERM_CATEGORY),
 			intval(TERM_OBJ_FILE)
 	);
-	hz_syslog(print_r($r,true));
+
 	if($r && count($r)) {
 		foreach($r as $rr)
 			$terms[] = array('name' => $rr['term'], 'selected' => (($selected == $rr['term']) ? 'selected' : ''));
