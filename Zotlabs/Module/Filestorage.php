@@ -11,6 +11,9 @@ class Filestorage extends \Zotlabs\Web\Controller {
 
 	function post() {
 
+		notice( t('Deprecated!') . EOL);
+		return;
+
 		$channel_id = ((x($_POST, 'uid')) ? intval($_POST['uid']) : 0);
 
 		if((! $channel_id) || (! local_channel()) || ($channel_id != local_channel())) {
@@ -46,6 +49,9 @@ class Filestorage extends \Zotlabs\Web\Controller {
 	}
 
 	function get() {
+
+		notice( t('Deprecated!') . EOL);
+		return;
 
 		if(argc() > 1)
 			$which = argv(1);
