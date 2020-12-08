@@ -44,7 +44,7 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 	 *
 	 * @var string $os_path
 	 */
-	private $os_path = '';
+	public $os_path = '';
 
 	/**
 	 * @brief Sets up the directory node, expects a full path.
@@ -704,21 +704,21 @@ class Directory extends DAV\Node implements DAV\ICollection, DAV\IQuota, DAV\IMo
 
 		if ($cat) {
 			$r = q("select $prefix attach.id, attach.uid, attach.hash, attach.filename,
-					attach.filetype, attach.filesize, attach.revision, attach.folder, attach.creator,
-					attach.flags, attach.is_dir, attach.created, attach.edited, attach.display_path,
-					attach.allow_cid, attach.allow_gid, attach.deny_cid, attach.deny_gid from attach
-					left join term on attach.id = term.oid
-					where term.term = '%s' and attach.uid = %d $perms $suffix",
+				attach.filetype, attach.filesize, attach.revision, attach.folder, attach.creator,
+				attach.flags, attach.is_dir, attach.created, attach.edited, attach.display_path,
+				attach.allow_cid, attach.allow_gid, attach.deny_cid, attach.deny_gid from attach
+				left join term on attach.id = term.oid
+				where term.term = '%s' and attach.uid = %d $perms $suffix",
 				dbesc($cat),
 				intval($channel_id)
 			);
 		}
 		else {
 			$r = q("select $prefix attach.id, attach.uid, attach.hash, attach.filename,
-					attach.filetype, attach.filesize, attach.revision, attach.folder, attach.creator,
-					attach.flags, attach.is_dir, attach.created, attach.edited, attach.display_path,
-					attach.allow_cid, attach.allow_gid, attach.deny_cid, attach.deny_gid from attach
-					where folder = '%s' and uid = %d $perms $suffix",
+				attach.filetype, attach.filesize, attach.revision, attach.folder, attach.creator,
+				attach.flags, attach.is_dir, attach.created, attach.edited, attach.display_path,
+				attach.allow_cid, attach.allow_gid, attach.deny_cid, attach.deny_gid from attach
+				where folder = '%s' and uid = %d $perms $suffix",
 				dbesc($folder),
 				intval($channel_id)
 			);

@@ -2513,7 +2513,7 @@ function copy_folder_to_cloudfiles($channel, $observer_hash, $srcpath, $cloudpat
  *  * \e boolean \b success
  *  * \e string \b resource_id
  */
-function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '', $check_dupes = true) {
+function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '', $recurse = true) {
 
 	$ret = [
 		'success' => false,
@@ -2524,9 +2524,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '',
 	if(! ($c && $resource_id))
 		return $ret;
 
-
 	// find the resource to be moved
-
 	$r = q("select * from attach where hash = '%s' and uid = %d limit 1",
 		dbesc($resource_id),
 		intval($channel_id)
@@ -2539,7 +2537,6 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '',
 	$oldstorepath = dbunescbin($r[0]['content']);
 
 	// find the resource we are moving to
-
 	if($new_folder_hash) {
 		$n = q("select * from attach where hash = '%s' and uid = %d and is_dir = 1 limit 1",
 			dbesc($new_folder_hash),
@@ -2553,24 +2550,21 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '',
 		$newstorepath = dbunescbin($n[0]['content']) . '/' . $resource_id;
 	}
 	else {
-
 		// root directory
-
 		$newdirname = EMPTY_STR;
 		$newalbumname = EMPTY_STR;
 		$newstorepath = 'store/' . $c['channel_address'] . '/' . $resource_id;
 	}
 
-	if (file_exists($oldstorepath))
+	if ($recurse) {
 		rename($oldstorepath,$newstorepath);
+	}
 
  	$oldfilename = $r[0]['filename'];
 	$filename = (($newname) ? basename($newname) : $oldfilename);
 
 	// duplicate detection.
-
 	if($check_dupes) {
-
 		$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
 			dbesc($filename),
 			dbesc($new_folder_hash)
@@ -2621,11 +2615,11 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '',
 					while($found);
 					$filename = $basename . '(' . $x . ')' . $ext;
 				}
-				else
+				else {
 					$filename = $basename . $ext;
+				}
 			}
 		}
-
 	}
 
 
@@ -2669,8 +2663,10 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '',
 			dbesc($resource_id)
 		);
 
-		foreach($ps as $p) {
-			rename($oldstorepath . '-' . $p['imgscale'], $p['content']);
+		if ($recurse) {
+			foreach($ps as $p) {
+				rename($oldstorepath . '-' . $p['imgscale'], $p['content']);
+			}
 		}
 	}
 
@@ -2717,7 +2713,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '',
  *  * \e boolean \b success
  *  * \e string \b resource_id of the new resource
  */
-function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '', $check_dupes = true) {
+function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '', $recurse = true) {
 
 	$ret = [
 		'success' => false,
@@ -2728,8 +2724,7 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '',
 	if(! ($c && $resource_id))
 		return $ret;
 
-	// find the resource to be moved
-
+	// find the resource to be copied
 	$r = q("select * from attach where hash = '%s' and uid = %d limit 1",
 		dbesc($resource_id),
 		intval($channel_id)
@@ -2747,7 +2742,6 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '',
 	$oldstorepath = dbunescbin($r[0]['content']);
 
 	// find the resource we are copying to
-
 	if($new_folder_hash) {
 		$n = q("select * from attach where hash = '%s' and uid = %d and is_dir = 1 limit 1",
 			dbesc($new_folder_hash),
@@ -2763,25 +2757,24 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '',
 		$newstorepath = dbunescbin($n[0]['content']) . '/' . $new_resource_id;
 	}
 	else {
-
 		// root directory
-
 		$newdirname = EMPTY_STR;
 		$newalbumname = EMPTY_STR;
 		$newstorepath = 'store/' . $c['channel_address'] . '/' . $new_resource_id;
 	}
 
-	if(is_dir($oldstorepath))
+	if(is_dir($oldstorepath)) {
 		os_mkdir($newstorepath,STORAGE_DEFAULT_PERMISSIONS,true);
-	else
+	}
+	else {
 		copy($oldstorepath,$newstorepath);
+	}
 
 	$oldfilename = $r[0]['filename'];
 	$filename = (($newname) ? basename($newname) : $oldfilename);
 
 	// duplicate detection. If 'overwrite' is specified, return false because we can't yet do that.
-
-	if($check_dupes) {
+	if($recurse) {
 		$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
 			dbesc($filename),
 			dbesc($new_folder_hash)
@@ -2831,8 +2824,9 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '',
 					while($found);
 					$filename = $basename . '(' . $x . ')' . $ext;
 				}
-				else
+				else {
 					$filename = $basename . $ext;
+				}
 			}
 		}
 	}
@@ -2874,9 +2868,7 @@ function attach_copy($channel_id, $resource_id, $new_folder_hash, $newname = '',
 				if($p['imgscale'] > 0)
 					copy($oldstorepath, $p['content']);
 			}
-
 			create_table_from_array('photo', $p, ['content']);
-
 		}
 	}
 

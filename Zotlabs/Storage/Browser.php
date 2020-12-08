@@ -83,7 +83,6 @@ class Browser extends DAV\Browser\Plugin {
 
 		// (owner_id = channel_id) is visitor owner of this directory?
 		$is_owner = ((local_channel() && $this->auth->owner_id == local_channel()) ? true : false);
-
 		$cat = ((x($_REQUEST,'cat')) ? $cat : '');
 
 		if ($this->auth->getTimezone()) {
@@ -96,6 +95,10 @@ class Browser extends DAV\Browser\Plugin {
 
 		$files = $this->server->getPropertiesForPath($path, [], 1);
 		$parent = $this->server->tree->getNodeForPath($path);
+
+		$arr = explode('/', $parent->os_path);
+		end($arr);
+		$folder_parent = isset($arr[1]) ? prev($arr) : '';
 
 		$parent_path = [];
 
@@ -111,12 +114,13 @@ class Browser extends DAV\Browser\Plugin {
 		$folder_list = attach_folder_select_list($this->auth->owner_id);
 
 		$nick = $this->auth->owner_nick;
-		$owner = $this->auth->owner_id;
+		$channel_id = $this->auth->owner_id;
+
+		$is_root_folder = ((basename($path) === $nick) ? true : false);
 
 		$f = [];
 
 		foreach ($files as $file) {
-
 
 			$ft = [];
 			$type = null;
@@ -130,7 +134,7 @@ class Browser extends DAV\Browser\Plugin {
 			$node = $this->server->tree->getNodeForPath($href);
 			$data = $node->data;
 			$attach_hash = $data['hash'];
-			$parent_hash = $node->folder_hash;
+			$folder_hash = $node->folder_hash;
 
 			list(, $filename) = \Sabre\Uri\split($href);
 
@@ -152,22 +156,22 @@ class Browser extends DAV\Browser\Plugin {
 					// Some name mapping is preferred
 					switch ($v) {
 						case '{DAV:}collection' :
-							$type[$k] = t('Collection');
+							$type[$k] = 'Collection';
 							break;
 						case '{DAV:}principal' :
-							$type[$k] = t('Principal');
+							$type[$k] = 'Principal';
 							break;
 						case '{urn:ietf:params:xml:ns:carddav}addressbook' :
-							$type[$k] = t('Addressbook');
+							$type[$k] = 'Addressbook';
 							break;
 						case '{urn:ietf:params:xml:ns:caldav}calendar' :
-							$type[$k] = t('Calendar');
+							$type[$k] = 'Calendar';
 							break;
 						case '{urn:ietf:params:xml:ns:caldav}schedule-inbox' :
-							$type[$k] = t('Schedule Inbox');
+							$type[$k] = 'Schedule Inbox';
 							break;
 						case '{urn:ietf:params:xml:ns:caldav}schedule-outbox' :
-							$type[$k] = t('Schedule Outbox');
+							$type[$k] = 'Schedule Outbox';
 							break;
 						case '{http://calendarserver.org/ns/}calendar-proxy-read' :
 							$type[$k] = 'Proxy-Read';
@@ -226,31 +230,32 @@ class Browser extends DAV\Browser\Plugin {
 			$lockstate = (($data['allow_cid'] || $data['allow_gid'] || $data['deny_cid'] || $data['deny_gid']) ? 'lock' : 'unlock');
 			$id = $data['id'];
 
-			$terms = q("select * from term where oid = %d AND otype = %d",
-				intval($id),
-				intval(TERM_OBJ_FILE)
-			);
+			if($id) {
+				$terms = q("select * from term where oid = %d AND otype = %d",
+					intval($id),
+					intval(TERM_OBJ_FILE)
+				);
 
-			$categories = [];
-			$terms_str = '';
-			if($terms) {
-				foreach($terms as $t) {
-					$term = htmlspecialchars($t['term'],ENT_COMPAT,'UTF-8',false) ;
-					if(! trim($term))
-						continue;
-					$categories[] = array('term' => $term, 'url' => $t['url']);
-					if ($terms_str)
-						$terms_str .= ',';
-					$terms_str .= $term;
+				$categories = [];
+				$terms_str = '';
+				if($terms) {
+					foreach($terms as $t) {
+						$term = htmlspecialchars($t['term'],ENT_COMPAT,'UTF-8',false) ;
+						if(! trim($term))
+							continue;
+						$categories[] = array('term' => $term, 'url' => $t['url']);
+						if ($terms_str)
+							$terms_str .= ',';
+						$terms_str .= $term;
+					}
+					$ft['terms'] = replace_macros(get_markup_template('item_categories.tpl'),array(
+						'$categories' => $categories
+					));
 				}
-				$ft['terms'] = replace_macros(get_markup_template('item_categories.tpl'),array(
-					'$categories' => $categories
-				));
 			}
 
 			// put the array for this file together
 			$ft['attach_id'] = $id;
-			$ft['fileStorageUrl'] = substr($href, 0, strpos($href, "/cloud/")) . "/filestorage/" . $this->auth->owner_nick;
 			$ft['icon'] = $icon;
 			$ft['photo_icon'] = $photo_icon;
 			$ft['is_owner'] = $is_owner;
@@ -286,7 +291,7 @@ class Browser extends DAV\Browser\Plugin {
 			$folders = $folder_list;
 			if($data['is_dir']) {
 				// can not copy a folder into itself
-				unset($folders[$parent_hash]);
+				unset($folders[$folder_hash]);
 			}
 
 			$ft['newfolder'] = ['newfolder_' . $id, t('Select a target location'), $data['folder'], '', $folders];
@@ -325,6 +330,9 @@ class Browser extends DAV\Browser\Plugin {
 				'$is_admin' => is_site_admin(),
 				'$admin_delete' => t('Admin Delete'),
 				'$parentpath' => $parent_path,
+				'$folder_parent' => $folder_parent,
+				'$folder' => $parent->folder_hash,
+				'$is_root_folder' => $is_root_folder,
 				'$cpath' => bin2hex(App::$query_string),
 				'$tiles' => intval($_SESSION['cloud_tiles']),
 				'$entries' => $f,
@@ -335,7 +343,7 @@ class Browser extends DAV\Browser\Plugin {
 				'$parent' => t('parent'),
 				'$edit' => t('Submit'),
 				'$delete' => t('Delete'),
-				'$nick' => $nick,
+				'$channel_id' => $channel_id,
 				'$cpdesc' => t('Copy/paste this code to attach file to a post'),
 				'$cpldesc' => t('Copy/paste this URL to link file from a web page'),
 
@@ -377,6 +385,7 @@ class Browser extends DAV\Browser\Plugin {
 		// SimpleCollection, we won't need to show the panel either.
 		if (get_class($node) === 'Sabre\\DAV\\SimpleCollection')
 			return;
+
 		require_once('include/acl_selectors.php');
 
 		$aclselect = null;
@@ -432,7 +441,6 @@ class Browser extends DAV\Browser\Plugin {
 		if(strpos($path,$special) === 0)
 			$path = trim(substr($path,$count),'/');
 
-
 		$output .= replace_macros(get_markup_template('cloud_actionspanel.tpl'), array(
 				'$folder_header' => t('Create new folder'),
 				'$folder_submit' => t('Create'),
@@ -448,7 +456,7 @@ class Browser extends DAV\Browser\Plugin {
 				'$lockstate' => $lockstate,
 				'$return_url' => \App::$cmd,
 				'$path' => $path,
-				'$folder' => find_folder_hash_by_path($this->auth->owner_id, $path),
+				'$folder' => $node->folder_hash,
 				'$dragdroptext' => t('Drop files here to immediately upload'),
 				'$notify' => ['notify', t('Show in your contacts shared folder'), 0, '', [t('No'), t('Yes')]]
 			));

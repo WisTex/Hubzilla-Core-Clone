@@ -19,6 +19,8 @@ class Attach_edit extends Controller {
 		}
 
 		$attach_id = ((x($_POST, 'attach_id')) ? intval($_POST['attach_id']) : null);
+		$channel_id = ((x($_POST, 'channel_id')) ? intval($_POST['channel_id']) : null);
+		$dnd = ((x($_POST, 'dnd')) ? intval($_POST['dnd']) : null);
 		$nick = ((x($_POST, 'nick')) ? notags($_POST['nick']) : '');
 		$delete = ((x($_POST, 'delete')) ? intval($_POST['delete']) : 0);
 		$newfolder  = ((x($_POST, 'newfolder_' . $attach_id))  ? notags($_POST['newfolder_' . $attach_id])  : '');
@@ -33,7 +35,7 @@ class Attach_edit extends Controller {
 			return;
 		}
 
-		$channel = channelx_by_nick($nick);
+		$channel = channelx_by_n($channel_id);
 
 		if (! $channel) {
 			notice(t('Channel not found.') . EOL);
@@ -41,10 +43,8 @@ class Attach_edit extends Controller {
 		}
 
 		$nick = $channel['channel_address'];
-		$channel_id = $channel['channel_id'];
 		$observer = App::get_observer();
 		$observer_hash = (($observer) ? $observer['xchan_hash'] : '');
-
 
 		$r = q("SELECT uid, hash, creator, folder, filename, is_photo FROM attach WHERE id = %d AND uid = %d",
 			intval($attach_id),
@@ -83,7 +83,7 @@ class Attach_edit extends Controller {
 			}
 		}
 
-		if(!$is_owner && !$admin_delete) {
+		if (!$is_owner && !$admin_delete) {
 			if(! $is_creator) {
 				notice( t('Permission denied.') . EOL);
 				return;
@@ -137,8 +137,7 @@ class Attach_edit extends Controller {
 			);
 		}
 
-
-		if($is_owner) {
+		if ($is_owner && ! $dnd) {
 			$acl = new AccessList($channel);
 			$acl->set_from_array($_REQUEST);
 			$x = $acl->get();
@@ -154,6 +153,10 @@ class Attach_edit extends Controller {
 
 		if ($sync) {
 			Libsync::build_sync_packet($channel_id, ['file' => [$sync]]);
+		}
+
+		if ($dnd) {
+			json_return_and_die([ 'success' => true ]);
 		}
 
 		$url = get_cloud_url($channel_id, $nick, $resource);

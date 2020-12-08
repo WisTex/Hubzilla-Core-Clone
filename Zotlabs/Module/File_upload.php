@@ -12,16 +12,16 @@ class File_upload extends \Zotlabs\Web\Controller {
 
 	function post() {
 
-		logger('file upload: ' . print_r($_REQUEST,true));
+		hz_syslog('file upload: ' . print_r($_REQUEST,true));
 		logger('file upload: ' . print_r($_FILES,true));
-	
+
 		$channel = (($_REQUEST['channick']) ? channelx_by_nick($_REQUEST['channick']) : null);
-	
+
 		if(! $channel) {
 			logger('channel not found');
 			killme();
 		}
-	
+
 		$_REQUEST['source'] = 'file_upload';
 
 		if($channel['channel_id'] != local_channel()) {
@@ -83,7 +83,7 @@ class File_upload extends \Zotlabs\Web\Controller {
 					];
 				}
 			}
-			else {	
+			else {
 				if(! array_key_exists('userfile',$_FILES)) {
 					$_FILES['userfile'] = [
 						'name'     => $_FILES['files']['name'],
@@ -104,7 +104,7 @@ class File_upload extends \Zotlabs\Web\Controller {
 			}
 		}
 		goaway(z_root() . '/' . $_REQUEST['return_url']);
-	
+
 	}
-	
+
 }

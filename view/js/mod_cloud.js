@@ -3,10 +3,14 @@
  */
 
 $(document).ready(function () {
+
 	// call initialization file
 	if (window.File && window.FileList && window.FileReader) {
 		UploadInit();
 	}
+
+	var attach_drop_id;
+	var attach_draging;
 
 	$('.cloud-tool-perms-btn').on('click', function (e) {
 		e.preventDefault();
@@ -76,7 +80,7 @@ $(document).ready(function () {
 
 			$.post('attach_edit', form, function (data) {
 				if (data.success) {
-					$('#cloud-index-' + id).remove();
+					$('#cloud-index-' + id + ', #cloud-tools-' + id).remove();
 					$('body').css('cursor', 'auto');
 				}
 				return true;
@@ -85,7 +89,6 @@ $(document).ready(function () {
 		}
 		return false;
 	});
-
 
 	$('.cloud-tool-cancel-btn').on('click', function (e) {
 		e.preventDefault();
@@ -97,15 +100,98 @@ $(document).ready(function () {
 
 	});
 
+	// DnD
+
+	$(document).on('drop', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+	});
+	$(document).on('dragover', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+	});
+	$(document).on('dragleave', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+	});
+
+	$('.cloud-index.attach-drop').on('drop', function (e) {
+
+		let target = $(this);
+		let folder = target.data('folder');
+		let id = target.data('id');
+
+
+		if(typeof folder === typeof undefined) {
+			return false;
+		}
+
+		// Check if it's a file
+		if (e.dataTransfer.files[0]) {
+			$('#file-directory').val('');
+			//folder = $('.attach-drop-zone').data('folder');
+			$('#file-folder').val(folder);
+			return true;
+		}
+
+		if(id === attach_drop_id) {
+			return false;
+		}
+
+		if(target.hasClass('attach-drop-zone') && attach_draging) {
+			return false;
+		}
+
+		target.removeClass('attach-drop-ok');
+
+		$.post('attach_edit', {'channel_id': channelId, 'dnd': 1, 'attach_id': attach_drop_id, ['newfolder_' + attach_drop_id]: folder }, function (data) {
+			if (data.success) {
+				$('#cloud-index-' + attach_drop_id + ', #cloud-tools-' + attach_drop_id).remove();
+				attach_drop_id = null;
+			}
+		});
+	});
+
+	$('.cloud-index.attach-drop').on('dragover', function (e) {
+		let target = $(this);
+
+		if(target.hasClass('attach-drop-zone') && attach_draging) {
+			return false;
+		}
+
+		target.addClass('attach-drop-ok');
+
+	});
+
+	$('.cloud-index').on('dragleave', function (e) {
+		let target = $(this);
+		target.removeClass('attach-drop-ok');
+	});
+
+	$('.cloud-index').on('dragstart', function (e) {
+		let target = $(this);
+		attach_drop_id = target.data('id');
+		// dragstart is not fired if a file is draged onto the window
+		// we use this to distinguish between drags and file drops
+		attach_draging = true;
+	});
+
+	$('.cloud-index').on('dragend', function (e) {
+		let target = $(this);
+		target.removeClass('attach-drop-ok');
+		attach_draging = false;
+
+	});
+
+
 });
 
 // initialize
 function UploadInit() {
 
-	var fileselect = $("#files-upload");
-	var filedrag = $("#cloud-drag-area");
 	var submit = $("#upload-submit");
 	var count = 1;
+	var filedrag = $(".cloud-index.attach-drop");
 
 	$('#invisible-cloud-file-upload').fileupload({
 			url: 'file_upload',
@@ -137,7 +223,6 @@ function UploadInit() {
 				});
 
 				data.formData = $('#ajax-upload-files').serializeArray();
-
 				data.submit();
 			},
 
@@ -158,7 +243,6 @@ function UploadInit() {
 
 			},
 
-
 			stop: function(e,data) {
 				window.location.href = window.location.href;
 			}
@@ -169,51 +253,7 @@ function UploadInit() {
 
 }
 
-// file drag hover
-function DragDropUploadFileHover(e) {
-	e.stopPropagation();
-	e.preventDefault();
-	e.currentTarget.className = (e.type == "dragover" ? "hover" : "");
-}
 
-// file selection via drag/drop
-function DragDropUploadFileSelectHandler(e) {
-	// cancel event and hover styling
-	DragDropUploadFileHover(e);
-
-	// fetch FileList object
-	var files = e.target.files || e.originalEvent.dataTransfer.files;
-
-	$('.new-upload').remove();
-
-	// process all File objects
-	for (var i = 0, f; f = files[i]; i++) {
-		prepareHtml(f, i);
-		UploadFile(f, i);
-	}
-}
-
-// file selection via input
-function UploadFileSelectHandler(e) {
-	// fetch FileList object
-	if(e.target.id === 'upload-submit') {
-		e.preventDefault();
-		var files = e.data[0].files;
-	}
-	if(e.target.id === 'files-upload') {
-		$('.new-upload').remove();
-		var files = e.target.files;
-	}
-
-	// process all File objects
-	for (var i = 0, f; f = files[i]; i++) {
-		if(e.target.id === 'files-upload')
-			prepareHtml(f, i);
-		if(e.target.id === 'upload-submit') {
-			UploadFile(f, i);
-		}
-	}
-}
 
 function prepareHtml(f) {
 	var num = f.count - 1;
@@ -222,7 +262,7 @@ function prepareHtml(f) {
 		'<tr id="new-upload-' + i + '" class="new-upload">' +
 		'<td><i class="fa ' + getIconFromType(f.type) + '" title="' + f.type + '"></i></td>' +
 		'<td>' + f.name + '</td>' +
-		'<td id="upload-progress-' + i + '"></td><td></td><td></td><td></td><td></td>' +
+		'<td id="upload-progress-' + i + '"></td><td></td><td></td>' +
 		'<td class="d-none d-md-table-cell">' + formatSizeUnits(f.size) + '</td><td class="d-none d-md-table-cell"></td>' +
 		'</tr>' +
 		'<tr id="new-upload-progress-bar-' + i + '" class="new-upload">' +
@@ -287,63 +327,4 @@ function getIconFromType(type) {
 	return iconFromType;
 }
 
-// upload  files
-function UploadFile(file, idx) {
 
-
-	window.filesToUpload = window.filesToUpload + 1;
-
-	var xhr = new XMLHttpRequest();
-
-	xhr.withCredentials = true;   // Include the SESSION cookie info for authentication
-
-	(xhr.upload || xhr).addEventListener('progress', function (e) {
-
-		var done = e.position || e.loaded;
-		var total = e.totalSize || e.total;
-		// Dynamically update the percentage complete displayed in the file upload list
-		$('#upload-progress-' + idx).html(Math.round(done / total * 100) + '%');
-		$('#upload-progress-bar-' + idx).css('background-size', Math.round(done / total * 100) + '%');
-
-		if(done == total) {
-			$('#upload-progress-' + idx).html('Processing...');
-		}
-
-	});
-
-
-	xhr.addEventListener('load', function (e) {
-		//we could possibly turn the filenames to real links here and add the delete and edit buttons to avoid page reload...
-		$('#upload-progress-' + idx).html('Ready!');
-
-		//console.log('xhr upload complete', e);
-		window.fileUploadsCompleted = window.fileUploadsCompleted + 1;
-
-		// When all the uploads have completed, refresh the page
-		if (window.filesToUpload > 0 && window.fileUploadsCompleted === window.filesToUpload) {
-
-			window.fileUploadsCompleted = window.filesToUpload = 0;
-
-			// After uploads complete, refresh browser window to display new files
-			window.location.href = window.location.href;
-		}
-	});
-
-
-	xhr.addEventListener('error', function (e) {
-		$('#upload-progress-' + idx).html('<span style="color: red;">ERROR</span>');
-	});
-
-	// POST to the entire cloud path
-//	xhr.open('post', 'file_upload', true);
-
-//	var formfields = $("#ajax-upload-files").serializeArray();
-
-//	var data = new FormData();
-//	$.each(formfields, function(i, field) {
-//		data.append(field.name, field.value);
-//	});
-//	data.append('userfile', file);
-
-//	xhr.send(data);
-}
