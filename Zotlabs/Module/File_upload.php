@@ -12,7 +12,7 @@ class File_upload extends \Zotlabs\Web\Controller {
 
 	function post() {
 
-		hz_syslog('file upload: ' . print_r($_REQUEST,true));
+		logger('file upload: ' . print_r($_REQUEST,true));
 		logger('file upload: ' . print_r($_FILES,true));
 
 		$channel = (($_REQUEST['channick']) ? channelx_by_nick($_REQUEST['channick']) : null);
