@@ -106,10 +106,12 @@ $(document).ready(function () {
 		e.preventDefault();
 		e.stopPropagation();
 	});
+
 	$(document).on('dragover', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
 	});
+
 	$(document).on('dragleave', function (e) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -128,8 +130,6 @@ $(document).ready(function () {
 
 		// Check if it's a file
 		if (e.dataTransfer.files[0]) {
-			$('#file-directory').val('');
-			//folder = $('.attach-drop-zone').data('folder');
 			$('#file-folder').val(folder);
 			return true;
 		}
@@ -160,7 +160,6 @@ $(document).ready(function () {
 		}
 
 		target.addClass('attach-drop-ok');
-
 	});
 
 	$('.cloud-index').on('dragleave', function (e) {
@@ -180,7 +179,6 @@ $(document).ready(function () {
 		let target = $(this);
 		target.removeClass('attach-drop-ok');
 		attach_draging = false;
-
 	});
 
 
