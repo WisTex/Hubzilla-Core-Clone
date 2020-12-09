@@ -83,3 +83,12 @@
 	padding: 0px !important;
 	height: 3px;
 }
+
+.bootstrap-tagsinput input[type=text] {
+	height: unset;
+}
+
+.bootstrap-tagsinput {
+	box-shadow: none;
+}
+
