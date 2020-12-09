@@ -7,14 +7,14 @@
 	{{if $parentpath}}
 	<div class="cloud-container" >
 		<div class="cloud-icon tiles">
-			<a href="{{$parentpath.path}}">
+			<a href="{{$parentpath}}">
 				<div class="cloud-icon-container">
 					<i class="fa fa-fw fa-level-up" ></i>
 				</div>
 			</a>
 		</div>
 		<div class="cloud-title">
-			<a href="{{$parentpath.path}}">..</a>
+			<a href="{{$parentpath}}">..</a>
 		</div>
 	</div>
 	{{/if}}
@@ -55,8 +55,8 @@
 		</tr>
 		{{if $parentpath}}
 		<tr id="cloud-index-up" class="cloud-index{{if ! $is_root_folder}} attach-drop{{/if}}"{{if ! $is_root_folder}} data-folder="{{$folder_parent}}"/{{/if}}>
-			<td><i class="fa fa-level-up"></i>{{*$parentpath.icon*}}</td>
-			<td colspan="7"><a href="{{$parentpath.path}}" title="{{$parent}}" draggable="false">..</a></td>
+			<td><i class="fa fa-level-up"></i></td>
+			<td colspan="7"><a href="{{$parentpath}}" title="{{$parent}}" draggable="false">..</a></td>
 		</tr>
 		{{/if}}
 		<tr id="new-upload-progress-bar-1"></tr> {{* this is needed to append the upload files in the right order *}}

@@ -81,16 +81,17 @@ class Browser extends DAV\Browser\Plugin {
 		require_once('include/conversation.php');
 		require_once('include/text.php');
 
-		// (owner_id = channel_id) is visitor owner of this directory?
-		$is_owner = ((local_channel() && $this->auth->owner_id == local_channel()) ? true : false);
-		$cat = ((x($_REQUEST,'cat')) ? $cat : '');
+		$nick = $this->auth->owner_nick;
+		$channel_id = $this->auth->owner_id;
+
+hz_syslog(print_r('browser nick: '. $nick,true),LOGGER_DEBUG);
+
+		// Is visitor owner of this directory?
+		$is_owner = ((local_channel() && $channel_id == local_channel()) ? true : false);
+		$cat = ((x($_REQUEST,'cat')) ? $_REQUEST['cat'] : '');
 
 		if ($this->auth->getTimezone()) {
 			date_default_timezone_set($this->auth->getTimezone());
-		}
-
-		if ($this->auth->owner_nick) {
-			$html = '';
 		}
 
 		$files = $this->server->getPropertiesForPath($path, [], 1);
@@ -100,23 +101,17 @@ class Browser extends DAV\Browser\Plugin {
 		end($arr);
 		$folder_parent = isset($arr[1]) ? prev($arr) : '';
 
-		$parent_path = [];
+		$folder_list = attach_folder_select_list($channel_id);
 
-		// only show parent if not leaving /cloud/; TODO how to improve this?
-		if ($path && $path !== 'cloud') {
+		$parent_path = '';
+
+		// Hide parent folder if in /cloud or category view
+		if ($channel_id && ! $cat) {
 			list($parent_uri) = \Sabre\Uri\split($path);
-			$full_path = \Sabre\HTTP\encodePath($this->server->getBaseUri() . $parent_uri);
-
-			$parent_path['icon'] = $this->enableAssets ? '<a href="' . $full_path . '"><img src="' . $this->getAssetUrl('icons/parent' . $this->iconExtension) . '" width="24" alt="' . t('parent') . '"></a>' : '';
-			$parent_path['path'] = $full_path;
+			$parent_path = \Sabre\HTTP\encodePath($this->server->getBaseUri() . $parent_uri);
 		}
 
-		$folder_list = attach_folder_select_list($this->auth->owner_id);
-
-		$nick = $this->auth->owner_nick;
-		$channel_id = $this->auth->owner_id;
-
-		$is_root_folder = ((basename($path) === $nick) ? true : false);
+		$is_root_folder = (($path === 'cloud/' . $nick) ? true : false);
 
 		$f = [];
 
@@ -319,7 +314,7 @@ class Browser extends DAV\Browser\Plugin {
 
 		$header = (($cat) ? t('File category') . ": " . $this->escapeHTML($cat) : t('Files') . ": " . $this->escapeHTML($path) . "/");
 
-		$html .= replace_macros(get_markup_template('cloud.tpl'), array(
+		$html = replace_macros(get_markup_template('cloud.tpl'), array(
 				'$header' => $header,
 				'$total' => t('Total'),
 				'$actionspanel' => $output,
