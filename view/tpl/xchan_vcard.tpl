@@ -1,6 +1,6 @@
 <div class="card mb-3 h-card">
 	<div class="row">
-		<div class="col-md-4">
+		<div class="col-4">
 			<a href="{{$link}}" >
 				<img class="u-photo" src="{{$photo}}" alt="{{$name}}" width="80px" height="80px">
 			</a>
