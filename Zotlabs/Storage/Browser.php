@@ -84,8 +84,6 @@ class Browser extends DAV\Browser\Plugin {
 		$nick = $this->auth->owner_nick;
 		$channel_id = $this->auth->owner_id;
 
-hz_syslog(print_r('browser nick: '. $nick,true),LOGGER_DEBUG);
-
 		// Is visitor owner of this directory?
 		$is_owner = ((local_channel() && $channel_id == local_channel()) ? true : false);
 		$cat = ((x($_REQUEST,'cat')) ? $_REQUEST['cat'] : '');
