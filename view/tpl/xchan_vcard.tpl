@@ -7,10 +7,10 @@
 		</div>
 		<div class="col m-1">
 			<div class="row">
-					<strong class="fn p-name">{{$name}}</strong>
+				<strong class="fn p-name">{{$name}}</strong>
 			</div>
 			<div class="row">
-					<small class="text-muted p-adr">{{$addr}}</small>
+				<small class="text-muted p-adr">{{$addr}}</small>
 			</div>
 			{{if $connect}}
 			<div class="row mt-2">
