@@ -58,7 +58,7 @@
 		<tr id="cloud-index-up" class="cloud-index{{if ! $is_root_folder}} attach-drop{{/if}}"{{if ! $is_root_folder}} data-folder="{{$folder_parent}}"/{{/if}}>
 			<td></td>
 			<td><i class="fa fa-level-up"></i></td>
-			<td colspan="6"><a href="{{$parentpath}}" title="{{$parent}}" draggable="false">..</a></td>
+			<td colspan="6"><a href="{{$parentpath}}" title="{{$parent}}" class="p-2" draggable="false">..</a></td>
 		</tr>
 		{{/if}}
 		{{if $entries.0}}
@@ -77,7 +77,7 @@
 				{{if $is_owner}}
 				<div class="dropdown">
 					<button class="btn btn-outline-secondary btn-sm" id="multi-dropdown-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						<i class="fa fa-fw fa-ellipsis-v"></i> Actions
+						<i class="fa fa-fw fa-ellipsis-v"></i> Bulk Actions
 					</button>
 					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-button">
 						{{if $is_owner}}

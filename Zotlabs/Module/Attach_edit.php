@@ -148,7 +148,7 @@ class Attach_edit extends Controller {
 
 			}
 
-			if(! $delete) {
+			if(! $delete && !$dnd) {
 				if ($single || (! $single && $categories)) {
 					q("DELETE FROM term WHERE uid = %d AND oid = %d AND otype = %d",
 						intval($channel_id),
@@ -200,9 +200,9 @@ class Attach_edit extends Controller {
 				}
 			}
 
-		}
+			logger('attach_edit: ' . $actions_done);
 
-		logger('attach_edit: ' . $actions_done);
+		}
 
 		if ($single) {
 			if($dnd || $delete) {
