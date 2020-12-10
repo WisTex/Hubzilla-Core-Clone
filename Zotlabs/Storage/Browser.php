@@ -103,8 +103,10 @@ class Browser extends DAV\Browser\Plugin {
 
 		$parent_path = '';
 
+		$siteroot_disabled = get_config('system', 'cloud_disable_siteroot');
+
 		// Hide parent folder if in /cloud or category view
-		if ($channel_id && ! $cat) {
+		if (($channel_id && ! $cat) || ($siteroot_disabled && $path !== 'cloud')) {
 			list($parent_uri) = \Sabre\Uri\split($path);
 			$parent_path = \Sabre\HTTP\encodePath($this->server->getBaseUri() . $parent_uri);
 		}
@@ -253,8 +255,8 @@ class Browser extends DAV\Browser\Plugin {
 			$ft['photo_icon'] = $photo_icon;
 			$ft['is_owner'] = $is_owner;
 			$ft['is_creator'] = $is_creator;
-			$ft['rel_path'] = (($data) ? '/cloud/' . $nick .'/' . $data['display_path'] : $href);
-			$ft['full_path'] = z_root() . (($data) ? '/cloud/' . $nick .'/' . $data['display_path'] : $href);
+			$ft['rel_path'] = (($nick) ? '/cloud/' . $nick .'/' . $data['display_path'] : $href);
+			$ft['full_path'] = z_root() . (($nick) ? '/cloud/' . $nick .'/' . $data['display_path'] : $href);
 			$ft['name'] = $name;
 			$ft['type'] = $type;
 			$ft['size'] = $size;
@@ -306,11 +308,14 @@ class Browser extends DAV\Browser\Plugin {
 		$tiles = ((array_key_exists('cloud_tiles',$_SESSION)) ? intval($_SESSION['cloud_tiles']) : $deftiles);
 		$_SESSION['cloud_tiles'] = $tiles;
 
-		if(get_config('system', 'cloud_disable_siteroot') && $parent_path['path'] === '/cloud') {
-			$parent_path = [];
-		}
-
 		$header = (($cat) ? t('File category') . ": " . $this->escapeHTML($cat) : t('Files') . ": " . $this->escapeHTML($path) . "/");
+
+		$channel = channelx_by_n($channel_id);
+		if($channel) {
+			$acl = new \Zotlabs\Access\AccessList($channel);
+			$channel_acl = $acl->get();
+			$lockstate = (($acl->is_private()) ? 'lock' : 'unlock');
+		}
 
 		$html = replace_macros(get_markup_template('cloud.tpl'), array(
 				'$header' => $header,
@@ -339,6 +344,20 @@ class Browser extends DAV\Browser\Plugin {
 				'$channel_id' => $channel_id,
 				'$cpdesc' => t('Copy/paste this code to attach file to a post'),
 				'$cpldesc' => t('Copy/paste this URL to link file from a web page'),
+
+				'$categories' => ['categories', t('Categories')],
+				'$recurse' => ['recurse', t('Set permissions for all files and sub folders'), 0, '', [t('No'), t('Yes')]],
+
+				'$newfolder' => ['newfolder', t('Select a target location'), $parent->folder_hash, '', $folder_list],
+				'$copy' => ['copy', t('Copy to target location'), 0, '', [t('No'), t('Yes')]],
+				'$return_path' => $path,
+
+				'$lockstate' => $lockstate,
+				'$allow_cid' => acl2json($channel_acl['allow_cid']),
+				'$allow_gid' => acl2json($channel_acl['allow_gid']),
+				'$deny_cid' => acl2json($channel_acl['deny_cid']),
+				'$deny_gid' => acl2json($channel_acl['deny_gid'])
+
 
 			));
 

@@ -1,6 +1,9 @@
 #files-mkdir-tools,
 #files-upload-tools,
-.cloud-tool {
+.cloud-tool,
+.cloud-multi-tool,
+#multi-dbtn-acl,
+#multi-dropdown-button {
 	display: none;
 }
 
@@ -8,7 +11,8 @@
 	padding: 3px 10px 0px 10px !important;
 }
 
-[id^="attach-edit-panel-"] {
+[id^="attach-edit-panel-"],
+#attach-multi-edit-panel {
 	padding: 3px 10px 0px 10px !important;
 }
 
@@ -21,7 +25,7 @@
 	width: 100%;
 }
 
-#cloud-index td:nth-child(2) a {
+#cloud-index td:nth-child(3) a {
 	display: block;
 }
 
@@ -29,22 +33,26 @@
 	padding: 7px 3px 7px 10px;
 }
 
-#cloud-index td:nth-child(5) {
+#cloud-index td:nth-child(6) {
 	padding: 7px 10px 7px 3px;
 }
 
-#cloud-index td:nth-child(2) {
+#cloud-index td:nth-child(3) {
 	word-break: break-all;
 }
 
-#cloud-index th:nth-child(6),
-#cloud-index td:nth-child(6) {
-	padding: 7px 3px;
+#cloud-index td:nth-child(4) {
 	white-space: nowrap;
 }
 
 #cloud-index th:nth-child(7),
 #cloud-index td:nth-child(7) {
+	padding: 7px 3px;
+	white-space: nowrap;
+}
+
+#cloud-index th:nth-child(8),
+#cloud-index td:nth-child(8) {
 	padding: 7px 10px;
 	white-space: nowrap;
 }

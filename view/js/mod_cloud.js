@@ -12,6 +12,8 @@ $(document).ready(function () {
 	var attach_drop_id;
 	var attach_draging;
 
+	// Per File Tools
+
 	$('.cloud-tool-perms-btn').on('click', function (e) {
 		e.preventDefault();
 		let id = $(this).data('id');
@@ -100,6 +102,8 @@ $(document).ready(function () {
 
 	});
 
+	// Per File Tools Eend
+
 	// DnD
 
 	$(document).on('drop', function (e) {
@@ -181,6 +185,125 @@ $(document).ready(function () {
 		attach_draging = false;
 	});
 
+	// DnD End
+
+	// Multi Tools
+
+	$('#cloud-multi-tool-select-all').on('change', function (e) {
+		if ($(this).is(':checked')) {
+			$('.cloud-multi-tool-checkbox').prop('checked', true);
+			$('.cloud-index:not(#cloud-index-up)').addClass('cloud-index-selected cloud-index-active');
+			$('.cloud-tools').addClass('cloud-index-selected');
+		}
+		else {
+			$('.cloud-multi-tool-checkbox').prop('checked', false);
+			$('.cloud-index').removeClass('cloud-index-selected cloud-index-active');
+			$('.cloud-tools').removeClass('cloud-index-selected');
+		}
+
+		$('.cloud-multi-tool-checkbox').trigger('change');
+	});
+
+
+	$('.cloud-multi-tool-checkbox').on('change', function (e) {
+		let id = $(this).val();
+
+		if ($(this).is(':checked')) {
+			$('#cloud-index-' + id).addClass('cloud-index-selected cloud-index-active');
+			$('#cloud-tools-' + id).addClass('cloud-index-selected');
+			$('<input id="aid_' + id + '" class="attach-ids-input" type="hidden" name="attach_ids[]" value="' + id + '">').prependTo('#attach_multi_edit_form');
+		}
+		else {
+			$('#cloud-index-' + id).removeClass('cloud-index-selected cloud-index-active');
+			$('#cloud-tools-' + id).removeClass('cloud-index-selected');
+			if ($('#cloud-multi-tool-select-all').is(':checked'))
+				$('#cloud-multi-tool-select-all').prop('checked', false);
+
+			$('#aid_' + id).remove();
+		}
+
+		if($('.cloud-multi-tool-checkbox:checked').length) {
+			$('#cloud-multi-actions').addClass('cloud-index-active');
+			$('#multi-dropdown-button').fadeIn();
+		}
+		else {
+			$('#cloud-multi-actions').removeClass('cloud-index-active');
+			$('#multi-dropdown-button').fadeOut();
+
+		}
+
+	});
+
+	$('#cloud-multi-tool-perms-btn').on('click', function (e) {
+		e.preventDefault();
+		$('.cloud-tool, .cloud-multi-tool').hide();
+
+		$('#multi-perms').val(1);
+		$('#cloud-multi-tool-submit, #recurse_container, #multi-dbtn-acl').show();
+	});
+
+	$('#cloud-multi-tool-move-btn').on('click', function (e) {
+		e.preventDefault();
+		$('.cloud-tool, .cloud-multi-tool, #recurse_container, #multi-dbtn-acl').hide();
+
+		$('#multi-perms').val(0);
+		$('#cloud-multi-tool-submit, #cloud-multi-tool-move').show();
+	});
+
+	$('#cloud-multi-tool-categories-btn').on('click', function (e) {
+		e.preventDefault();
+		$('.cloud-tool, .cloud-multi-tool, #recurse_container, #multi-dbtn-acl').hide();
+
+		$('#id_categories').tagsinput({
+			tagClass: 'badge badge-pill badge-warning text-dark'
+		});
+
+		$('#multi-perms').val(0);
+		$('#cloud-multi-tool-categories, #cloud-multi-tool-submit').show();
+	});
+
+	$('#cloud-multi-tool-delete-btn').on('click', function (e) {
+		e.preventDefault();
+
+		let post_data = $('.cloud-multi-tool-checkbox').serializeArray();
+
+		if(! post_data.length) {
+			return false;
+		}
+		let confirm = confirmDelete();
+		if (confirm) {
+			$('body').css('cursor', 'wait');
+			$('.cloud-index-selected').css('opacity', 0.33);
+
+			post_data.push(
+				{ name: 'channel_id', value: channelId },
+				{ name: 'delete', value: 1},
+			);
+
+			$.post('attach_edit', post_data, function (data) {
+				if (data.success) {
+					console.log(data);
+					$('.cloud-index-selected').remove();
+					$('body').css('cursor', 'auto');
+				}
+				return true;
+			});
+		}
+		return false;
+
+	});
+
+	$('.cloud-multi-tool-cancel-btn').on('click', function (e) {
+		e.preventDefault();
+		$('.cloud-multi-tool, #recurse_container, #multi-dbtn-acl').hide();
+
+		$('#attach_multi_edit_form').trigger('reset');
+		$('#multi-perms').val(0);
+		$('#id_categories').tagsinput('destroy');
+	});
+
+	// Multi Tools End
+
 
 });
 
@@ -258,6 +381,7 @@ function prepareHtml(f) {
 	var i = f.count;
 	$('#cloud-index #new-upload-progress-bar-' + num.toString()).after(
 		'<tr id="new-upload-' + i + '" class="new-upload">' +
+		'<td></td>' +
 		'<td><i class="fa ' + getIconFromType(f.type) + '" title="' + f.type + '"></i></td>' +
 		'<td>' + f.name + '</td>' +
 		'<td id="upload-progress-' + i + '"></td><td></td><td></td>' +
