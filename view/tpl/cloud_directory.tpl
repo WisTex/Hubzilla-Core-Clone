@@ -60,9 +60,11 @@
 			<td><i class="fa fa-level-up"></i></td>
 			<td colspan="6"><a href="{{$parentpath}}" title="{{$parent}}" class="p-2" draggable="false">..</a></td>
 		</tr>
-		<tr class="cloud-tools"><td colspan="8" class="attach-edit-panel"> {{* this is for display consistency *}}</td></tr>
+		<tr class="cloud-tools">
+			<td colspan="8" class="attach-edit-panel">{{* this is for display consistency *}}</td>
+		</tr>
 		{{/if}}
-		{{if $entries.0}}
+		{{if $channel_id && $is_owner && $entries.0}}
 		<tr id="cloud-multi-actions">
 			<td colspan="2">
 				<div class="form-check form-check-inline">
@@ -142,9 +144,11 @@
 		{{foreach $entries as $item}}
 		<tr id="cloud-index-{{$item.attach_id}}" class="cloud-index{{if $item.collection}} attach-drop{{/if}}"{{if $item.collection}} data-folder="{{$item.resource}}"{{/if}} data-id="{{$item.attach_id}}" draggable="true">
 			<td>
+				{{if $channel_id && $is_owner}}
 				<div class="form-check form-check-inline">
 					<input class="form-check-input cloud-multi-tool-checkbox" type="checkbox" id="cloud-multi-tool-checkbox-{{$item.attach_id}}" name="attach_ids[]" value="{{$item.attach_id}}">
 				</div>
+				{{/if}}
 			</td>
 			<td><i class="fa {{$item.icon_from_type}}" title="{{$item.type}}"></i></td>
 			<td><a href="{{$item.rel_path}}" class="p-2" draggable="false">{{$item.name}}</a></td>
