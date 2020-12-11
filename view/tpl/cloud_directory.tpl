@@ -60,6 +60,7 @@
 			<td><i class="fa fa-level-up"></i></td>
 			<td colspan="6"><a href="{{$parentpath}}" title="{{$parent}}" class="p-2" draggable="false">..</a></td>
 		</tr>
+		<tr class="cloud-tools"><td colspan="8" class="attach-edit-panel"> {{* this is for display consistency *}}</td></tr>
 		{{/if}}
 		{{if $entries.0}}
 		<tr id="cloud-multi-actions">
@@ -76,25 +77,25 @@
 			<td colspan="3">
 				{{if $is_owner}}
 				<div class="dropdown">
-					<button class="btn btn-outline-secondary btn-sm" id="multi-dropdown-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						<i class="fa fa-fw fa-ellipsis-v"></i> Bulk Actions
+					<button class="btn btn-warning btn-sm" id="multi-dropdown-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<i class="fa fa-fw fa-ellipsis-v d-table-cell"></i><span class="d-none d-md-table-cell">Bulk Actions</span>
 					</button>
 					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-button">
 						{{if $is_owner}}
-						<a id="cloud-multi-tool-perms-btn" class="dropdown-item cloud-tool-perms-btn" href="#"><i class="fa fa-fw fa-lock"></i> Adjust permissions</a>
+						<a id="cloud-multi-tool-perms-btn" class="dropdown-item" href="#"><i class="fa fa-fw fa-lock"></i> Adjust permissions</a>
 						{{/if}}
-						<a id="cloud-multi-tool-move-btn" class="dropdown-item cloud-tool-move-btn" href="#"><i class="fa fa-fw fa-copy"></i> Move or copy</a>
-						<a id="cloud-multi-tool-categories-btn" class="dropdown-item cloud-tool-categories-btn" href="#"><i class="fa fa-fw fa-asterisk"></i> Categories</a>
+						<a id="cloud-multi-tool-move-btn" class="dropdown-item" href="#"><i class="fa fa-fw fa-copy"></i> Move or copy</a>
+						<a id="cloud-multi-tool-categories-btn" class="dropdown-item" href="#"><i class="fa fa-fw fa-asterisk"></i> Categories</a>
 						<a id="cloud-multi-tool-delete-btn" class="dropdown-item" href="#"><i class="fa fa-fw fa-trash-o"></i> {{$delete}}</a>
 					</div>
 				</div>
 				{{else if $is_admin}}
 				<div class="dropdown">
-					<button class="btn btn-link btn-sm" id="dropdown-button-{{$item.attach_id}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						<i class="fa fa-fw fa-ellipsis-v"></i>
+					<button class="btn btn-warning btn-sm" id="multi-dropdown-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<i class="fa fa-fw fa-ellipsis-v d-table-cell"></i><span class="d-none d-md-table-cell">Bulk Actions</span>
 					</button>
 					<div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-button">
-						<a id="cloud-multi-tool-delete-btn" class="dropdown-item" href="#"><i class="fa fa-fw fa-trash-o"></i> {{$delete}}</a>
+						<a id="cloud-multi-tool-delete-btn" class="dropdown-item" href="#"><i class="fa fa-fw fa-trash-o"></i> {{$admin_delete}}</a>
 					</div>
 				</div>
 				{{/if}}
@@ -193,7 +194,7 @@
 			<td class="d-none d-md-table-cell p-2">{{$item.last_modified}}</td>
 		</tr>
 		<tr id="cloud-tools-{{$item.attach_id}}" class="cloud-tools">
-			<td id="attach-edit-panel-{{$item.attach_id}}" colspan="8">
+			<td id="attach-edit-panel-{{$item.attach_id}}" class="attach-edit-panel" colspan="8">
 				<form id="attach_edit_form_{{$item.attach_id}}" action="attach_edit" method="post" class="acl-form" data-form_id="attach_edit_form_{{$item.attach_id}}" data-allow_cid='{{$item.allow_cid}}' data-allow_gid='{{$item.allow_gid}}' data-deny_cid='{{$item.deny_cid}}' data-deny_gid='{{$item.deny_gid}}'>
 					<input type="hidden" name="attach_id" value="{{$item.attach_id}}" />
 					<input type="hidden" name="channel_id" value="{{$channel_id}}" />

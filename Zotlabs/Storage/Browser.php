@@ -97,7 +97,7 @@ class Browser extends DAV\Browser\Plugin {
 
 		$arr = explode('/', $parent->os_path);
 		end($arr);
-		$folder_parent = isset($arr[1]) ? prev($arr) : '';
+		$folder_parent = ((isset($arr[1])) ? prev($arr) : '');
 
 		$folder_list = attach_folder_select_list($channel_id);
 
@@ -255,8 +255,8 @@ class Browser extends DAV\Browser\Plugin {
 			$ft['photo_icon'] = $photo_icon;
 			$ft['is_owner'] = $is_owner;
 			$ft['is_creator'] = $is_creator;
-			$ft['rel_path'] = (($nick) ? '/cloud/' . $nick .'/' . $data['display_path'] : $href);
-			$ft['full_path'] = z_root() . (($nick) ? '/cloud/' . $nick .'/' . $data['display_path'] : $href);
+			$ft['rel_path'] = (($data) ? '/cloud/' . $nick .'/' . $data['display_path'] : $href);
+			$ft['full_path'] = z_root() . (($data) ? '/cloud/' . $nick .'/' . $data['display_path'] : $href);
 			$ft['name'] = $name;
 			$ft['type'] = $type;
 			$ft['size'] = $size;

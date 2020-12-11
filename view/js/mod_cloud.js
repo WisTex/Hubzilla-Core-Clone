@@ -17,60 +17,42 @@ $(document).ready(function () {
 	$('.cloud-tool-perms-btn').on('click', function (e) {
 		e.preventDefault();
 		let id = $(this).data('id');
-		$('.cloud-tool').hide();
-		$('.cloud-index').removeClass('cloud-index-active');
-
-		$('#cloud-tool-submit-' + id).show();
-		$('#cloud-index-' + id).addClass('cloud-index-active');
+		activate_id(id);
 	});
 
 	$('.cloud-tool-rename-btn').on('click', function (e) {
 		e.preventDefault();
 		let id = $(this).data('id');
-
-		$('.cloud-tool').hide();
-		$('.cloud-index').removeClass('cloud-index-active');
-
-		$('#cloud-tool-rename-' + id + ', #cloud-tool-submit-' + id).show();
-		$('#cloud-index-' + id).addClass('cloud-index-active');
+		activate_id(id);
+		$('#cloud-tool-rename-' + id).show();
 	});
 
 	$('.cloud-tool-move-btn').on('click', function (e) {
 		e.preventDefault();
 		let id = $(this).data('id');
-		$('.cloud-tool').hide();
-		$('.cloud-index').removeClass('cloud-index-active');
-
-		$('#cloud-tool-move-' + id + ', #cloud-tool-submit-' + id).show();
-		$('#cloud-index-' + id).addClass('cloud-index-active');
+		activate_id(id);
+		$('#cloud-tool-move-' + id).show();
 	});
 
 	$('.cloud-tool-categories-btn').on('click', function (e) {
 		e.preventDefault();
 		let id = $(this).data('id');
-		$('.cloud-tool').hide();
-		$('.cloud-index').removeClass('cloud-index-active');
-
+		activate_id(id);
 		$('#id_categories_' + id).tagsinput({
 			tagClass: 'badge badge-pill badge-warning text-dark'
 		});
-
-		$('#cloud-tool-categories-' + id + ', #cloud-tool-submit-' + id).show();
-		$('#cloud-index-' + id).addClass('cloud-index-active');
+		$('#cloud-tool-categories-' + id).show();
 	});
 
 	$('.cloud-tool-download-btn').on('click', function (e) {
-		let id = $(this).data('id');
-		$('.cloud-tool').hide();
+		close_and_deactivate_all_panels();
 	});
 
 	$('.cloud-tool-delete-btn').on('click', function (e) {
 		e.preventDefault();
 		let id = $(this).data('id');
 
-		$('.cloud-tool').hide();
-		$('.cloud-index').removeClass('cloud-index-active');
-		$('#cloud-index-' + id).addClass('cloud-index-active');
+		close_and_deactivate_all_panels();
 
 		let confirm = confirmDelete();
 		if (confirm) {
@@ -95,11 +77,9 @@ $(document).ready(function () {
 	$('.cloud-tool-cancel-btn').on('click', function (e) {
 		e.preventDefault();
 		let id = $(this).data('id');
-		$('.cloud-tool').hide();
-		$('#cloud-index-' + id).removeClass('cloud-index-active');
+		close_and_deactivate_all_panels();
 		$('#attach_edit_form_' + id).trigger('reset');
 		$('#id_categories_' + id).tagsinput('destroy');
-
 	});
 
 	// Per File Tools Eend
@@ -223,43 +203,48 @@ $(document).ready(function () {
 		}
 
 		if($('.cloud-multi-tool-checkbox:checked').length) {
-			$('#cloud-multi-actions').addClass('cloud-index-active');
+			close_all_panels();
+			$('#cloud-multi-actions').addClass('bg-warning');
 			$('#multi-dropdown-button').fadeIn();
 		}
 		else {
-			$('#cloud-multi-actions').removeClass('cloud-index-active');
+			$('#cloud-multi-actions').removeClass('bg-warning');
 			$('#multi-dropdown-button').fadeOut();
-
+			close_and_deactivate_all_panels();
+			disable_multi_acl();
 		}
 
 	});
 
 	$('#cloud-multi-tool-perms-btn').on('click', function (e) {
 		e.preventDefault();
-		$('.cloud-tool, .cloud-multi-tool').hide();
 
-		$('#multi-perms').val(1);
-		$('#cloud-multi-tool-submit, #recurse_container, #multi-dbtn-acl').show();
+		close_all_panels();
+		enable_multi_acl();
+
+		$('#cloud-multi-tool-submit').show();
 	});
 
 	$('#cloud-multi-tool-move-btn').on('click', function (e) {
 		e.preventDefault();
-		$('.cloud-tool, .cloud-multi-tool, #recurse_container, #multi-dbtn-acl').hide();
 
-		$('#multi-perms').val(0);
+		close_all_panels();
+		disable_multi_acl();
+
 		$('#cloud-multi-tool-submit, #cloud-multi-tool-move').show();
 	});
 
 	$('#cloud-multi-tool-categories-btn').on('click', function (e) {
 		e.preventDefault();
-		$('.cloud-tool, .cloud-multi-tool, #recurse_container, #multi-dbtn-acl').hide();
+
+		close_all_panels();
+		disable_multi_acl();
 
 		$('#id_categories').tagsinput({
 			tagClass: 'badge badge-pill badge-warning text-dark'
 		});
 
-		$('#multi-perms').val(0);
-		$('#cloud-multi-tool-categories, #cloud-multi-tool-submit').show();
+		$('#cloud-multi-tool-submit, #cloud-multi-tool-categories').show();
 	});
 
 	$('#cloud-multi-tool-delete-btn').on('click', function (e) {
@@ -295,17 +280,56 @@ $(document).ready(function () {
 
 	$('.cloud-multi-tool-cancel-btn').on('click', function (e) {
 		e.preventDefault();
-		$('.cloud-multi-tool, #recurse_container, #multi-dbtn-acl').hide();
+
+		close_and_deactivate_all_panels();
+		disable_multi_acl();
 
 		$('#attach_multi_edit_form').trigger('reset');
-		$('#multi-perms').val(0);
 		$('#id_categories').tagsinput('destroy');
 	});
 
 	// Multi Tools End
 
+	// Helper Functions
+
+	function disable_multi_acl() {
+		$('#multi-perms').val(0);
+		$('#multi-dbtn-acl, #recurse_container').hide();
+		$('#attach-multi-edit-perms').removeClass('btn-group');
+	}
+
+	function enable_multi_acl() {
+		$('#multi-perms').val(1);
+		$('#multi-dbtn-acl, #recurse_container').show();
+		$('#attach-multi-edit-perms').addClass('btn-group');
+	}
+
+	function close_all_panels() {
+		$('.cloud-tool, .cloud-multi-tool').hide();
+	}
+
+	function deactivate_all_panels() {
+		$('.cloud-index').removeClass('cloud-index-active');
+	}
+
+	function close_and_deactivate_all_panels() {
+		close_all_panels();
+		deactivate_all_panels();
+	}
+
+	function activate_id(id) {
+		close_and_deactivate_all_panels();
+		$('#cloud-multi-tool-select-all, .cloud-multi-tool-checkbox').prop('checked', false).trigger('change');
+
+		$('#cloud-tool-submit-' + id).show();
+		$('#cloud-index-' + id).addClass('cloud-index-active');
+		$('#cloud-tool-submit-' + id).show();
+	}
 
 });
+
+
+
 
 // initialize
 function UploadInit() {

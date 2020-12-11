@@ -2508,7 +2508,7 @@ function copy_folder_to_cloudfiles($channel, $observer_hash, $srcpath, $cloudpat
  * @param int $resource_id
  * @param string $new_folder_hash
  * @param (optional) string $newname
- * @param (optional) boolean $check_dupes
+ * @param (optional) boolean $recurse
  * @return array Associative array with:
  *  * \e boolean \b success
  *  * \e string \b resource_id
@@ -2564,7 +2564,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '',
 	$filename = (($newname) ? basename($newname) : $oldfilename);
 
 	// duplicate detection.
-	if($check_dupes) {
+	if($recurse) {
 		$s = q("select filename, id, hash, filesize from attach where filename = '%s' and folder = '%s' ",
 			dbesc($filename),
 			dbesc($new_folder_hash)
@@ -2708,7 +2708,7 @@ function attach_move($channel_id, $resource_id, $new_folder_hash, $newname = '',
  * @param int $resource_id
  * @param string $new_folder_hash
  * @param (optional) string $newname
- * @param (optional) boolean $check_dupes
+ * @param (optional) boolean $recurse
  * @return array Associative array with:
  *  * \e boolean \b success
  *  * \e string \b resource_id of the new resource
