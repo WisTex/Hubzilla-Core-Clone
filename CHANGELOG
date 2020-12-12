@@ -1,5 +1,6 @@
 Hubzilla 5.0.5 (2020-12-12)
 	- Fix hubloc issue in mod getfile
+	- Remove duplicate SQL query
 
 
 Hubzilla 5.0.4 (2020-12-01)
