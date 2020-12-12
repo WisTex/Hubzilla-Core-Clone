@@ -308,7 +308,7 @@ class Browser extends DAV\Browser\Plugin {
 		$tiles = ((array_key_exists('cloud_tiles',$_SESSION)) ? intval($_SESSION['cloud_tiles']) : $deftiles);
 		$_SESSION['cloud_tiles'] = $tiles;
 
-		$header = (($cat) ? t('File category') . ": " . $this->escapeHTML($cat) : t('Files') . ": " . $this->escapeHTML($path) . "/");
+		$header = (($cat) ? t('File category') . ": " . $this->escapeHTML($cat) : t('Files'));
 
 		$channel = channelx_by_n($channel_id);
 		if($channel) {
@@ -450,8 +450,35 @@ class Browser extends DAV\Browser\Plugin {
 		$special = 'cloud/' . $this->auth->owner_nick;
 		$count   = strlen($special);
 
+
+
 		if(strpos($path,$special) === 0)
-			$path = trim(substr($path,$count),'/');
+			$display_path = trim(substr($path,$count),'/');
+
+		if(! $_REQUEST['cat']){
+			$folders = explode('/', $display_path);
+			$folder_hashes = explode('/', $node->os_path);
+
+			$breadcrumb_path = z_root() . '/cloud/' . $this->auth->owner_nick;
+			$breadcrumbs[] = [
+				'name' => $this->auth->owner_nick,
+				'hash' => '',
+				'path' => 'cloud/' . $this->auth->owner_nick
+			];
+
+			foreach($folders as $i => $name) {
+					$breadcrumb_path .= '/' . $name;
+					$breadcrumbs[] = [
+						'name' => $name,
+						'hash' => $folder_hashes[$i],
+						'path' => $breadcrumb_path
+					];
+			}
+
+			$breadcrumbs_html = replace_macros(get_markup_template('breadcrumb.tpl'), array(
+				'$breadcrumbs' => $breadcrumbs
+			));
+		}
 
 		$output .= replace_macros(get_markup_template('cloud_actionspanel.tpl'), array(
 				'$folder_header' => t('Create new folder'),
@@ -466,11 +493,11 @@ class Browser extends DAV\Browser\Plugin {
 				'$deny_cid' => acl2json($channel_acl['deny_cid']),
 				'$deny_gid' => acl2json($channel_acl['deny_gid']),
 				'$lockstate' => $lockstate,
-				'$return_url' => \App::$cmd,
-				'$path' => $path,
+				'$return_url' => $path,
 				'$folder' => $node->folder_hash,
 				'$dragdroptext' => t('Drop files here to immediately upload'),
-				'$notify' => ['notify', t('Show in your contacts shared folder'), 0, '', [t('No'), t('Yes')]]
+				'$notify' => ['notify', t('Show in your contacts shared folder'), 0, '', [t('No'), t('Yes')]],
+				'$breadcrumbs_html' => $breadcrumbs_html
 			));
 	}
 

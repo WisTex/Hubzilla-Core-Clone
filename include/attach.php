@@ -647,18 +647,19 @@ function attach_store($channel, $observer_hash, $options = '', $arr = null) {
 			$pathname = filepath_macro($newalbum);
 		}
 		elseif(array_key_exists('folder',$arr)) {
-			$x = q("select filename from attach where hash = '%s' and uid = %d limit 1",
+			$x = q("select display_path from attach where hash = '%s' and uid = %d limit 1",
 				dbesc($arr['folder']),
 				intval($channel['channel_id'])
 			);
 			if($x)
-				$pathname = $x[0]['filename'];
+				$pathname = $x[0]['display_path'];
 		}
 		else {
 			$pathname = filepath_macro($album);
 		}
 	}
 	if(! $pathname) {
+		hz_syslog('no pathname');
 		$pathname = filepath_macro($upload_path);
 	}
 
@@ -675,6 +676,8 @@ function attach_store($channel, $observer_hash, $options = '', $arr = null) {
 	$direct = null;
 
 	if($pathname) {
+hz_syslog('pathname: ' . $pathname);
+
 		$x = attach_mkdirp($channel, $observer_hash, $darr);
 		$folder_hash = (($x['success']) ? $x['data']['hash'] : '');
 		$direct = (($x['success']) ? $x['data'] : null);
@@ -686,6 +689,7 @@ function attach_store($channel, $observer_hash, $options = '', $arr = null) {
 		}
 	}
 	else {
+hz_syslog('gothere');
 		$folder_hash = ((($arr) && array_key_exists('folder',$arr)) ? $arr['folder'] : '');
 	}
 

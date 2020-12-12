@@ -1,4 +1,4 @@
-<div id="cloud-drag-area" class="section-content-wrapper-np">
+<div class="section-content-wrapper-np">
 	{{if $tiles}}
 	<table id="cloud-index">
 		<tr id="new-upload-progress-bar-1"></tr> {{* this is needed to append the upload files in the right order *}}
@@ -42,7 +42,6 @@
 	{{/foreach}}
 	<div class="clear"></div>
 	{{else}}
-
 	<table id="cloud-index">
 		<tr>
 			<th width="1%">{{* multi tool checkbox *}}</th>
@@ -202,6 +201,7 @@
 				<form id="attach_edit_form_{{$item.attach_id}}" action="attach_edit" method="post" class="acl-form" data-form_id="attach_edit_form_{{$item.attach_id}}" data-allow_cid='{{$item.allow_cid}}' data-allow_gid='{{$item.allow_gid}}' data-deny_cid='{{$item.deny_cid}}' data-deny_gid='{{$item.deny_gid}}'>
 					<input type="hidden" name="attach_id" value="{{$item.attach_id}}" />
 					<input type="hidden" name="channel_id" value="{{$channel_id}}" />
+					<input type="hidden" name="return_path" value="{{$return_path}}">
 					<div id="cloud-tool-rename-{{$item.attach_id}}" class="cloud-tool">
 						{{include file="field_input.tpl" field=$item.newfilename}}
 					</div>

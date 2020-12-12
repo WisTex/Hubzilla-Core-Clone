@@ -23,7 +23,6 @@ class Attach_edit extends Controller {
 		$channel_id = ((x($_POST, 'channel_id')) ? intval($_POST['channel_id']) : 0);
 		$dnd = ((x($_POST, 'dnd')) ? intval($_POST['dnd']) : 0);
 		$permissions = ((x($_POST, 'permissions')) ? intval($_POST['permissions']) : 0);
-		//$nick = ((x($_POST, 'nick')) ? notags($_POST['nick']) : '');
 		$return_path = ((x($_POST, 'return_path')) ? notags($_POST['return_path']) : 'cloud');
 		$delete = ((x($_POST, 'delete')) ? intval($_POST['delete']) : 0);
 		$newfolder  = ((x($_POST, 'newfolder_' . $attach_id))  ? notags($_POST['newfolder_' . $attach_id])  : '');
@@ -72,9 +71,7 @@ class Attach_edit extends Controller {
 		}
 
 		foreach ($r as $rr) {
-
 			$actions_done = '';
-
 			$attach_id = $rr['id'];
 			$resource = $rr['hash'];
 			$creator = $rr['creator'];
@@ -148,7 +145,7 @@ class Attach_edit extends Controller {
 
 			}
 
-			if(! $delete && !$dnd) {
+			if(! $delete && ! $dnd) {
 				if ($single || (! $single && $categories)) {
 					q("DELETE FROM term WHERE uid = %d AND oid = %d AND otype = %d",
 						intval($channel_id),
@@ -204,20 +201,11 @@ class Attach_edit extends Controller {
 
 		}
 
-		if ($single) {
-			if($dnd || $delete) {
-				json_return_and_die([ 'success' => true ]);
-			}
-			$url = get_cloud_url($channel_id, $nick, $resource);
-			goaway(dirname($url));
+		if($dnd || $delete) {
+			json_return_and_die([ 'success' => true ]);
+		}
 
-		}
-		else {
-			if($dnd || $delete) {
-				json_return_and_die([ 'success' => true ]);
-			}
-			goaway($return_path);
-		}
+		goaway($return_path);
 
 	}
 
