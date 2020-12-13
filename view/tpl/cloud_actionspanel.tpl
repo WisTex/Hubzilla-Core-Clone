@@ -43,3 +43,4 @@
 	<div class="clear"></div>
 </div>
 {{$aclselect}}
+{{$breadcrumbs_html}}
