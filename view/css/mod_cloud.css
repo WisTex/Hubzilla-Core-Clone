@@ -96,3 +96,11 @@
 	box-shadow: none;
 }
 
+.breadcrumb {
+	padding: 0px 10px 0px 10px;
+	margin: 0px 0px 3px 0px;
+}
+
+.breadcrumb-item {
+	margin: 0px;
+}

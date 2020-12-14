@@ -455,15 +455,18 @@ class Browser extends DAV\Browser\Plugin {
 		if(strpos($path,$special) === 0)
 			$display_path = trim(substr($path,$count),'/');
 
-		if(! $_REQUEST['cat']){
+		$breadcrumbs_html = '';
+
+		if($display_path && ! $_REQUEST['cat']){
+			$breadcrumbs = [];
 			$folders = explode('/', $display_path);
 			$folder_hashes = explode('/', $node->os_path);
-
 			$breadcrumb_path = z_root() . '/cloud/' . $this->auth->owner_nick;
+
 			$breadcrumbs[] = [
 				'name' => $this->auth->owner_nick,
 				'hash' => '',
-				'path' => 'cloud/' . $this->auth->owner_nick
+				'path' => $breadcrumb_path
 			];
 
 			foreach($folders as $i => $name) {

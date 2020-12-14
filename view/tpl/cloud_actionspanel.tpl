@@ -42,5 +42,10 @@
 	</form>
 	<div class="clear"></div>
 </div>
+{{if $breadcrumbs_html}}
 {{$aclselect}}
+{{/if}}
+{{if $breadcrumbs_html}}
 {{$breadcrumbs_html}}
+<hr class="m-0">
+{{/if}}

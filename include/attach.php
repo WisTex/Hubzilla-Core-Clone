@@ -659,7 +659,6 @@ function attach_store($channel, $observer_hash, $options = '', $arr = null) {
 		}
 	}
 	if(! $pathname) {
-		hz_syslog('no pathname');
 		$pathname = filepath_macro($upload_path);
 	}
 
@@ -676,8 +675,6 @@ function attach_store($channel, $observer_hash, $options = '', $arr = null) {
 	$direct = null;
 
 	if($pathname) {
-hz_syslog('pathname: ' . $pathname);
-
 		$x = attach_mkdirp($channel, $observer_hash, $darr);
 		$folder_hash = (($x['success']) ? $x['data']['hash'] : '');
 		$direct = (($x['success']) ? $x['data'] : null);
@@ -689,7 +686,6 @@ hz_syslog('pathname: ' . $pathname);
 		}
 	}
 	else {
-hz_syslog('gothere');
 		$folder_hash = ((($arr) && array_key_exists('folder',$arr)) ? $arr['folder'] : '');
 	}
 

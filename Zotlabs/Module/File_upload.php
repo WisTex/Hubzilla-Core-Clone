@@ -11,8 +11,6 @@ require_once('include/photos.php');
 class File_upload extends \Zotlabs\Web\Controller {
 
 	function post() {
-hz_syslog(print_r($_REQUEST,true));
-
 		logger('file upload: ' . print_r($_REQUEST,true));
 		logger('file upload: ' . print_r($_FILES,true));
 
