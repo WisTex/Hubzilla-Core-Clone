@@ -849,7 +849,7 @@ class Enotify {
 		$who = (($item['verb'] === ACTIVITY_SHARE) ? 'owner' : 'author');
 
 		$x = array(
-			'notify_link' => $item['llink'],
+			'notify_link' => ((intval($item['item_private']) === 2) ? z_root() . '/dm/' . gen_link_id($item['mid']) : $item['llink']),
 			'name' => $item[$who]['xchan_name'],
 			'addr' => (($item[$who]['xchan_addr']) ? $item[$who]['xchan_addr'] : $item[$who]['xchan_url']),
 			'url' => $item[$who]['xchan_url'],

@@ -29,8 +29,8 @@
 		};
 	});
 
-	{{if $module == 'display' || $module == 'hq' || $startpage == 'hq'}}
-	$(document).on('click', '.notification', function(e) {
+	{{if $module == 'display' || $module == 'hq' || $module == 'dm' || $startpage == 'hq'}}
+	$(document).on('click', '.notification, .direct-message', function(e) {
 		var b64mid = $(this).data('b64mid');
 		var notify_id = $(this).data('notify_id');
 		var path = $(this)[0].pathname.substr(1,7);
@@ -56,11 +56,13 @@
 			history.pushState(stateObj, '', 'display/' + b64mid);
 			{{/if}}
 
-			{{if $module == 'hq'}}
-			history.pushState(stateObj, '', 'hq/' + b64mid);
+			{{if $module == 'hq' || $module == 'dm'}}
+			history.pushState(stateObj, '', '{{$module}}/' + b64mid);
+			$('.direct-message').removeClass('active');
+			$('[data-b64mid="' + b64mid + '"].direct-message').addClass('active');
 			{{/if}}
 
-			{{if $module == 'hq'}}
+			{{if $module == 'hq' || $module == 'dm'}}
 			if(b64mid) {
 			{{else}}
 			if(path === 'display' && b64mid) {
@@ -131,7 +133,7 @@
 		{{if $module == 'hq'}}
 		liveUpdate(notify_id);
 		{{/if}}
-		{{if $module == 'display'}}
+		{{if $module == 'display'|| $module == 'dm'}}
 		liveUpdate();
 		{{/if}}
 	}

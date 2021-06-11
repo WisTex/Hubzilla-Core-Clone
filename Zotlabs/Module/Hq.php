@@ -42,15 +42,23 @@ class Hq extends \Zotlabs\Web\Controller {
 			$item_hash = argv(1);
 		}
 
-		if($_REQUEST['mid'])
+		$dm_mode = false;
+		$dm_sql = '';
+		if(argv(0) === 'dm') {
+			$dm_mode = true;
+			$dm_sql = ' AND item_private = 2 ';
+		}
+
+		if(isset($_REQUEST['mid'])) {
 			$item_hash = $_REQUEST['mid'];
+		}
 
 		$item_normal = item_normal();
 		$item_normal_update = item_normal_update();
 
 		if(! $item_hash) {
 			$r = q("SELECT mid FROM item
-				WHERE uid = %d $item_normal
+				WHERE uid = %d $dm_sql $item_normal
 				AND mid = parent_mid
 				ORDER BY created DESC LIMIT 1",
 				intval(local_channel())
@@ -71,7 +79,7 @@ class Hq extends \Zotlabs\Web\Controller {
 
 			$target_item = null;
 
-			$r = q("select id, uid, mid, parent_mid, thr_parent, verb, item_type, item_deleted, item_blocked from item where mid = '%s' limit 1",
+			$r = q("select id, uid, mid, parent_mid, thr_parent, verb, item_type, item_deleted, item_blocked from item where mid = '%s' $dm_sql limit 1",
 				dbesc($item_hash)
 			);
 
@@ -116,7 +124,7 @@ class Hq extends \Zotlabs\Web\Controller {
 				'bang'                => '',
 				'visitor'             => true,
 				'profile_uid'         => local_channel(),
-				'return_path'         => 'hq',
+				'return_path'         => (($dm_mode) ? 'dm' : 'hq'),
 				'expanded'            => true,
 				'editor_autocomplete' => true,
 				'bbco_autocomplete'   => 'bbcode',
@@ -137,7 +145,8 @@ class Hq extends \Zotlabs\Web\Controller {
 
 		if(! $update && ! $load) {
 
-			nav_set_selected('HQ');
+			$app = (($dm_mode) ? 'Direct Messages' : 'HQ');
+			nav_set_selected($app);
 
 			if($target_item) {
 				// if the target item is not a post (eg a like) we want to address its thread parent

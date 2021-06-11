@@ -1939,7 +1939,6 @@ function sse_handleNotificationsItems(notifyType, data, replace, followup) {
 		}).appendTo('#nav-' + notifyType + '-menu');
 	}
 
-	$(document.body).trigger("sticky_kit:recalc");
 	$("#nav-" + notifyType + "-menu .notifications-autotime").timeago();
 
 	if($('#tt-' + notifyType + '-only').hasClass('active'))
