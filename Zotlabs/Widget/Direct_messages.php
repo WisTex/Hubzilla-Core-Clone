@@ -58,6 +58,7 @@ class Direct_messages {
 		foreach($items as $item) {
 
 			$owner = $item['owner'];
+			$recipients = '';
 
 
 			if($channel['channel_hash'] === $owner['xchan_hash']) {
@@ -70,14 +71,16 @@ class Direct_messages {
 				$column = 'xchan_url';
 			}
 
-			stringify_array_elms($recips, true);
-			$query_str = implode(',', $recips);
+			if(is_array($recips)) {
+				stringify_array_elms($recips, true);
 
-			$xchans = dbq("SELECT xchan_name FROM xchan WHERE $column IN ($query_str)");
+				$query_str = implode(',', $recips);
+				$xchans = dbq("SELECT xchan_name FROM xchan WHERE $column IN ($query_str)");
 
-			$recipients = $owner['xchan_name'] . ', ';
-			foreach($xchans as $xchan) {
-				$recipients .= $xchan['xchan_name'] . ', ';
+				$recipients = $owner['xchan_name'] . ', ';
+				foreach($xchans as $xchan) {
+					$recipients .= $xchan['xchan_name'] . ', ';
+				}
 			}
 
 			$summary = $item['summary'];
