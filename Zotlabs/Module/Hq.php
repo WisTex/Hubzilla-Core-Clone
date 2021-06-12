@@ -202,6 +202,7 @@ class Hq extends \Zotlabs\Web\Controller {
 			$r = q("SELECT item.id AS item_id FROM item
 				WHERE uid = %d
 				AND mid = '%s'
+				$dm_sql
 				$item_normal
 				LIMIT 1",
 				intval(local_channel()),
@@ -213,7 +214,7 @@ class Hq extends \Zotlabs\Web\Controller {
 
 				$r = q("SELECT item.id AS item_id FROM item
 					LEFT JOIN abook ON item.author_xchan = abook.abook_xchan
-					WHERE mid = '%s' AND item.uid = %d $item_normal
+					WHERE mid = '%s' AND item.uid = %d $dm_sql $item_normal
 					AND (abook.abook_blocked = 0 or abook.abook_flags is null)
 					$sql_extra LIMIT 1",
 					dbesc($target_item['parent_mid']),
@@ -227,6 +228,7 @@ class Hq extends \Zotlabs\Web\Controller {
 			$r = q("SELECT item.parent AS item_id FROM item
 				WHERE uid = %d
 				AND parent_mid = '%s'
+				$dm_sql
 				$item_normal_update
 				$simple_update
 				LIMIT 1",
@@ -239,7 +241,7 @@ class Hq extends \Zotlabs\Web\Controller {
 
 				$r = q("SELECT item.parent AS item_id FROM item
 					LEFT JOIN abook ON item.author_xchan = abook.abook_xchan
-					WHERE mid = '%s' AND item.uid = %d $item_normal_update $simple_update
+					WHERE mid = '%s' AND item.uid = %d $dm_sql $item_normal_update $simple_update
 					AND (abook.abook_blocked = 0 or abook.abook_flags is null)
 					$sql_extra LIMIT 1",
 					dbesc($target_item['parent_mid']),
@@ -254,7 +256,7 @@ class Hq extends \Zotlabs\Web\Controller {
 		if($r) {
 			$items = q("SELECT item.*, item.id AS item_id
 				FROM item
-				WHERE parent = '%s' $item_normal ",
+				WHERE parent = '%s' $dm_sql $item_normal ",
 				dbesc($r[0]['item_id'])
 			);
 

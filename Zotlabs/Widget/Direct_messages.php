@@ -8,13 +8,16 @@ use Zotlabs\Lib\IConfig;
 class Direct_messages {
 
 	public static function widget($arr) {
-		if(! local_channel())
+		if (! local_channel())
 			return EMPTY_STR;
 
+		$o = '';
 		$page = self::get_dm_page();
 
-		$tpl = get_markup_template('direct_messages_widget.tpl');
+		if (!$page['entries'])
+			return $o;
 
+		$tpl = get_markup_template('direct_messages_widget.tpl');
 		$o .= replace_macros($tpl, [
 			'$banner' => t('Direct Messages'),
 			'$loading' => t('Loading'),
@@ -102,13 +105,11 @@ class Direct_messages {
 			}
 
 			$summary = $item['summary'];
-			if(!$summary) {
+			if (!$summary) {
 				$summary = htmlentities(html2plain(bbcode($item['body']), 75, true), ENT_QUOTES, 'UTF-8', false);
-				if(strlen($summary) > 68)
+				if (strlen($summary) > 68) {
 					$summary = trim(substr($summary, 0, 68)) . '...';
-
-				if(!$summary)
-					$summary = t('Nothing to preview');
+				}
 			}
 
 			$entries[$i]['owner_name'] = $owner['xchan_name'];
@@ -122,7 +123,6 @@ class Direct_messages {
 			$last_id = $item['id'];
 
 			$i++;
-
 		}
 
 		$result = [
