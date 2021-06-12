@@ -95,7 +95,7 @@ class Direct_messages {
 				$query_str = implode(',', $recips);
 
 				//fixme: when query by xchan_addr or xchan_url we might get duplicate entries (zot6+zot xchan)
-				$xchans = dbq("SELECT * FROM xchan WHERE $column IN ($query_str)");
+				$xchans = dbq("SELECT xchan_name FROM xchan WHERE $column IN ($query_str)");
 
 				foreach($xchans as $xchan) {
 					$recipients .= $xchan['xchan_name'] . ', ';
