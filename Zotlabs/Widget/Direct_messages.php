@@ -7,7 +7,7 @@ use Zotlabs\Lib\IConfig;
 
 class Direct_messages {
 
-	function widget($arr) {
+	public static function widget($arr) {
 		if(! local_channel())
 			return EMPTY_STR;
 
@@ -64,20 +64,39 @@ class Direct_messages {
 			if($channel['channel_hash'] === $owner['xchan_hash']) {
 				// we are the owner, get the recipients from the item
 				$recips = expand_acl($item['allow_cid']);
-				$column = 'xchan_hash';
+				if (is_array($recips)) {
+					array_unshift($recips, $owner['xchan_hash']);
+					$column = 'xchan_hash';
+				}
 			}
 			else {
 				$recips = IConfig::Get($item, 'activitypub', 'recips')['to'];
-				$column = 'xchan_url';
+				if (is_array($recips)) {
+					array_unshift($recips, $owner['xchan_url']);
+					$column = 'xchan_url';
+				}
+				else {
+					$hookinfo = [
+						'item' => $item,
+						'recips' => null,
+						'column' => ''
+					];
+
+					call_hooks('direct_message_recipients', $hookinfo);
+
+					$recips = $hookinfo['recips'];
+					$column = $hookinfo['column'];
+				}
 			}
 
 			if(is_array($recips)) {
 				stringify_array_elms($recips, true);
 
 				$query_str = implode(',', $recips);
-				$xchans = dbq("SELECT xchan_name FROM xchan WHERE $column IN ($query_str)");
 
-				$recipients = $owner['xchan_name'] . ', ';
+				//fixme: when query by xchan_addr or xchan_url we might get duplicate entries (zot6+zot xchan)
+				$xchans = dbq("SELECT * FROM xchan WHERE $column IN ($query_str)");
+
 				foreach($xchans as $xchan) {
 					$recipients .= $xchan['xchan_name'] . ', ';
 				}
