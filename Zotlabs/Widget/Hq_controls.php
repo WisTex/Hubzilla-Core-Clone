@@ -11,13 +11,14 @@ class Hq_controls {
 
 		return replace_macros(get_markup_template('hq_controls.tpl'),
 			[
-				'$title' => t('HQ Control Panel'),
 				'$menu' => [
 					'create' => [
 						'label' => t('Create a new post'),
 						'id' => 'jot-toggle',
 						'href' => '#',
-						'class' => ''
+						'class' => 'btn btn-success',
+						'type' => 'button',
+						'icon' => 'pencil-square-o'
 					]
 				]
 			]

@@ -1,8 +1,5 @@
-<div class="widget">
-	<h3>{{$title}}</h3>
-	<ul class="nav nav-pills flex-column">
-		{{foreach $menu as $m}}
-		<li class="nav-item"><a href="{{$m.href}}" id="{{$m.id}}" class="nav-link{{if $m.class}} {{$m.class}}{{/if}}">{{$m.label}}</a></li>
-		{{/foreach}}
-	</ul>
+<div class="d-grid gap-2 mb-3">
+	{{foreach $menu as $m}}
+	<button id="{{$m.id}}" class="{{$m.class}}" type="{{$m.type}}"><i class="fa fa-fw fa-{{$m.icon}}"></i> {{$m.label}}</button>
+	{{/foreach}}
 </div>

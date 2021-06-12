@@ -1,4 +1,4 @@
-<div id="dm-widget" class="border rounded-2 overflow-auto" style="max-height: 70vh;">
+<div id="dm-widget" class="border rounded-2 overflow-auto mb-3" style="max-height: 70vh;">
 	<div id="direct-message-template" rel="template" class="d-none">
 		<a href="dm/{0}" class="list-group-item list-group-item-action direct-message" data-b64mid="{0}">
 			<div class="d-flex w-100 justify-content-between">
