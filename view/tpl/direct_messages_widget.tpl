@@ -2,10 +2,13 @@
 	<div id="direct-message-template" rel="template" class="d-none">
 		<a href="dm/{0}" class="list-group-item list-group-item-action direct-message" data-b64mid="{0}">
 			<div class="d-flex w-100 justify-content-between">
-				<div class="mb-1"><strong>{1}</strong></div>
-				<small class="direct-message-timeago text-nowrap" title="{2}">{2}</small>
+				<div class="mb-1 title="{6}"><strong>{5}</strong></div>
+				<small class="direct-message-timeago text-nowrap" title="{2}"></small>
 			</div>
-			<div class="mb-1">{3}</div>
+			<div class="mb-1">
+				<strong>{1}</strong>
+				{3}
+			</div>
 			<small>
 				{4}
 			</small>
@@ -15,10 +18,13 @@
 		{{foreach $entries as $e}}
 		<a href="dm/{{$e.b64mid}}" class="list-group-item list-group-item-action direct-message" data-b64mid="{{$e.b64mid}}">
 			<div class="d-flex w-100 justify-content-between">
-				<div class="mb-1"><strong>{{$e.subject}}</strong></div>
+				<div class="mb-1" title="{{$e.owner_addr}}"><strong>{{$e.owner_name}}</strong></div>
 				<small class="direct-message-timeago text-nowrap" title="{{$e.created}}"></small>
 			</div>
-			<div class="mb-1">{{$e.summary}}</div>
+			<div class="mb-1">
+				<strong>{{$e.subject}}</strong>
+				{{$e.summary}}
+			</div>
 			<small>
 				{{$e.recipients}}
 			</small>

@@ -32,7 +32,7 @@ function get_dm_page() {
 	$('#dm-loading').show();
 	$.ajax({
 		type: 'post',
-		url: '/dm',
+		url: 'dm',
 		data: {
 			last_id: dm_last_id
 		}
@@ -41,9 +41,9 @@ function get_dm_page() {
 		dm_last_id = obj.last_id;
 		console.log(obj);
 		let html;
-		let tpl = $('#direct-message-template[rel=template]').html();	
+		let tpl = $('#direct-message-template[rel=template]').html();
 			obj.entries.forEach(function(e) {
-			html = tpl.format(e.b64mid, e.subject, e.created, e.summary, e.recipients);
+			html = tpl.format(e.b64mid, e.subject, e.created, e.summary, e.recipients, e.owner_name, e.owner_addr);
 			$('#dm-loading').before(html);
 		});
 		$('#dm-loading').hide();
