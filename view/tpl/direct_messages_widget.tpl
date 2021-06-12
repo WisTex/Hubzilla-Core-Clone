@@ -2,7 +2,7 @@
 	<div id="direct-message-template" rel="template" class="d-none">
 		<a href="dm/{0}" class="list-group-item list-group-item-action direct-message" data-b64mid="{0}">
 			<div class="d-flex w-100 justify-content-between">
-				<div class="mb-1 title="{6}"><strong>{5}</strong></div>
+				<div class="mb-1" title="{6}"><strong>{5}</strong></div>
 				<small class="direct-message-timeago text-nowrap" title="{2}"></small>
 			</div>
 			<div class="mb-1">
