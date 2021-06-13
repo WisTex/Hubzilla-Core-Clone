@@ -1,6 +1,10 @@
 <?php
 namespace Zotlabs\Module;
 
+use App;
+use Zotlabs\Widget\Messages;
+
+
 require_once("include/bbcode.php");
 require_once('include/security.php');
 require_once('include/conversation.php');
@@ -14,23 +18,7 @@ class Hq extends \Zotlabs\Web\Controller {
 		if(! local_channel())
 			return;
 
-		\App::$profile_uid = local_channel();
-	}
-
-	function post() {
-
-		if(!local_channel())
-			return;
-
-		if($_REQUEST['notify_id']) {
-			q("update notify set seen = 1 where id = %d and uid = %d",
-				intval($_REQUEST['notify_id']),
-				intval(local_channel())
-			);
-		}
-
-		killme();
-
+		App::$profile_uid = local_channel();
 	}
 
 	function get($update = 0, $load = false) {
@@ -43,10 +31,10 @@ class Hq extends \Zotlabs\Web\Controller {
 		}
 
 		$dm_mode = false;
-		$dm_sql = '';
+		$dm_sql = " AND item_private IN (0, 1) ";
 		if(argv(0) === 'dm') {
 			$dm_mode = true;
-			$dm_sql = ' AND item_private = 2 ';
+			$dm_sql = " AND item_private = 2 ";
 		}
 
 		if(isset($_REQUEST['mid'])) {
@@ -63,7 +51,6 @@ class Hq extends \Zotlabs\Web\Controller {
 				ORDER BY created DESC LIMIT 1",
 				intval(local_channel())
 			);
-
 			if($r[0]['mid']) {
 				$item_hash = 'b64.' . base64url_encode($r[0]['mid']);
 			}
@@ -104,7 +91,7 @@ class Hq extends \Zotlabs\Web\Controller {
 		}
 
 		if(! $update) {
-			$channel = \App::get_channel();
+			$channel = App::get_channel();
 
 			$channel_acl = [
 				'allow_cid' => $channel['channel_allow_cid'],
@@ -145,7 +132,7 @@ class Hq extends \Zotlabs\Web\Controller {
 
 		if(! $update && ! $load) {
 
-			$app = (($dm_mode) ? 'Direct Messages' : 'HQ');
+			$app = (($dm_mode) ? 'Direct Messages' : 'Messages');
 			nav_set_selected($app);
 
 			if($target_item) {
@@ -162,11 +149,11 @@ class Hq extends \Zotlabs\Web\Controller {
 
 			$o .= '<div id="live-hq"></div>' . "\r\n";
 			$o .= "<script> var profile_uid = " . local_channel()
-				. "; var netargs = '?f='; var profile_page = " . \App::$pager['page'] . ";</script>\r\n";
+				. "; var netargs = '?f='; var profile_page = " . App::$pager['page'] . ";</script>\r\n";
 
-			\App::$page['htmlhead'] .= replace_macros(get_markup_template("build_query.tpl"),[
+			App::$page['htmlhead'] .= replace_macros(get_markup_template("build_query.tpl"),[
 				'$baseurl' => z_root(),
-				'$pgtype'  => 'hq',
+				'$pgtype'  => (($dm_mode) ? 'dm' : 'hq'),
 				'$uid'     => local_channel(),
 				'$gid'     => '0',
 				'$cid'     => '0',
@@ -275,6 +262,18 @@ class Hq extends \Zotlabs\Web\Controller {
 		$_SESSION['loadtime'] = datetime_convert();
 
 		return $o;
+
+	}
+
+	function post() {
+		if (!local_channel())
+			return;
+
+		$options['last_id'] = $_REQUEST['last_id'];
+		$options['dm'] = $_REQUEST['dm'];
+
+		$ret = Messages::get_messages_page($options);
+		json_return_and_die($ret);
 
 	}
 

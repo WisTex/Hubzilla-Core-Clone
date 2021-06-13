@@ -1,5 +1,6 @@
 [region=aside]
 [widget=hq_controls][/widget]
+[widget=messages][/widget]
 [/region]
 [region=right_aside]
 [widget=notifications][/widget]

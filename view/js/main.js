@@ -26,13 +26,6 @@ var followUpPageLoad = false;
 var window_needs_alert = true;
 var expanded_items = [];
 
-var sse_bs_active = false;
-var sse_offset = 0;
-var sse_type;
-var sse_partial_result = false;
-var sse_rmids = [];
-var sse_fallback_interval;
-
 var page_cache = {};
 
 // take care of tab/window reloads on channel change
@@ -93,7 +86,7 @@ $(document).ready(function() {
 		if (tao.zin.syslc == '') {
 			$('.zinlcx').append(tao.zin.axim);
 			$.ajax({
-    			type: 'POST', url: 'lang', 
+    			type: 'POST', url: 'lang',
       			data: { zinlc: '??' }
    			}).done( function(re) {
    				tao.zin.re = JSON.parse(re);
@@ -117,7 +110,7 @@ $(document).ready(function() {
 			tao.zin.me = e.target.id.substr(5);
 			$('#right_aside_wrapper').append(tao.zin.axim);
 			$.ajax({
-	   			type: 'POST', url: 'lang', 
+	   			type: 'POST', url: 'lang',
       			data: { zinlc: tao.zin.me }
     		}).done( function(re) {
      			tao.zin.re = JSON.parse(re);
@@ -161,110 +154,67 @@ $(document).ready(function() {
 
 	jQuery.timeago.settings.allowFuture = true;
 
-	if(sse_enabled) {
-		if(typeof(window.SharedWorker) === 'undefined') {
-			// notifications with multiple tabs open will not work very well in this scenario
-			var evtSource = new EventSource('/sse');
+	$(document).on('click', '.notification, .direct-message', function(e) {
+		let b64mid = $(this).data('b64mid');
+		let notify_id = $(this).data('notify_id');
+		let path = $(this)[0].pathname.split('/')[1];
+		let stateObj = { b64mid: b64mid };
+		let singlethread_modules = ['display', 'hq', 'dm'];
+		let redirect_modules = ['display', 'notify'];
+		let notifications_parent;
 
-			evtSource.addEventListener('notifications', function(e) {
-				var obj = JSON.parse(e.data);
-				sse_handleNotifications(obj, false, false);
-			}, false);
-
-			document.addEventListener('visibilitychange', function() {
-				if (!document.hidden) {
-					sse_offset = 0;
-					sse_bs_init();
-				}
-			}, false);
-
+		if ($('#notifications_wrapper').length) {
+			notifications_parent = $('#notifications_wrapper')[0].parentElement.id;
 		}
-		else {
-			var myWorker = new SharedWorker('/view/js/sse_worker.js', localUser);
 
-			myWorker.port.onmessage = function(e) {
-				obj = e.data;
-				console.log(obj);
-				sse_handleNotifications(obj, false, false);
-			}
-
-			myWorker.onerror = function(e) {
-				myWorker.port.close();
-			}
-
-			myWorker.port.start();
-		}
-	}
-	else {
-		if (!document.hidden)
-			sse_fallback_interval = setInterval(sse_fallback, updateInterval);
-
-		document.addEventListener('visibilitychange', function() {
-			if (document.hidden) {
-				clearInterval(sse_fallback_interval);
-			}
-			else {
-				sse_offset = 0;
-				sse_bs_init();
-				sse_fallback_interval = setInterval(sse_fallback, updateInterval);
-			}
-
-		}, false);
-	}
-
-	$('.notification-link').on('click', { replace: true, followup: false }, sse_bs_notifications);
-
-	$('.notification-filter').on('keypress', function(e) {
-		if(e.which == 13) { // enter
-			this.blur();
-			sse_offset = 0;
-			$("#nav-" + sse_type + "-menu").html('');
-			$("#nav-" + sse_type + "-loading").show();
-
-			var cn_val = $('#cn-' + sse_type + '-input').length ? $('#cn-' + sse_type + '-input').val().toString().toLowerCase() : '';
-
-			$.get('/sse_bs/' + sse_type + '/' + sse_offset + '?nquery=' + encodeURIComponent(cn_val), function(obj) {
-				console.log('sse: bootstraping ' + sse_type);
-				console.log(obj);
-
-				sse_bs_active = false;
-				sse_partial_result = true;
-				sse_offset = obj[sse_type].offset;
-				if(sse_offset < 0)
-					$("#nav-" + sse_type + "-loading").hide();
-
-				sse_handleNotifications(obj, true, false);
-
-			});
-		}
-	});
-
-	$('.notifications-textinput-clear').on('click', function(e) {
-		if(! sse_partial_result)
+		if(! b64mid && ! notify_id)
 			return;
 
-		$("#nav-" + sse_type + "-menu").html('');
-		$("#nav-" + sse_type + "-loading").show();
-		$.get('/sse_bs/' + sse_type, function(obj) {
-			console.log('sse: bootstraping ' + sse_type);
-			console.log(obj);
+		if(redirect_modules.indexOf(path) !== -1) {
+			path = 'hq';
+		}
 
-			sse_bs_active = false;
-			sse_partial_result = false;
-			sse_offset = obj[sse_type].offset;
-			if(sse_offset < 0)
-				$("#nav-" + sse_type + "-loading").hide();
+		if(notify_id != null) {
+			$.ajax({
+				type: 'post',
+				url: 'notify',
+				data: {
+					'notify_id' : notify_id
+				},
+				async: ((module !== path) ? false : true)
+			});
+		}
 
-			sse_handleNotifications(obj, true, false);
+		if (module !== path) {
+			e.preventDefault();
+			window.location.href = path + '/' + b64mid;
+		}
+		else {
 
-		});
-	});
+			if (singlethread_modules.indexOf(module) !== -1) {
+				history.pushState(stateObj, '', module + '/' + b64mid);
+				$('.direct-message').removeClass('active');
+				$('[data-b64mid="' + b64mid + '"].direct-message').addClass('active');
+			}
 
-	$('.notification-content').on('scroll', function() {
-		if(this.scrollTop > this.scrollHeight - this.clientHeight - (this.scrollHeight/7)) {
-			sse_bs_notifications(sse_type, false, true);
+			if (b64mid) {
+
+				e.preventDefault();
+
+				if(! page_load) {
+					prepareLiveUpdate(b64mid, notify_id);
+				}
+
+				if($('#notifications_wrapper').hasClass('fs'))
+					$('#notifications_wrapper').prependTo('#' + notifications_parent).removeClass('fs');
+			}
 		}
 	});
+
+	window.onpopstate = function(e) {
+		if(e.state !== null && e.state.b64mid !== bParam_mid)
+			prepareLiveUpdate(e.state.b64mid, '');
+	};
 
 	//mod_mail only
 	$(".mail-conv-detail .autotime").timeago();
@@ -967,6 +917,20 @@ function updateInit() {
 	}
 }
 
+function prepareLiveUpdate(b64mid, notify_id) {
+	$(document).scrollTop(0);
+	$('.thread-wrapper').remove();
+	bParam_mid = b64mid;
+	mode = 'replace';
+	page_load = true;
+	if (module == 'hq') {
+		liveUpdate(notify_id);
+	}
+	if (module == 'display'|| module == 'dm') {
+		liveUpdate();
+	}
+}
+
 function liveUpdate(notify_id) {
 
 	if(typeof profile_uid === 'undefined') profile_uid = false; /* Should probably be unified with channelId defined in head.tpl */
@@ -1052,7 +1016,7 @@ function liveUpdate(notify_id) {
 
 		if(typeof notify_id !== 'undefined' && notify_id !== 'undefined') {
 			$.post(
-				"hq",
+				"notify",
 				{
 					"notify_id" : notify_id
 				}
@@ -1760,287 +1724,6 @@ function zid(s) {
 	return s;
 }
 
-function sse_bs_init() {
-	if(sessionStorage.getItem('notification_open') !== null || typeof sse_type !== 'undefined' ) {
-		if(typeof sse_type === 'undefined')
-			sse_type = sessionStorage.getItem('notification_open');
-
-		$("#nav-" + sse_type + "-sub").addClass('show');
-		sse_bs_notifications(sse_type, true, false);
-	}
-	else {
-		sse_bs_counts();
-	}
-}
-
-function sse_bs_counts() {
-	if(sse_bs_active)
-		return;
-
-	sse_bs_active = true;
-
-	$.ajax({
-		type: 'post',
-		url: '/sse_bs',
-		data: { sse_rmids }
-	}).done( function(obj) {
-		console.log(obj);
-		sse_bs_active = false;
-		sse_rmids = [];
-		sse_handleNotifications(obj, true, false);
-	});
-}
-
-function sse_bs_notifications(e, replace, followup) {
-
-	if(sse_bs_active)
-		return;
-
-
-	var manual = false;
-
-	if(typeof replace === 'undefined')
-		replace = e.data.replace;
-
-	if(typeof followup === 'undefined')
-		followup = e.data.followup;
-
-	if(typeof e === 'string') {
-		sse_type = e;
-	}
-	else {
-		manual = true;
-		sse_offset = 0;
-		sse_type = e.target.dataset.sse_type;
-	}
-
-	if(typeof sse_type === 'undefined')
-		return;
-
-	if(followup || !manual || !($('#nav-' + sse_type + '-sub').hasClass('collapse') && $('#nav-' + sse_type + '-sub').hasClass('show'))) {
-
-		if(sse_offset >= 0) {
-			$("#nav-" + sse_type + "-loading").show();
-		}
-
-		sessionStorage.setItem('notification_open', sse_type);
-		if(sse_offset !== -1 || replace) {
-
-			var cn_val = (($('#cn-' + sse_type + '-input').length && sse_partial_result) ? $('#cn-' + sse_type + '-input').val().toString().toLowerCase() : '');
-
-			$("#nav-" + sse_type + "-loading").show();
-
-			sse_bs_active = true;
-
-			$.ajax({
-				type: 'post',
-				url: '/sse_bs/' + sse_type + '/' + sse_offset,
-				nquery: encodeURIComponent(cn_val),
-				data: { sse_rmids }
-			}).done(function(obj) {
-				console.log('sse: bootstraping ' + sse_type);
-				console.log(obj);
-				sse_bs_active = false;
-				sse_rmids = [];
-				$("#nav-" + sse_type + "-loading").hide();
-				sse_offset = obj[sse_type].offset;
-				sse_handleNotifications(obj, replace, followup);
-			});
-		}
-		else
-			$("#nav-" + sse_type + "-loading").hide();
-
-	}
-	else {
-		sessionStorage.removeItem('notification_open');
-	}
-}
-
-function sse_handleNotifications(obj, replace, followup) {
-
-	var primary_notifications = ['dm', 'home', 'intros', 'register', 'notify', 'files'];
-	var secondary_notifications = ['network', 'forums', 'all_events', 'pubs'];
-	var all_notifications = primary_notifications.concat(secondary_notifications);
-
-	all_notifications.forEach(function(type, index) {
-		if(typeof obj[type] === typeof undefined)
-			return true;
-
-		if(obj[type].count) {
-			$('.' + type + '-button').fadeIn();
-			if(replace || followup)
-				$('.' + type + '-update').html(Number(obj[type].count));
-			else
-				$('.' + type + '-update').html(Number(obj[type].count) + Number($('.' + type + '-update').html()));
-		}
-		else {
-			$('.' + type + '-update').html('0');
-			$('.' + type + '-button').fadeOut(function() {
-				sse_setNotificationsStatus();
-			});
-		}
-		if(obj[type].notifications.length)
-			sse_handleNotificationsItems(type, obj[type].notifications, replace, followup);
-	});
-
-	sse_setNotificationsStatus();
-
-	// notice and info
-	$.jGrowl.defaults.closerTemplate = '<div>[ ' + aStr.closeAll + ']</div>';
-
-	if(obj.notice) {
-		$(obj.notice.notifications).each(function() {
-			$.jGrowl(this, { sticky: true, theme: 'notice' });
-		});
-	}
-
-	if(obj.info) {
-		$(obj.info.notifications).each(function(){
-			$.jGrowl(this, { sticky: false, theme: 'info', life: 10000 });
-		});
-	}
-
-	// load more notifications if visible notifications count becomes low
-	if(sse_type  && sse_offset != -1 && $('#nav-' + sse_type + '-menu').children().length <= 20) {
-		sse_offset = 0;
-		sse_bs_notifications(sse_type, false, true);
-	}
-
-
-}
-
-function sse_handleNotificationsItems(notifyType, data, replace, followup) {
-
-	var notifications_tpl = ((notifyType == 'forums') ? decodeURIComponent($("#nav-notifications-forums-template[rel=template]").html().replace('data-src', 'src')) : decodeURIComponent($("#nav-notifications-template[rel=template]").html().replace('data-src', 'src')));
-	var notify_menu = $("#nav-" + notifyType + "-menu");
-	var notify_loading = $("#nav-" + notifyType + "-loading");
-	var notify_count = $("." + notifyType + "-update");
-
-	if(replace && !followup) {
-		notify_menu.html('');
-		notify_loading.hide();
-	}
-
-	$(data).each(function() {
-
-		// do not add a notification if it is already present
-		if($('#nav-' + notifyType + '-menu .notification[data-b64mid=\'' + this.b64mid + '\']').length)
-			return true;
-
-		html = notifications_tpl.format(this.notify_link,this.photo,this.name,this.addr,this.message,this.when,this.hclass,this.b64mid,this.notify_id,this.thread_top,this.unseen,this.private_forum, encodeURIComponent(this.mids), this.body);
-		notify_menu.append(html);
-	});
-
-	if(!replace && !followup) {
-		$("#nav-" + notifyType + "-menu .notification").sort(function(a,b) {
-			a = new Date(a.dataset.when);
-			b = new Date(b.dataset.when);
-			return a > b ? -1 : a < b ? 1 : 0;
-		}).appendTo('#nav-' + notifyType + '-menu');
-	}
-
-	$("#nav-" + notifyType + "-menu .notifications-autotime").timeago();
-
-	if($('#tt-' + notifyType + '-only').hasClass('active'))
-		$('#nav-' + notifyType + '-menu [data-thread_top=false]').addClass('tt-filter-active');
-
-	if($('#cn-' + notifyType + '-input').length) {
-		var filter = $('#cn-' + notifyType + '-input').val().toString().toLowerCase();
-		if(filter) {
-			filter = filter.indexOf('%') == 0 ? filter.substring(1) : filter;
-
-			$('#nav-' + notifyType + '-menu .notification').each(function(i, el) {
-				var cn = $(el).data('contact_name').toString().toLowerCase();
-				var ca = $(el).data('contact_addr').toString().toLowerCase();
-				if(cn.indexOf(filter) === -1 && ca.indexOf(filter) === -1)
-					$(el).addClass('cn-filter-active');
-				else
-					$(el).removeClass('cn-filter-active');
-			});
-		}
-	}
-}
-
-function sse_updateNotifications(type, mid) {
-
-	if(type === 'pubs')
-		return true;
-
-	if(type === 'notify' && (mid !== bParam_mid || sse_type !== 'notify'))
-		return true;
-/*
-	var count = Number($('.' + type + '-update').html());
-
-	count--;
-
-	if(count < 1) {
-		$('.' + type + '-update').html(count);
-		$('.' + type + '-button').fadeOut(function() {
-			sse_setNotificationsStatus();
-		});
-	}
-	else {
-		$('.' + type + '-update').html(count);
-	}
-*/
-
-	$('#nav-' + type + '-menu .notification[data-b64mid=\'' + mid + '\']').fadeOut(function() {
-		this.remove();
-	});
-
-}
-
-function sse_setNotificationsStatus() {
-	var primary_notifications = ['dm', 'home', 'intros', 'register', 'notify', 'files'];
-	var secondary_notifications = ['network', 'forums', 'all_events', 'pubs'];
-	var all_notifications = primary_notifications.concat(secondary_notifications);
-
-	var primary_available = false;
-	var any_available = false;
-
-	all_notifications.forEach(function(type, index) {
-		if($('.' + type + '-button').css('display') == 'block') {
-			any_available = true;
-			if(primary_notifications.indexOf(type) > -1)
-				primary_available = true;
-		}
-	});
-
-	if(primary_available) {
-		$('.notifications-btn-icon').removeClass('fa-exclamation-circle');
-		$('.notifications-btn-icon').addClass('fa-exclamation-triangle');
-	}
-	else {
-		$('.notifications-btn-icon').removeClass('fa-exclamation-triangle');
-		$('.notifications-btn-icon').addClass('fa-exclamation-circle');
-	}
-
-	if(any_available) {
-		$('.notifications-btn').css('opacity', 1);
-		$('#no_notifications').hide();
-		$('#notifications').show();
-	}
-	else {
-		$('.notifications-btn').css('opacity', 0.5);
-		$('#navbar-collapse-1').removeClass('show');
-		$('#no_notifications').show();
-		$('#notifications').hide();
-	}
-
-}
-
-function sse_fallback() {
-	$.get('/sse', function(obj) {
-		if(! obj)
-			return;
-
-		console.log('sse fallback');
-		console.log(obj);
-
-		sse_handleNotifications(obj, false, false);
-	});
-}
-
 function makeid(length) {
 	var result = '';
 	var characters = 'abcdef0123456789';
@@ -2049,4 +1732,45 @@ function makeid(length) {
 		result += characters.charAt(Math.floor(Math.random() * charactersLength));
 	}
 	return result;
+}
+
+function get_messages_page(page_type) {
+	if (get_messages_page_active)
+		return;
+
+	if (messages_last_id === -1)
+		return;
+
+	get_messages_page_active = true;
+	$('#messages-loading').show();
+	$.ajax({
+		type: 'post',
+		url: 'hq',
+		data: {
+			last_id: messages_last_id,
+			dm: (page_type === 'dm') ? 1 : 0
+		}
+	}).done(function(obj) {
+		get_messages_page_active = false;
+		messages_last_id = obj.last_id;
+		console.log(obj);
+		let html;
+		let tpl = $('#messages-template[rel=template]').html();
+		obj.entries.forEach(function(e) {
+			html = tpl.format(
+				e.b64mid,
+				e.subject,
+				e.created,
+				e.summary,
+				e.recipients,
+				e.owner_name,
+				e.owner_addr,
+				e.href,
+				e.icon
+			);
+			$('#messages-loading').before(html);
+		});
+		$('#messages-loading').hide();
+		$('.messages-timeago').timeago();
+	});
 }
