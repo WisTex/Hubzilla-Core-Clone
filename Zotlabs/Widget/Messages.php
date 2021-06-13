@@ -167,7 +167,7 @@ class Messages {
 			}
 		}
 
-		return trim($recipients, ',');
+		return trim($recipients, ', ');
 	}
 
 }
