@@ -78,15 +78,18 @@ class Messages {
 				$recipients = self::get_dm_recipients($channel, $item);
 			}
 
-			$summary = $item['summary'];
+			$summary = $item['title'];
+			if (!$summary) {
+				$summary = $item['summary'];
+			}
 			if (!$summary) {
 				$summary = htmlentities(html2plain(bbcode($item['body']), 75, true), ENT_QUOTES, 'UTF-8', false);
-				if (strlen($summary) > 68) {
-					$summary = trim(substr($summary, 0, 68)) . '...';
-				}
-				if (!$summary) {
-					$summary = t('Sorry, there is no text preview available for this post.');
-				}
+			}
+			if (!$summary) {
+				$summary = t('Sorry, there is no text preview available for this post');
+			}
+			if (strlen($summary) > 68) {
+				$summary = trim(substr($summary, 0, 68)) . '...';
 			}
 
 			switch(intval($item['item_private'])) {
@@ -104,7 +107,6 @@ class Messages {
 			$entries[$i]['owner_addr'] = (($item['owner']['xchan_addr']) ? $item['owner']['xchan_addr'] : $item['owner']['xchan_url']);
 			$entries[$i]['recipients'] = $recipients;
 			$entries[$i]['created'] = datetime_convert('UTC', date_default_timezone_get(), $item['created']);
-			$entries[$i]['subject'] = $item['title'];
 			$entries[$i]['summary'] = $summary;
 			$entries[$i]['b64mid'] = gen_link_id($item['mid']);
 			$entries[$i]['href'] = z_root() . '/' . (($dm_mode) ? 'dm' : 'hq') . '/' . gen_link_id($item['mid']);

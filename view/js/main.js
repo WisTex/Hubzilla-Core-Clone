@@ -1759,7 +1759,6 @@ function get_messages_page(page_type) {
 		obj.entries.forEach(function(e) {
 			html = tpl.format(
 				e.b64mid,
-				e.subject,
 				e.created,
 				e.summary,
 				e.recipients,
