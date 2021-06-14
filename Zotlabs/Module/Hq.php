@@ -269,7 +269,7 @@ class Hq extends \Zotlabs\Web\Controller {
 		if (!local_channel())
 			return;
 
-		$options['last_id'] = $_REQUEST['last_id'];
+		$options['offset'] = $_REQUEST['offset'];
 		$options['dm'] = $_REQUEST['dm'];
 
 		$ret = Messages::get_messages_page($options);

@@ -325,7 +325,7 @@
 		}
 
 		// load more notifications if visible notifications count becomes low
-		if(sse_type  && sse_offset != -1 && $('#nav-' + sse_type + '-menu').children().length <= 20) {
+		if(sse_type  && sse_offset != -1 && $('#nav-' + sse_type + '-menu').children().length < 7) {
 			sse_offset = 0;
 			sse_bs_notifications(sse_type, false, true);
 		}

@@ -1738,7 +1738,7 @@ function get_messages_page(page_type) {
 	if (get_messages_page_active)
 		return;
 
-	if (messages_last_id === -1)
+	if (messages_offset === -1)
 		return;
 
 	get_messages_page_active = true;
@@ -1747,12 +1747,12 @@ function get_messages_page(page_type) {
 		type: 'post',
 		url: 'hq',
 		data: {
-			last_id: messages_last_id,
+			offset: messages_offset,
 			dm: (page_type === 'dm') ? 1 : 0
 		}
 	}).done(function(obj) {
 		get_messages_page_active = false;
-		messages_last_id = obj.last_id;
+		messages_offset = obj.offset;
 		console.log(obj);
 		let html;
 		let tpl = $('#messages-template[rel=template]').html();

@@ -10,7 +10,7 @@
 			</div>
 			<div class="mb-1">
 				<strong>{1}</strong>
-				{3}
+				<div class="text-break">{3}</div>
 			</div>
 			<small>{4}</small>
 		</a>
@@ -27,7 +27,7 @@
 			</div>
 			<div class="mb-1">
 				<strong>{{$e.subject}}</strong>
-				{{$e.summary}}
+				<div class="text-break">{{$e.summary}}</div>
 			</div>
 			<small>{{$e.recipients}}</small>
 		</a>
@@ -38,6 +38,6 @@
 	</div>
 </div>
 <script>
-	var messages_last_id = {{$last_id}};
+	var messages_offset = {{$offset}};
 	var get_messages_page_active = false;
 </script>

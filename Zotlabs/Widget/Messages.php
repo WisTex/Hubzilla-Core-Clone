@@ -11,10 +11,6 @@ class Messages {
 		if (! local_channel())
 			return EMPTY_STR;
 
-		$options = [
-			'last_id' => 0,
-		];
-
 		if (intval($arr['dm']) === 1) {
 			$options['dm'] = true;
 		}
@@ -30,7 +26,7 @@ class Messages {
 			'$banner' => t('Direct Messages'),
 			'$loading' => t('Loading'),
 			'$entries' => $page['entries'],
-			'$last_id' => $page['last_id']
+			'$offset' => $page['offset']
 		]);
 
 		return $o;
@@ -38,7 +34,7 @@ class Messages {
 
 	public static function get_messages_page($options) {
 
-		if ($options['last_id'] == -1) {
+		if ($options['offset'] == -1) {
 			return;
 		}
 
@@ -48,9 +44,9 @@ class Messages {
 		$limit = 10;
 		$dm_mode = false;
 
-		$id_sql = '';
-		if ($options['last_id']) {
-			$id_sql = " AND id < " . intval($options['last_id']);
+		$offset = 0;
+		if ($options['offset']) {
+			$offset = intval($options['offset']);
 		}
 
 		$dm_sql = ' AND item_private IN (0, 1) ';
@@ -60,13 +56,15 @@ class Messages {
 		}
 
 		$items = q("SELECT * FROM item WHERE uid = %d
-			$id_sql
+			AND created <= '%s'
 			$dm_sql
 			AND item_thread_top = 1
 			$item_normal
 			ORDER BY created DESC
-			LIMIT $limit",
-			intval(local_channel())
+			LIMIT $limit OFFSET $offset",
+			intval(local_channel()),
+			dbescdate($_SESSION['page_loadtime'])
+
 		);
 
 		xchan_query($items, false);
@@ -99,10 +97,8 @@ class Messages {
 					$icon = '';
 			}
 
-			$owner = $item['owner'];
-
-			$entries[$i]['owner_name'] = $owner['xchan_name'];
-			$entries[$i]['owner_addr'] = (($owner['xchan_addr']) ? $owner['xchan_addr'] : $owner['xchan_url']);
+			$entries[$i]['owner_name'] = $item['owner']['xchan_name'];
+			$entries[$i]['owner_addr'] = (($item['owner']['xchan_addr']) ? $item['owner']['xchan_addr'] : $item['owner']['xchan_url']);
 			$entries[$i]['recipients'] = $recipients;
 			$entries[$i]['created'] = datetime_convert('UTC', date_default_timezone_get(), $item['created']);
 			$entries[$i]['subject'] = $item['title'];
@@ -111,13 +107,11 @@ class Messages {
 			$entries[$i]['href'] = z_root() . '/' . (($dm_mode) ? 'dm' : 'hq') . '/' . gen_link_id($item['mid']);
 			$entries[$i]['icon'] = $icon;
 
-			$last_id = $item['id'];
-
 			$i++;
 		}
 
 		$result = [
-			'last_id' => ((count($entries) < $limit) ? -1 : $last_id),
+			'offset' => ((count($entries) < $limit) ? -1 : intval($offset + $limit)),
 			'entries' => $entries
 		];
 
@@ -130,13 +124,14 @@ class Messages {
 			// we are the owner, get the recipients from the item
 			$recips = expand_acl($item['allow_cid']);
 			if (is_array($recips)) {
-				array_unshift($recips, $owner['xchan_hash']);
+				array_unshift($recips, $item['owner']['xchan_hash']);
 				$column = 'xchan_hash';
 			}
 		}
 		else {
-			$recips = IConfig::Get($item, 'activitypub', 'recips')['to'];
-			if (is_array($recips)) {
+			$recips = IConfig::Get($item, 'activitypub', 'recips');
+			if (isset($recips['to']) && is_array($recips['to'])) {
+				$recips = $recips['to'];
 				array_unshift($recips, $item['owner']['xchan_url']);
 				$column = 'xchan_url';
 			}
@@ -160,7 +155,7 @@ class Messages {
 			$query_str = implode(',', $recips);
 
 			//fixme: when query by xchan_addr or xchan_url we might get duplicate entries (zot6+zot xchan)
-			$xchans = dbq("SELECT xchan_name FROM xchan WHERE $column IN ($query_str)");
+			$xchans = dbq("SELECT DISTINCT xchan_name FROM xchan WHERE $column IN ($query_str)");
 
 			foreach($xchans as $xchan) {
 				$recipients .= $xchan['xchan_name'] . ', ';
