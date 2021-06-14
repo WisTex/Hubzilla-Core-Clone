@@ -161,11 +161,6 @@ $(document).ready(function() {
 		let stateObj = { b64mid: b64mid };
 		let singlethread_modules = ['display', 'hq', 'dm'];
 		let redirect_modules = ['display', 'notify'];
-		let notifications_parent;
-
-		if ($('#notifications_wrapper').length) {
-			notifications_parent = $('#notifications_wrapper')[0].parentElement.id;
-		}
 
 		if(! b64mid && ! notify_id)
 			return;
@@ -204,9 +199,6 @@ $(document).ready(function() {
 				if(! page_load) {
 					prepareLiveUpdate(b64mid, notify_id);
 				}
-
-				if($('#notifications_wrapper').hasClass('fs'))
-					$('#notifications_wrapper').prependTo('#' + notifications_parent).removeClass('fs');
 			}
 		}
 	});

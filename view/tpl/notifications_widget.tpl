@@ -31,6 +31,12 @@
 			}
 		});
 
+		$(document).on('click', '.notification', function() {
+			if($('#notifications_wrapper').hasClass('fs')) {
+				$('#notifications_wrapper').prependTo('#' + notifications_parent).removeClass('fs');
+			}
+		});
+
 		if(sse_enabled) {
 			if(typeof(window.SharedWorker) === 'undefined') {
 				// notifications with multiple tabs open will not work very well in this scenario
@@ -219,7 +225,6 @@
 
 		if(sse_bs_active)
 			return;
-
 
 		var manual = false;
 
