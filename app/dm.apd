@@ -1,0 +1,6 @@
+version: 1
+url: $baseurl/dm
+requires: local_channel
+name: Direct Messages
+photo: icon:envelope-o
+categories: nav_featured_app, Networking
