@@ -2,7 +2,7 @@
 	<div id="messages-template" rel="template" class="d-none">
 		<a href="{7}" class="list-group-item list-group-item-action direct-message" data-b64mid="{0}">
 			<div class="d-flex w-100 justify-content-between">
-				<div class="mb-1" title="{6}">
+				<div class="mb-1 text-truncate" title="{6}">
 					{8}
 					<strong>{5}</strong>
 				</div>
@@ -19,7 +19,7 @@
 		{{foreach $entries as $e}}
 		<a href="{{$e.href}}" class="list-group-item list-group-item-action direct-message" data-b64mid="{{$e.b64mid}}">
 			<div class="d-flex w-100 justify-content-between">
-				<div class="mb-1" title="{{$e.owner_addr}}">
+				<div class="mb-1 text-truncate" title="{{$e.owner_addr}}">
 					{{$e.icon}}
 					<strong>{{$e.owner_name}}</strong>
 				</div>
