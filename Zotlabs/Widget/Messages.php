@@ -84,6 +84,9 @@ class Messages {
 				if (strlen($summary) > 68) {
 					$summary = trim(substr($summary, 0, 68)) . '...';
 				}
+				if (!$summary) {
+					$summary = t('No text preview available');
+				}
 			}
 
 			switch(intval($item['item_private'])) {
