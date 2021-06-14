@@ -85,7 +85,7 @@ class Messages {
 					$summary = trim(substr($summary, 0, 68)) . '...';
 				}
 				if (!$summary) {
-					$summary = t('No text preview available');
+					$summary = t('Sorry, there is no text preview available for this post.');
 				}
 			}
 
