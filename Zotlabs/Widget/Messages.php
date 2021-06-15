@@ -41,7 +41,7 @@ class Messages {
 		$channel = App::get_channel();
 		$item_normal = item_normal();
 		$entries = [];
-		$limit = 10;
+		$limit = 30;
 		$dm_mode = false;
 
 		$offset = 0;
