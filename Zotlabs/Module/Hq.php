@@ -130,7 +130,7 @@ class Hq extends \Zotlabs\Web\Controller {
 
 		if(! $update && ! $load) {
 
-			$app = (($dm_mode) ? 'Direct Messages' : 'Messages');
+			$app = (($dm_mode) ? 'Direct Messages' : 'Start');
 			nav_set_selected($app);
 
 			if($target_item) {

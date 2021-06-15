@@ -18,16 +18,16 @@
 		{{foreach $entries as $e}}
 		<a href="{{$e.href}}" class="list-group-item list-group-item-action direct-message" data-b64mid="{{$e.b64mid}}">
 			<div class="d-flex w-100 justify-content-between">
-				<div class="mb-1 text-truncate" title="{{$e.owner_addr}}">
+				<div class="mb-1 text-truncate" title="{{$e.author_addr}}">
 					{{$e.icon}}
-					<strong>{{$e.owner_name}}</strong>
+					<strong>{{$e.author_name}}</strong>
 				</div>
 				<small class="messages-timeago text-nowrap" title="{{$e.created}}"></small>
 			</div>
 			<div class="mb-1">
 				<div class="text-break">{{$e.summary}}</div>
 			</div>
-			<small>{{$e.recipients}}</small>
+			<small>{{$e.info}}</small>
 		</a>
 		{{/foreach}}
 		<div id="messages-loading" class="list-group-item" style="display: none;">

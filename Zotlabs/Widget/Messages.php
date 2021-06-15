@@ -73,9 +73,13 @@ class Messages {
 
 		foreach($items as $item) {
 
-			$recipients = '';
+			$info = '';
 			if ($dm_mode) {
-				$recipients = self::get_dm_recipients($channel, $item);
+				$info .= self::get_dm_recipients($channel, $item);
+			}
+
+			if($item['owner_xchan'] !== $item['author_xchan']) {
+				$info .= t('via') . ' ' . $item['owner']['xchan_name'];
 			}
 
 			$summary = $item['title'];
@@ -103,9 +107,9 @@ class Messages {
 					$icon = '';
 			}
 
-			$entries[$i]['owner_name'] = $item['owner']['xchan_name'];
-			$entries[$i]['owner_addr'] = (($item['owner']['xchan_addr']) ? $item['owner']['xchan_addr'] : $item['owner']['xchan_url']);
-			$entries[$i]['recipients'] = $recipients;
+			$entries[$i]['author_name'] = $item['author']['xchan_name'];
+			$entries[$i]['author_addr'] = (($item['author']['xchan_addr']) ? $item['author']['xchan_addr'] : $item['author']['xchan_url']);
+			$entries[$i]['info'] = $info;
 			$entries[$i]['created'] = datetime_convert('UTC', date_default_timezone_get(), $item['created']);
 			$entries[$i]['summary'] = $summary;
 			$entries[$i]['b64mid'] = gen_link_id($item['mid']);

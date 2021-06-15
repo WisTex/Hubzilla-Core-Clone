@@ -1753,9 +1753,9 @@ function get_messages_page(page_type) {
 				e.b64mid,
 				e.created,
 				e.summary,
-				e.recipients,
-				e.owner_name,
-				e.owner_addr,
+				e.info,
+				e.author_name,
+				e.author_addr,
 				e.href,
 				e.icon
 			);
