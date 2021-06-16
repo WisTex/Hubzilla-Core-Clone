@@ -154,7 +154,7 @@ $(document).ready(function() {
 
 	jQuery.timeago.settings.allowFuture = true;
 
-	$(document).on('click', '.notification, .direct-message', function(e) {
+	$(document).on('click', '.notification, .message', function(e) {
 		let b64mid = $(this).data('b64mid');
 		let notify_id = $(this).data('notify_id');
 		let path = $(this)[0].pathname.split('/')[1];
@@ -188,8 +188,8 @@ $(document).ready(function() {
 
 			if (singlethread_modules.indexOf(module) !== -1) {
 				history.pushState(stateObj, '', module + '/' + b64mid);
-				$('.direct-message').removeClass('active');
-				$('[data-b64mid="' + b64mid + '"].direct-message').addClass('active');
+				$('.message').removeClass('active');
+				$('[data-b64mid="' + b64mid + '"].message').addClass('active');
 			}
 
 			if (b64mid) {
