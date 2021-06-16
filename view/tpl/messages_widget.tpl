@@ -76,6 +76,7 @@
 	});
 
 	$('.messages-timeago').timeago();
+	$('.direct-message[data-b64mid=\'' + bParam_mid + '\']').addClass('active');
 
 	function get_messages_page() {
 		if (get_messages_page_active)
@@ -112,8 +113,10 @@
 				);
 				$('#messages-loading').before(html);
 			});
+			$('.direct-message[data-b64mid=\'' + bParam_mid + '\']').addClass('active');
 			$('#messages-loading').hide();
 			$('.messages-timeago').timeago();
+
 		});
 	}
 
