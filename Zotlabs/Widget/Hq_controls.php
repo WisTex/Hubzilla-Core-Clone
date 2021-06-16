@@ -13,13 +13,21 @@ class Hq_controls {
 			[
 				'$menu' => [
 					'create' => [
-						'label' => t('Create a new post'),
+						'label' => t('Toggle post editor'),
 						'id' => 'jot-toggle',
 						'href' => '#',
-						'class' => 'btn btn-success',
+						'class' => 'btn btn-link',
 						'type' => 'button',
-						'icon' => 'pencil-square-o'
-					]
+						'icon' => ''
+					],
+					'notes' => [
+						'label' => t('Toggle personal notes'),
+						'id' => 'notes-toggle',
+						'href' => '#',
+						'class' => 'btn btn-link',
+						'type' => 'button',
+						'icon' => ''
+					],
 				]
 			]
 		);

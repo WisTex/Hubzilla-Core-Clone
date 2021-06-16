@@ -30,13 +30,6 @@ class Hq extends \Zotlabs\Web\Controller {
 			$item_hash = argv(1);
 		}
 
-		$dm_mode = false;
-		$dm_sql = " AND item_private IN (0, 1) ";
-		if(argv(0) === 'dm') {
-			$dm_mode = true;
-			$dm_sql = " AND item_private = 2 ";
-		}
-
 		if(isset($_REQUEST['mid'])) {
 			$item_hash = $_REQUEST['mid'];
 		}
@@ -46,7 +39,7 @@ class Hq extends \Zotlabs\Web\Controller {
 
 		if(! $item_hash) {
 			$r = q("SELECT mid FROM item
-				WHERE uid = %d $dm_sql $item_normal
+				WHERE uid = %d $item_normal
 				AND mid = parent_mid
 				ORDER BY created DESC LIMIT 1",
 				intval(local_channel())
@@ -66,7 +59,7 @@ class Hq extends \Zotlabs\Web\Controller {
 
 			$target_item = null;
 
-			$r = q("select id, uid, mid, parent_mid, thr_parent, verb, item_type, item_deleted, item_blocked from item where mid = '%s' $dm_sql limit 1",
+			$r = q("select id, uid, mid, parent_mid, thr_parent, verb, item_type, item_deleted, item_blocked from item where mid = '%s' limit 1",
 				dbesc($item_hash)
 			);
 
@@ -111,7 +104,7 @@ class Hq extends \Zotlabs\Web\Controller {
 				'bang'                => '',
 				'visitor'             => true,
 				'profile_uid'         => local_channel(),
-				'return_path'         => (($dm_mode) ? 'dm' : 'hq'),
+				'return_path'         => 'hq', //(($dm_mode) ? 'dm' : 'hq'),
 				'expanded'            => true,
 				'editor_autocomplete' => true,
 				'bbco_autocomplete'   => 'bbcode',
@@ -130,8 +123,8 @@ class Hq extends \Zotlabs\Web\Controller {
 
 		if(! $update && ! $load) {
 
-			$app = (($dm_mode) ? 'Direct Messages' : 'Start');
-			nav_set_selected($app);
+			//$app = (($dm_mode) ? 'Direct Messages' : 'Start');
+			nav_set_selected('HQ');
 
 			if($target_item) {
 				// if the target item is not a post (eg a like) we want to address its thread parent
@@ -151,7 +144,7 @@ class Hq extends \Zotlabs\Web\Controller {
 
 			App::$page['htmlhead'] .= replace_macros(get_markup_template("build_query.tpl"),[
 				'$baseurl' => z_root(),
-				'$pgtype'  => (($dm_mode) ? 'dm' : 'hq'),
+				'$pgtype'  => 'hq', //(($dm_mode) ? 'dm' : 'hq'),
 				'$uid'     => local_channel(),
 				'$gid'     => '0',
 				'$cid'     => '0',
@@ -187,7 +180,6 @@ class Hq extends \Zotlabs\Web\Controller {
 			$r = q("SELECT item.id AS item_id FROM item
 				WHERE uid = %d
 				AND mid = '%s'
-				$dm_sql
 				$item_normal
 				LIMIT 1",
 				intval(local_channel()),
@@ -199,7 +191,7 @@ class Hq extends \Zotlabs\Web\Controller {
 
 				$r = q("SELECT item.id AS item_id FROM item
 					LEFT JOIN abook ON item.author_xchan = abook.abook_xchan
-					WHERE mid = '%s' AND item.uid = %d $dm_sql $item_normal
+					WHERE mid = '%s' AND item.uid = %d $item_normal
 					AND (abook.abook_blocked = 0 or abook.abook_flags is null)
 					$sql_extra LIMIT 1",
 					dbesc($target_item['parent_mid']),
@@ -213,7 +205,6 @@ class Hq extends \Zotlabs\Web\Controller {
 			$r = q("SELECT item.parent AS item_id FROM item
 				WHERE uid = %d
 				AND parent_mid = '%s'
-				$dm_sql
 				$item_normal_update
 				$simple_update
 				LIMIT 1",
@@ -226,7 +217,7 @@ class Hq extends \Zotlabs\Web\Controller {
 
 				$r = q("SELECT item.parent AS item_id FROM item
 					LEFT JOIN abook ON item.author_xchan = abook.abook_xchan
-					WHERE mid = '%s' AND item.uid = %d $dm_sql $item_normal_update $simple_update
+					WHERE mid = '%s' AND item.uid = %d $item_normal_update $simple_update
 					AND (abook.abook_blocked = 0 or abook.abook_flags is null)
 					$sql_extra LIMIT 1",
 					dbesc($target_item['parent_mid']),
@@ -241,7 +232,7 @@ class Hq extends \Zotlabs\Web\Controller {
 		if($r) {
 			$items = q("SELECT item.*, item.id AS item_id
 				FROM item
-				WHERE parent = '%s' $dm_sql $item_normal ",
+				WHERE parent = '%s' $item_normal ",
 				dbesc($r[0]['item_id'])
 			);
 
@@ -269,6 +260,7 @@ class Hq extends \Zotlabs\Web\Controller {
 
 		$options['offset'] = $_REQUEST['offset'];
 		$options['dm'] = $_REQUEST['dm'];
+		$options['type'] = $_REQUEST['type'];
 
 		$ret = Messages::get_messages_page($options);
 		json_return_and_die($ret);

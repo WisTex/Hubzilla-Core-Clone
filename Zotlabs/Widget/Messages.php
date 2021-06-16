@@ -8,12 +8,8 @@ use Zotlabs\Lib\IConfig;
 class Messages {
 
 	public static function widget($arr) {
-		if (! local_channel())
+		if (!local_channel())
 			return EMPTY_STR;
-
-		if (intval($arr['dm']) === 1) {
-			$options['dm'] = true;
-		}
 
 		$o = '';
 		$page = self::get_messages_page($options);
@@ -23,16 +19,23 @@ class Messages {
 
 		$tpl = get_markup_template('messages_widget.tpl');
 		$o .= replace_macros($tpl, [
-			'$banner' => t('Direct Messages'),
-			'$loading' => t('Loading'),
 			'$entries' => $page['entries'],
-			'$offset' => $page['offset']
+			'$offset' => $page['offset'],
+			'$feature_star' => feature_enabled(local_channel(), 'star_posts'),
+			'$strings' => [
+				'messages_title' => t('Public and restricted messages'),
+				'direct_messages_title' => t('Direct messages'),
+				'starred_messages_title' => t('Starred messages'),
+				'loading' => t('Loading')
+			]
 		]);
 
 		return $o;
 	}
 
 	public static function get_messages_page($options) {
+		if (!local_channel())
+			return;
 
 		if ($options['offset'] == -1) {
 			return;
@@ -49,22 +52,28 @@ class Messages {
 			$offset = intval($options['offset']);
 		}
 
-		$dm_sql = ' AND item_private IN (0, 1) ';
-		if ($options['dm']) {
-			$dm_mode = true;
-			$dm_sql = ' AND item_private = 2 ';
+		$loadtime = (($offset) ? $_SESSION['page_loadtime'] : datetime_convert());
+
+		switch($options['type']) {
+			case 'direct':
+				$type_sql = ' AND item_private = 2 ';
+				break;
+			case 'starred':
+				$type_sql = ' AND item_starred = 1 ';
+				break;
+			default:
+				$type_sql = ' AND item_private IN (0, 1) ';
 		}
 
 		$items = q("SELECT * FROM item WHERE uid = %d
 			AND created <= '%s'
-			$dm_sql
+			$type_sql
 			AND item_thread_top = 1
 			$item_normal
 			ORDER BY created DESC
 			LIMIT $limit OFFSET $offset",
 			intval(local_channel()),
-			dbescdate($_SESSION['page_loadtime'])
-
+			dbescdate($loadtime)
 		);
 
 		xchan_query($items, false);
@@ -74,7 +83,7 @@ class Messages {
 		foreach($items as $item) {
 
 			$info = '';
-			if ($dm_mode) {
+			if ($options['type'] == 'direct') {
 				$info .= self::get_dm_recipients($channel, $item);
 			}
 

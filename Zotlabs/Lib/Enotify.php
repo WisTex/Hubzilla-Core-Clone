@@ -129,9 +129,9 @@ class Enotify {
 		$preamble = sprintf( t('%1$s sent you a new direct message at %2$s.'), $sender['xchan_name'],$sitename);
 		$epreamble = sprintf( t('%1$s sent you %2$s.'),'[zrl=' . $sender['xchan_url'] . ']' . $sender['xchan_name'] . '[/zrl]', '[zrl=$itemlink]' . t('a direct message') . '[/zrl]');
 		$sitelink = t('Please visit %s to view and/or reply to your direct messages.');
-		$tsitelink = sprintf( $sitelink, $siteurl . '/dm/' . gen_link_id($params['item']['mid']));
-		$hsitelink = sprintf( $sitelink, '<a href="' . $siteurl . '/dm/' . gen_link_id($params['item']['mid']) . '">' . $sitename . '</a>');
-		$itemlink = $siteurl . '/dm/' . gen_link_id($params['item']['mid']);
+		$tsitelink = sprintf( $sitelink, $siteurl . '/hq/' . gen_link_id($params['item']['mid']));
+		$hsitelink = sprintf( $sitelink, '<a href="' . $siteurl . '/hq/' . gen_link_id($params['item']['mid']) . '">' . $sitename . '</a>');
+		$itemlink = $siteurl . '/hq/' . gen_link_id($params['item']['mid']);
 	}
 
 	if ($params['type'] == NOTIFY_COMMENT) {
@@ -849,7 +849,7 @@ class Enotify {
 		$who = (($item['verb'] === ACTIVITY_SHARE) ? 'owner' : 'author');
 
 		$x = array(
-			'notify_link' => ((intval($item['item_private']) === 2) ? z_root() . '/dm/' . gen_link_id($item['mid']) : $item['llink']),
+			'notify_link' => $item['llink'],
 			'name' => $item[$who]['xchan_name'],
 			'addr' => (($item[$who]['xchan_addr']) ? $item[$who]['xchan_addr'] : $item[$who]['xchan_url']),
 			'url' => $item[$who]['xchan_url'],

@@ -1,8 +1,0 @@
-[region=aside]
-[widget=hq_controls][/widget]
-[widget=messages][var=dm]1[/var][/widget]
-[/region]
-[region=right_aside]
-[widget=notifications][/widget]
-[widget=newmember][/widget]
-[/region]

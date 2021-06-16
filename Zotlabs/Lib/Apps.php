@@ -67,7 +67,6 @@ class Apps {
 		$x = get_config('system','base_apps',[
 			'Connections',
 			'Network',
-			'Direct Messages',
 			'Settings',
 			'Files',
 			'Channel Home',
@@ -348,7 +347,6 @@ class Apps {
 			'Directory' => t('Directory'),
 			'Help' => t('Help'),
 			'Mail' => t('Mail'),
-			'Direct Messages' => t('Direct Messages'),
 			'Mood' => t('Mood'),
 			'Poke' => t('Poke'),
 			'Chat' => t('Chat'),
