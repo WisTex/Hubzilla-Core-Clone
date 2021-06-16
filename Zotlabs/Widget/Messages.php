@@ -100,7 +100,7 @@ class Messages {
 			if (!$summary) {
 				$summary = t('Sorry, there is no text preview available for this post');
 			}
-			if (strlen($summary) > 68) {
+			if (strlen($summary) > 75) {
 				$summary = trim(explode("\n", $summary)[0]) . '...';
 			}
 
