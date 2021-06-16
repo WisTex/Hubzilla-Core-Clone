@@ -19,7 +19,7 @@
 </ul>
 <div id="messages-widget" class="border border-top-0 overflow-auto mb-3" style="max-height: 70vh;">
 	<div id="messages-template" rel="template" class="d-none">
-		<a href="{6}" class="list-group-item list-group-item-action direct-message" data-b64mid="{0}">
+		<a href="{6}" class="list-group-item list-group-item-action message" data-b64mid="{0}">
 			<div class="d-flex w-100 justify-content-between">
 				<div class="mb-1 text-truncate" title="{5}">
 					{7}
@@ -35,7 +35,7 @@
 	</div>
 	<div id="dm-container" class="list-group list-group-flush" data-offset="10">
 		{{foreach $entries as $e}}
-		<a href="{{$e.href}}" class="list-group-item list-group-item-action direct-message" data-b64mid="{{$e.b64mid}}">
+		<a href="{{$e.href}}" class="list-group-item list-group-item-action message" data-b64mid="{{$e.b64mid}}">
 			<div class="d-flex w-100 justify-content-between">
 				<div class="mb-1 text-truncate" title="{{$e.author_addr}}">
 					{{$e.icon}}
@@ -71,7 +71,7 @@
 		$(this).addClass('active');
 		messages_offset = 0;
 		messages_type = $(this).data('messages_type');
-		$('#dm-container .direct-message').remove();
+		$('#dm-container .message').remove();
 		get_messages_page();
 	});
 

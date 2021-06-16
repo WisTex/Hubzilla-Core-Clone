@@ -45,7 +45,6 @@ class Messages {
 		$item_normal = item_normal();
 		$entries = [];
 		$limit = 30;
-		$dm_mode = false;
 
 		$offset = 0;
 		if ($options['offset']) {
@@ -102,7 +101,7 @@ class Messages {
 				$summary = t('Sorry, there is no text preview available for this post');
 			}
 			if (strlen($summary) > 68) {
-				$summary = trim(substr($summary, 0, 68)) . '...';
+				$summary = trim(explode("\n", $summary)[0]) . '...';
 			}
 
 			switch(intval($item['item_private'])) {
@@ -171,8 +170,6 @@ class Messages {
 			stringify_array_elms($recips, true);
 
 			$query_str = implode(',', $recips);
-
-			//fixme: when query by xchan_addr or xchan_url we might get duplicate entries (zot6+zot xchan)
 			$xchans = dbq("SELECT DISTINCT xchan_name FROM xchan WHERE $column IN ($query_str)");
 
 			foreach($xchans as $xchan) {

@@ -263,8 +263,8 @@ class Hq extends \Zotlabs\Web\Controller {
 		$options['type'] = $_REQUEST['type'];
 
 		$ret = Messages::get_messages_page($options);
-		json_return_and_die($ret);
 
+		json_return_and_die($ret);
 	}
 
 }
