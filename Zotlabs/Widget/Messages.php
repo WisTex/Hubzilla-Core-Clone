@@ -100,9 +100,7 @@ class Messages {
 			if (!$summary) {
 				$summary = t('Sorry, there is no text preview available for this post');
 			}
-			if (strlen($summary) > 75) {
-				$summary = trim(explode("\n", $summary)[0]) . '...';
-			}
+			$summary = substr_words($summary, 68);
 
 			switch(intval($item['item_private'])) {
 				case 1:
@@ -121,7 +119,7 @@ class Messages {
 			$entries[$i]['created'] = datetime_convert('UTC', date_default_timezone_get(), $item['created']);
 			$entries[$i]['summary'] = $summary;
 			$entries[$i]['b64mid'] = gen_link_id($item['mid']);
-			$entries[$i]['href'] = z_root() . '/' . (($dm_mode) ? 'dm' : 'hq') . '/' . gen_link_id($item['mid']);
+			$entries[$i]['href'] = z_root() . '/hq/' . gen_link_id($item['mid']);
 			$entries[$i]['icon'] = $icon;
 
 			$i++;

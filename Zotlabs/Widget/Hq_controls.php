@@ -9,26 +9,32 @@ class Hq_controls {
 		if (! local_channel())
 			return;
 
+		$entries = [
+			'toggle_editor' => [
+				'label' => t('Toggle post editor'),
+				'id' => 'jot-toggle',
+				'href' => '#',
+				'class' => 'btn btn-outline-primary',
+				'type' => 'button',
+				'icon' => 'pencil',
+				'extra' => 'data-toggle="button"'
+			]
+		];
+
+
+		$entries['toggle_notes'] = [
+			'label' => t('Toggle personal notes'),
+			'id' => 'notes-toggle',
+			'href' => '#',
+			'class' => 'btn btn-outline-primary',
+			'type' => 'button',
+			'icon' => 'sticky-note-o',
+			'extra' => 'data-toggle="button"'
+		];
+
 		return replace_macros(get_markup_template('hq_controls.tpl'),
 			[
-				'$menu' => [
-					'create' => [
-						'label' => t('Toggle post editor'),
-						'id' => 'jot-toggle',
-						'href' => '#',
-						'class' => 'btn btn-link',
-						'type' => 'button',
-						'icon' => ''
-					],
-					'notes' => [
-						'label' => t('Toggle personal notes'),
-						'id' => 'notes-toggle',
-						'href' => '#',
-						'class' => 'btn btn-link',
-						'type' => 'button',
-						'icon' => ''
-					],
-				]
+				'$entries' => $entries
 			]
 		);
 	}

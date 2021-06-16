@@ -17,7 +17,7 @@
 	</li>
 	{{/if}}
 </ul>
-<div id="messages-widget" class="border border-top-0 overflow-auto mb-3" style="max-height: 70vh;">
+<div id="messages-widget" class="border border-top-0 overflow-auto mb-3" style="height: 70vh;">
 	<div id="messages-template" rel="template" class="d-none">
 		<a href="{6}" class="list-group-item list-group-item-action message" data-b64mid="{0}">
 			<div class="d-flex w-100 justify-content-between">
