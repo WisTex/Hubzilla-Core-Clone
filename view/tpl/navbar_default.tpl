@@ -262,13 +262,48 @@
 			{{$sysapps}}
 		</div>
 		{{/if}}
+		{{if $is_owner}}
+		<div id="app-bin-container" data-token="{{$form_security_token}}">
+		{{/if}}
 		{{foreach $nav_apps as $nav_app}}
 			{{$nav_app}}
 		{{/foreach}}
 		{{if $is_owner}}
+		</div>
+		{{/if}}
+		{{if $is_owner}}
 		<div class="dropdown-divider"></div>
 		<a class="dropdown-item" href="/apps"><i class="generic-icons-nav fa fa-fw fa-plus-circle"></i>{{$addapps}}</a>
-		<a class="dropdown-item" href="/apporder"><i class="generic-icons-nav fa fa-fw fa-sort"></i>{{$orderapps}}</a>
 		{{/if}}
 	</div>
 </div>
+{{if $is_owner}}
+<script>
+	var app_bin = document.getElementById('app-bin-container');
+	new Sortable(app_bin, {
+		animation: 150,
+		onEnd: function (e) {
+			let app_str = '';
+			$('#app-bin-container a').each(function () {
+				if(app_str.length) {
+					app_str = app_str.concat(',', $(this).text());
+				}
+				else {
+					app_str = app_str.concat($(this).text());
+				}
+			});
+			$.post(
+				'pconfig',
+				{
+					'aj' : 1,
+					'cat' : 'system',
+					'k' : 'app_order',
+					'v' : app_str,
+					'form_security_token' : $('#app-bin-container').data('token')
+				}
+			);
+
+		}
+	});
+</script>
+{{/if}}

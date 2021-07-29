@@ -903,7 +903,7 @@ class Apps {
 
 		if(! $apps)
 			return $apps;
-
+hz_syslog(print_r($apps,true));
 		$conf = (($menu === 'nav_featured_app') ? 'app_order' : 'app_pin_order');
 
 		$x = (($uid) ? get_pconfig($uid,'system',$conf) : get_config('system',$conf));

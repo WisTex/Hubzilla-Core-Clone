@@ -343,6 +343,7 @@ function nav($template = 'default') {
 		'$settings_url'       => $settings_url,
 		'$name'               => App::$profile['channel_name'],
 		'$thumb'              => App::$profile['thumb'],
+		'$form_security_token' => get_form_security_token('pconfig')
 	]);
 
 	if (x($_SESSION, 'reload_avatar') && $observer) {
