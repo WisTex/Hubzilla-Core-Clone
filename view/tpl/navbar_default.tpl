@@ -262,6 +262,12 @@
 			{{$sysapps}}
 		</div>
 		{{/if}}
+		<div class="d-lg-none">
+		{{foreach $navbar_apps as $navbar_app}}
+			{{$navbar_app|replace:'navbar-app nav-link':'dropdown-item'|replace:'fa':'generic-icons-nav fa'}}
+		{{/foreach}}
+		<div class="dropdown-divider"></div>
+		</div>
 		{{if $is_owner}}
 		<div id="app-bin-container" data-token="{{$form_security_token}}">
 		{{/if}}
@@ -282,6 +288,8 @@
 	var app_bin = document.getElementById('app-bin-container');
 	new Sortable(app_bin, {
 		animation: 150,
+		delay: 200,
+		delayOnTouchOnly: true,
 		onEnd: function (e) {
 			let app_str = '';
 			$('#app-bin-container a').each(function () {
