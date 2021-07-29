@@ -168,7 +168,7 @@
 			{{/if**}}
 			{{if $navbar_apps}}
 			{{foreach $navbar_apps as $navbar_app}}
-			<li>
+			<li class="nav-app-sortable">
 			{{$navbar_app}}
 			</li>
 			{{/foreach}}
@@ -262,9 +262,9 @@
 			{{$sysapps}}
 		</div>
 		{{/if}}
-		<div class="d-lg-none">
+		<div id="nav-app-bin-container" class="d-lg-none">
 		{{foreach $navbar_apps as $navbar_app}}
-			{{$navbar_app|replace:'navbar-app nav-link':'dropdown-item'|replace:'fa':'generic-icons-nav fa'}}
+			{{$navbar_app|replace:'navbar-app nav-link':'dropdown-item nav-app-sortable'|replace:'fa':'generic-icons-nav fa'}}
 		{{/foreach}}
 		<div class="dropdown-divider"></div>
 		</div>
@@ -307,6 +307,65 @@
 					'cat' : 'system',
 					'k' : 'app_order',
 					'v' : app_str,
+					'form_security_token' : $('#app-bin-container').data('token')
+				}
+			);
+
+		}
+	});
+
+	var nav_app_bin = document.getElementById('nav-right');
+	new Sortable(nav_app_bin, {
+		animation: 150,
+		delay: 200,
+		delayOnTouchOnly: true,
+		draggable: '.nav-app-sortable',
+		onEnd: function (e) {
+			let nav_app_str = '';
+			$('#nav-right .nav-app-sortable').each(function () {
+				if(nav_app_str.length) {
+					nav_app_str = nav_app_str.concat(',', $(this).text());
+				}
+				else {
+					nav_app_str = nav_app_str.concat($(this).text());
+				}
+			});
+			$.post(
+				'pconfig',
+				{
+					'aj' : 1,
+					'cat' : 'system',
+					'k' : 'app_pin_order',
+					'v' : nav_app_str,
+					'form_security_token' : $('#app-bin-container').data('token')
+				}
+			);
+
+		}
+	});
+
+	var nav_app_bin_container = document.getElementById('nav-app-bin-container');
+	new Sortable(nav_app_bin_container, {
+		animation: 150,
+		delay: 200,
+		delayOnTouchOnly: true,
+		onEnd: function (e) {
+			let nav_app_str = '';
+			$('#nav-app-bin-container a').each(function () {
+				if(nav_app_str.length) {
+					nav_app_str = nav_app_str.concat(',', $(this).text());
+				}
+				else {
+					nav_app_str = nav_app_str.concat($(this).text());
+				}
+			});
+			$.post(
+				'pconfig',
+				{
+					'aj' : 1,
+					'cat' : 'system',
+					'k' : 'app_pin_order',
+					'v' : nav_app_str,
 					'form_security_token' : $('#app-bin-container').data('token')
 				}
 			);
