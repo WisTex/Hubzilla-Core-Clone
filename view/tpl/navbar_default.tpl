@@ -372,5 +372,72 @@
 
 		}
 	});
+
+	$('#nav-right').on('dragover', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).css('box-shadow', '0px 0px 3px red inset');
+	});
+	$('#nav-right').on('dragleave', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).css('box-shadow', '');
+
+	});
+	$('#nav-right').on('drop', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).css('box-shadow', '');
+
+		if (papp === null)
+			return;
+
+		$.post(
+			'appman',
+			{
+				'aj' : 1,
+				'feature' : 'nav_pinned_app',
+				'papp' : papp
+			}
+		);
+
+		$('<li><a class="navbar-app nav-link" href="' + app_url + '"><i class="fa fa-fw fa-' + app_icon + '"></i></li>').insertBefore('#app-menu');
+	});
+
+	$('#app-menu').on('dragover', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).css('box-shadow', '0px 0px 1px red inset');
+	});
+	$('#app-menu').on('dragleave', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).css('box-shadow', '');
+
+	});
+	$('#app-menu').on('drop', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		$(this).css('box-shadow', '');
+
+		if (papp === null)
+			return;
+
+		$.post(
+			'appman',
+			{
+				'aj' : 1,
+				'feature' : 'nav_featured_app',
+				'papp' : papp
+			}
+		);
+	});
+
+	var papp, app_icon, app_url;
+	$(document).on('dragstart', function (e) {
+		papp = e.target.dataset.papp || null;
+		app_icon = e.target.dataset.icon || null;
+		app_url = e.target.dataset.url || null;
+	});
 </script>
 {{/if}}
