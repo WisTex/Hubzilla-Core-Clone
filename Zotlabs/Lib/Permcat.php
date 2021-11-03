@@ -81,6 +81,7 @@ class Permcat {
 			'name'      => 'default',
 			'localname' => t('default','permcat'),
 			'perms'     => Permissions::Operms($perms),
+			'raw_perms' => $perms,
 			'system'    => 1
 		];
 
@@ -92,6 +93,7 @@ class Permcat {
 					'name'      => $p[$x][0],
 					'localname' => $p[$x][1],
 					'perms'     => Permissions::Operms(Permissions::FilledPerms($p[$x][2])),
+					'raw_perms' => Permissions::FilledPerms($p[$x][2]),
 					'system'    => intval($p[$x][3])
 				];
 			}
@@ -149,6 +151,9 @@ class Permcat {
 			$x = q("select * from pconfig where uid = %d and cat = 'permcat'",
 				intval($uid)
 			);
+
+
+
 			if($x) {
 				foreach($x as $xv) {
 					$value = ((preg_match('|^a:[0-9]+:{.*}$|s', $xv['v'])) ? unserialize($xv['v']) : $xv['v']);

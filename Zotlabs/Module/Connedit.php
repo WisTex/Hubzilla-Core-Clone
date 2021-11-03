@@ -820,10 +820,19 @@ class Connedit extends Controller {
 			}
 
 			$pcat = new Permcat(local_channel());
+
 			$pcatlist = $pcat->listing();
+
+
+
 			$permcats = [];
+			$current_permcat = '';
 			if($pcatlist) {
 				foreach($pcatlist as $pc) {
+					if (!array_diff_assoc($existing, $pc['raw_perms'])) {
+						$current_permcat = $pc['name'];
+					}
+
 					$permcats[$pc['name']] = $pc['localname'];
 				}
 			}
@@ -851,7 +860,7 @@ class Connedit extends Controller {
 			$o .= replace_macros($tpl, [
 				'$header'         => (($self) ? t('Connection Default Permissions') : sprintf( t('Connection: %s'),$contact['xchan_name'])),
 				'$autoperms'      => array('autoperms',t('Apply these permissions automatically'), ((get_pconfig(local_channel(),'system','autoperms')) ? 1 : 0), t('Connection requests will be approved without your interaction'), $yes_no),
-				'$permcat'        => [ 'permcat', t('Permission role'), '', '<span class="loading invisible">' . t('Loading') . '<span class="jumping-dots"><span class="dot-1">.</span><span class="dot-2">.</span><span class="dot-3">.</span></span></span>',$permcats ],
+				'$permcat'        => [ 'permcat', t('Permission role'), $current_permcat, '<span class="loading invisible">' . t('Loading') . '<span class="jumping-dots"><span class="dot-1">.</span><span class="dot-2">.</span><span class="dot-3">.</span></span></span>',$permcats ],
 				'$permcat_new'    => t('Add permission role'),
 				'$permcat_enable' => Apps::system_app_installed(local_channel(), 'Permission Categories'),
 				'$addr'           => unpunify($contact['xchan_addr']),

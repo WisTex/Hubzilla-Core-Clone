@@ -78,6 +78,14 @@
 		<input type="hidden" name="contact_id" value="{{$contact_id}}">
 		<input type="hidden" name="section" value="{{$section}}">
 
+		{{if $permcat_enable}}
+		<div class="section-content-wrapper">
+			<a href="permcats" class="float-end"><i class="fa fa-plus"></i>&nbsp;{{$permcat_new}}</a>
+			{{include file="field_select.tpl" field=$permcat}}
+			<button type="submit" name="done" value="{{$submit}}" class="btn btn-primary">{{$submit}}</button>
+		</div>
+		{{/if}}
+
 		<div class="panel-group" id="contact-edit-tools" role="tablist" aria-multiselectable="true">
 			{{if $notself}}
 
@@ -483,11 +491,6 @@
 						{{if $notself}}{{$permnote}}{{/if}}
 						{{if $self}}{{$permnote_self}}{{/if}}
 						</div>
-
-						{{if $permcat_enable}}
-						<a href="permcats" class="float-end"><i class="fa fa-plus"></i>&nbsp;{{$permcat_new}}</a>
-						{{include file="field_select.tpl" field=$permcat}}
-						{{/if}}
 
 						<table id="perms-tool-table" class=mb-3>
 							<tr>
