@@ -40,6 +40,19 @@
 		<h2>{{$header}}</h2>
 	</div>
 	<div class="section-content-wrapper-np">
+		<form id="abook-edit-form" action="connedit/{{$contact_id}}" method="post" >
+
+		<input type="hidden" name="contact_id" value="{{$contact_id}}">
+		<input type="hidden" name="section" value="{{$section}}">
+
+		{{if $permcat_enable}}
+		<div class="section-content-wrapper">
+			<a href="permcats" class="float-end"><i class="fa fa-plus"></i>&nbsp;{{$permcat_new}}</a>
+			{{include file="field_select.tpl" field=$permcat}}
+			<button type="submit" name="done" value="{{$submit}}" class="btn btn-primary">{{$submit}}</button>
+		</div>
+		{{/if}}
+
 		{{if $notself}}
 		{{foreach $tools as $tool}}
 		{{if $tool.info}}
@@ -70,19 +83,6 @@
 				{{$lastupdtext}} {{$last_update}}
 			</div>
 			{{/if}}
-		</div>
-		{{/if}}
-
-		<form id="abook-edit-form" action="connedit/{{$contact_id}}" method="post" >
-
-		<input type="hidden" name="contact_id" value="{{$contact_id}}">
-		<input type="hidden" name="section" value="{{$section}}">
-
-		{{if $permcat_enable}}
-		<div class="section-content-wrapper">
-			<a href="permcats" class="float-end"><i class="fa fa-plus"></i>&nbsp;{{$permcat_new}}</a>
-			{{include file="field_select.tpl" field=$permcat}}
-			<button type="submit" name="done" value="{{$submit}}" class="btn btn-primary">{{$submit}}</button>
 		</div>
 		{{/if}}
 
