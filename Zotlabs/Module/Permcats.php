@@ -65,8 +65,14 @@ class Permcats extends Controller {
 
 		$channel = App::get_channel();
 
+		$sys_permcats = [
+			'follower',
+			'contributor',
+			'publisher'
+		];
+
 		if(argc() > 1)
-			$name = hex2bin(argv(1));
+			$name = ((in_array(argv(1), $sys_permcats)) ? argv(1) : hex2bin(argv(1)));
 
 		if(argc() > 2 && argv(2) === 'drop') {
 			\Zotlabs\Lib\Permcat::delete(local_channel(),$name);
