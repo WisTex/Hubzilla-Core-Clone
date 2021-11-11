@@ -3,6 +3,7 @@
 namespace Zotlabs\Lib;
 
 use Zotlabs\Lib\Apps;
+use Zotlabs\Access\AccessList;
 
 require_once('include/text.php');
 
@@ -98,11 +99,20 @@ class ThreadItem {
  		$conv = $this->get_conversation();
 		$observer = $conv->get_observer();
 
-		$lock = (((intval($item['item_private'])) || (($item['uid'] == local_channel()) && (strlen($item['allow_cid']) || strlen($item['allow_gid'])
-			|| strlen($item['deny_cid']) || strlen($item['deny_gid']))))
+		$acl = new AccessList(false);
+		$acl->set($item);
+
+		$lock = ((intval($item['item_private']) || ($item['uid'] == local_channel() && $acl->is_private()))
 			? t('Private Message')
 			: false);
-		$locktype = $item['item_private'];
+
+		// 1 = restricted message, 2 = direct message
+		$locktype = intval($item['item_private']);
+		// 0 = limited based on public policy
+		if ($item['uid'] == local_channel() && intval($item['item_private']) && !$acl->is_private() && strlen($item['public_policy'])) {
+			$lock = t('Public Policy');
+			$locktype = 0;
+		}
 
 		$shareable = ((($conv->get_profile_owner() == local_channel() && local_channel()) && ($item['item_private'] != 1)) ? true : false);
 
