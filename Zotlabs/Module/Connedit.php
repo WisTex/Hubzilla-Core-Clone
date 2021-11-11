@@ -803,33 +803,42 @@ class Connedit extends Controller {
 			}
 
 			foreach($global_perms as $k => $v) {
-				$thisperm = get_abconfig(local_channel(),$contact['abook_xchan'],'my_perms',$k);
-//fixme
+				// this does not take channel limits in account
+				//$thisperm = get_abconfig(local_channel(),$contact['abook_xchan'],'my_perms',$k);
+
+				// use the values from get_all_perms()
+				$thisperm = $existing[$k];
 
 				$checkinherited = PermissionLimits::Get(local_channel(),$k);
 
+				if(!($checkinherited & PERMS_SPECIFIC))
+					$inherited[] = $k;
+
 				// For auto permissions (when $self is true) we don't want to look at existing
 				// permissions because they are enabled for the channel owner
-				if((! $self) && ($existing[$k]))
-					$thisperm = "1";
+				//if((! $self) && ($existing[$k]))
+				//	$thisperm = "1";
 
-
-
-
-				$perms[] = array('perms_' . $k, $v, ((array_key_exists($k,$their_perms)) ? intval($their_perms[$k]) : ''),$thisperm, 1, (($checkinherited & PERMS_SPECIFIC) ? '' : '1'), '', $checkinherited);
+				$perms[] = array('perms_' . $k, $v, ((array_key_exists($k,$their_perms)) ? intval($their_perms[$k]) : ''),$thisperm, 1, (($checkinherited & PERMS_SPECIFIC) ? '0' : '1'), '', $checkinherited);
 			}
 
 			$pcat = new Permcat(local_channel());
 
 			$pcatlist = $pcat->listing();
 
-
-
-			$permcats = [];
 			$current_permcat = '';
 			if($pcatlist) {
 				foreach($pcatlist as $pc) {
-					if (!array_diff_assoc($existing, $pc['raw_perms'])) {
+
+					// unset the inherited perms before comparing
+
+					$ex = $existing;
+					$raw = $pc['raw_perms'];
+
+					foreach($inherited as $i)
+						unset($ex[$i], $raw[$i]);
+
+					if (!array_diff_assoc($ex, $raw)) {
 						$current_permcat = $pc['name'];
 					}
 

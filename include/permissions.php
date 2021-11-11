@@ -21,7 +21,7 @@ require_once('include/security.php');
  * @param bool $default_ignored (default true)
  *          if false, lie and pretend the ignored person has permissions you are ignoring (used in channel discovery)
  *
- * @returns array of all permissions, key is permission name, value is true or false
+ * @returns array of all permissions, key is permission name, value is 1 or 0
  */
 function get_all_perms($uid, $observer_xchan, $check_siteblock = true, $default_ignored = true) {
 
