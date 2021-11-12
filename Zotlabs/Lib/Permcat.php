@@ -152,8 +152,6 @@ class Permcat {
 				intval($uid)
 			);
 
-
-
 			if($x) {
 				foreach($x as $xv) {
 					$value = ((preg_match('|^a:[0-9]+:{.*}$|s', $xv['v'])) ? unserialize($xv['v']) : $xv['v']);

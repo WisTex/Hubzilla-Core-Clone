@@ -125,6 +125,7 @@ class Connedit extends Controller {
 
 		$abook_incl = ((array_key_exists('abook_incl',$_POST)) ? escape_tags($_POST['abook_incl']) : $orig_record[0]['abook_incl']);
 		$abook_excl = ((array_key_exists('abook_excl',$_POST)) ? escape_tags($_POST['abook_excl']) : $orig_record[0]['abook_excl']);
+		$abook_role = ((array_key_exists('permcat',$_POST)) ? escape_tags($_POST['permcat']) : $orig_record[0]['abook_role']);
 
 
 		$hidden = intval($_POST['hidden']);
@@ -140,7 +141,7 @@ class Connedit extends Controller {
 		if($closeness < 0 || $closeness > 99) {
 			$closeness = 80;
 		}
-
+/* ratings are deprrecated
 		$rating = intval($_POST['rating']);
 		if($rating < (-10))
 			$rating = (-10);
@@ -148,11 +149,25 @@ class Connedit extends Controller {
 			$rating = 10;
 
 		$rating_text = trim(escape_tags($_REQUEST['rating_text']));
+*/
 
+		$permcats = new Permcat(local_channel());
+
+		$role_perms = $permcats->fetch($abook_role);
 		$all_perms = Permissions::Perms();
+hz_syslog(print_r($role_perms,true));
 
-		if($all_perms) {
+		if($all_perms && !$role_perms['error']) {
 			foreach($all_perms as $perm => $desc) {
+
+				if(array_key_exists($perm, $role_perms['raw_perms'])) {
+					set_abconfig($channel['channel_id'],$orig_record[0]['abook_xchan'],'my_perms',$perm,intval($role_perms['raw_perms'][$perm]));
+				}
+				else {
+					set_abconfig($channel['channel_id'],$orig_record[0]['abook_xchan'],'my_perms',$perm,0);
+				}
+
+/*
 				if(array_key_exists('perms_' . $perm, $_POST)) {
 					set_abconfig($channel['channel_id'],$orig_record[0]['abook_xchan'],'my_perms',$perm,
 						intval($_POST['perms_' . $perm]));
@@ -166,16 +181,18 @@ class Connedit extends Controller {
 						set_pconfig($channel['channel_id'],'autoperms',$perm,0);
 					}
 				}
+*/
 			}
+
 		}
 
-		if(! is_null($autoperms))
-			set_pconfig($channel['channel_id'],'system','autoperms',$autoperms);
+//		if(! is_null($autoperms))
+//			set_pconfig($channel['channel_id'],'system','autoperms',$autoperms);
 
 		$new_friend = false;
 
 		// only store a record and notify the directory if the rating changed
-
+/* ratings are deprecated
 		if(! $is_self) {
 
 			$signed = $orig_record[0]['abook_xchan'] . '.' . $rating . '.' . $rating_text;
@@ -221,7 +238,7 @@ class Connedit extends Controller {
 					$record = $z[0]['xlink_id'];
 			}
 		}
-
+*/
 		if(($_REQUEST['pending']) && intval($orig_record[0]['abook_pending'])) {
 
 			$new_friend = true;
@@ -233,6 +250,8 @@ class Connedit extends Controller {
 			// request. The workaround is to approve the connection, then go back and
 			// adjust permissions as desired.
 
+			// TODO: set permissions according to selected role
+
 			$p = Permissions::connect_perms(local_channel());
 			$my_perms = $p['perms'];
 			if($my_perms) {
@@ -243,17 +262,16 @@ class Connedit extends Controller {
 		}
 
 		$abook_pending = (($new_friend) ? 0 : $orig_record[0]['abook_pending']);
-
-
-
+//hz_syslog(print_r($_POST,true));
 		$r = q("UPDATE abook SET abook_profile = '%s', abook_closeness = %d, abook_pending = %d,
-			abook_incl = '%s', abook_excl = '%s'
+			abook_incl = '%s', abook_excl = '%s', abook_role = '%s'
 			where abook_id = %d AND abook_channel = %d",
 			dbesc($profile_id),
 			intval($closeness),
 			intval($abook_pending),
 			dbesc($abook_incl),
 			dbesc($abook_excl),
+			dbesc($abook_role),
 			intval($contact_id),
 			intval(local_channel())
 		);
@@ -364,7 +382,7 @@ class Connedit extends Controller {
 				intval(App::$poi['abook_id'])
 			);
 			if($r) {
-				App::$poi = array_shift($r);
+				App::$poi = $r[0];
 			}
 
 			$clone = App::$poi;
@@ -402,6 +420,7 @@ class Connedit extends Controller {
 
 		$connect_perms = Permissions::connect_perms(local_channel());
 
+/*
 		$o .= "<script>function connectDefaultShare() {
 		\$('.abook-edit-me').each(function() {
 			if(! $(this).is(':disabled'))
@@ -413,6 +432,7 @@ class Connedit extends Controller {
 			}
 		}
 		$o .= " }\n</script>\n";
+*/
 
 		if(argc() == 3) {
 
@@ -671,13 +691,14 @@ class Connedit extends Controller {
 
 			$sections = [];
 
+/*
 			$sections['perms'] = [
 					'label' => t('Permissions'),
 					'url'   => z_root() . '/connedit/' . $contact['abook_id'] . '/?f=&section=perms',
 					'sel'   => '',
 					'title' => t('Open Individual Permissions section by default'),
 			];
-
+*/
 			$self = false;
 
 			if(intval($contact['abook_self'])) {
@@ -745,6 +766,8 @@ class Connedit extends Controller {
 				];
 			}
 
+
+/* ratings are deprecated
 			$rating_val = 0;
 			$rating_text = '';
 
@@ -769,7 +792,7 @@ class Connedit extends Controller {
 			else {
 				$rating = false;
 			}
-
+*/
 
 			$perms = array();
 			$channel = App::get_channel();
@@ -778,7 +801,7 @@ class Connedit extends Controller {
 
 			$existing = get_all_perms(local_channel(),$contact['abook_xchan'],false);
 
-			$unapproved = array('pending', t('Approve this connection'), '', t('Accept connection to allow communication'), array(t('No'),('Yes')));
+			$unapproved = array('pending', t('Approve this contact'), '', t('Accept contact to allow communication'), array(t('No'),('Yes')));
 
 			$multiprofs = ((feature_enabled(local_channel(),'multi_profiles')) ? true : false);
 
@@ -791,10 +814,12 @@ class Connedit extends Controller {
 			if($slide && $multiprofs)
 				$affinity = t('Set Affinity & Profile');
 
+/*
 			$theirs = q("select * from abconfig where chan = %d and xchan = '%s' and cat = 'their_perms'",
 					intval(local_channel()),
 					dbesc($contact['abook_xchan'])
 			);
+
 			$their_perms = array();
 			if($theirs) {
 				foreach($theirs as $t) {
@@ -816,32 +841,34 @@ class Connedit extends Controller {
 
 				// For auto permissions (when $self is true) we don't want to look at existing
 				// permissions because they are enabled for the channel owner
-				//if((! $self) && ($existing[$k]))
-				//	$thisperm = "1";
+				if((! $self) && ($existing[$k]))
+					$thisperm = "1";
 
 				$perms[] = array('perms_' . $k, $v, ((array_key_exists($k,$their_perms)) ? intval($their_perms[$k]) : ''),$thisperm, 1, (($checkinherited & PERMS_SPECIFIC) ? '0' : '1'), '', $checkinherited);
 			}
-
+*/
 			$pcat = new Permcat(local_channel());
 
 			$pcatlist = $pcat->listing();
-
-			$current_permcat = '';
+			$current_permcat = $contact['abook_role'];
+			$permcats[] = '';
 			if($pcatlist) {
 				foreach($pcatlist as $pc) {
 
-					// unset the inherited perms before comparing
+/*
+					else { // find the category by comparing permission sets
+						// unset the inherited perms before comparing
+						$ex = $existing;
+						$raw = $pc['raw_perms'];
 
-					$ex = $existing;
-					$raw = $pc['raw_perms'];
+						foreach($inherited as $i)
+							unset($ex[$i], $raw[$i]);
 
-					foreach($inherited as $i)
-						unset($ex[$i], $raw[$i]);
-
-					if (!array_diff_assoc($ex, $raw)) {
-						$current_permcat = $pc['name'];
+						if (!array_diff_assoc($ex, $raw)) {
+							$current_permcat = $pc['name'];
+						}
 					}
-
+*/
 					$permcats[$pc['name']] = $pc['localname'];
 				}
 			}
@@ -855,64 +882,63 @@ class Connedit extends Controller {
 			if(! $clonable) {
 				$clone_warn = '<strong>';
 				$clone_warn .= ((intval($contact['abook_not_here']))
-					? t('This connection is unreachable from this location.')
-					: t('This connection may be unreachable from other channel locations.')
+					? t('This contact is unreachable from this location.')
+					: t('This contact may be unreachable from other channel locations.')
 				);
 				$clone_warn .= '</strong><br>' . t('Location independence is not supported by their network.');
 			}
 
 
-
 			if(intval($contact['abook_not_here']) && $unclonable)
-				$not_here = t('This connection is unreachable from this location. Location independence is not supported by their network.');
+				$not_here = t('This contact is unreachable from this location. Location independence is not supported by their network.');
 
 			$o .= replace_macros($tpl, [
-				'$header'         => (($self) ? t('Connection Default Permissions') : sprintf( t('Connection: %s'),$contact['xchan_name'])),
-				'$autoperms'      => array('autoperms',t('Apply these permissions automatically'), ((get_pconfig(local_channel(),'system','autoperms')) ? 1 : 0), t('Connection requests will be approved without your interaction'), $yes_no),
-				'$permcat'        => [ 'permcat', t('Permission role'), $current_permcat, '<span class="loading invisible">' . t('Loading') . '<span class="jumping-dots"><span class="dot-1">.</span><span class="dot-2">.</span><span class="dot-3">.</span></span></span>',$permcats ],
-				'$permcat_new'    => t('Add permission role'),
-				'$permcat_enable' => Apps::system_app_installed(local_channel(), 'Permission Categories'),
+				'$header'         => (($self) ? t('Connection Default Permissions') : sprintf( t('Contact: %s'),$contact['xchan_name'])),
+//				'$autoperms'      => array('autoperms',t('Apply these permissions automatically'), ((get_pconfig(local_channel(),'system','autoperms')) ? 1 : 0), t('Connection requests will be approved without your interaction'), $yes_no),
+				'$permcat'        => [ 'permcat', t('Contact role'), $current_permcat, '', $permcats ],
+				'$permcat_new'    => t('Manage contact roles'),
+				'$permcat_value'  => bin2hex($current_permcat),
 				'$addr'           => unpunify($contact['xchan_addr']),
 				'$primeurl'       => unpunify($contact['xchan_url']),
 				'$section'        => $section,
 				'$sections'       => $sections,
 				'$vcard'          => $vcard,
-				'$addr_text'      => t('This connection\'s primary address is'),
+				'$addr_text'      => t('This contacts\'s primary address is'),
 				'$loc_text'       => t('Available locations:'),
 				'$locstr'         => $locstr,
 				'$unclonable'     => $clone_warn,
 				'$notself'        => (($self) ? '' : '1'),
 				'$self'           => (($self) ? '1' : ''),
 				'$autolbl'        => t('The permissions indicated on this page will be applied to all new connections.'),
-				'$tools_label'    => t('Connection Tools'),
+				'$tools_label'    => t('Contact Tools'),
 				'$tools'          => (($self) ? '' : $tools),
 				'$lbl_slider'     => t('Slide to adjust your degree of friendship'),
-				'$lbl_rating'     => t('Rating'),
-				'$lbl_rating_label' => t('Slide to adjust your rating'),
-				'$lbl_rating_txt' => t('Optionally explain your rating'),
+//				'$lbl_rating'     => t('Rating'),
+//				'$lbl_rating_label' => t('Slide to adjust your rating'),
+//				'$lbl_rating_txt' => t('Optionally explain your rating'),
 				'$connfilter'     => feature_enabled(local_channel(),'connfilter'),
 				'$connfilter_label' => t('Custom Filter'),
 				'$incl'           => array('abook_incl',t('Only import posts with this text'), $contact['abook_incl'],t('words one per line or #tags or /patterns/ or lang=xx, leave blank to import all posts')),
 				'$excl'           => array('abook_excl',t('Do not import posts with this text'), $contact['abook_excl'],t('words one per line or #tags or /patterns/ or lang=xx, leave blank to import all posts')),
-				'$rating_text'    => array('rating_text', t('Optionally explain your rating'),$rating_text,''),
-				'$rating_info'    => t('This information is public!'),
-				'$rating'         => $rating,
-				'$rating_val'     => $rating_val,
+				//'$rating_text'    => array('rating_text', t('Optionally explain your rating'),$rating_text,''),
+				//'$rating_info'    => t('This information is public!'),
+				//'$rating'         => $rating,
+				//'$rating_val'     => $rating_val,
 				'$slide'          => $slide,
 				'$affinity'       => $affinity,
-				'$pending_label'  => t('Connection Pending Approval'),
+				'$pending_label'  => t('Contact Pending Approval'),
 				'$is_pending'     => (intval($contact['abook_pending']) ? 1 : ''),
 				'$unapproved'     => $unapproved,
 				'$inherited'      => t('inherited'),
 				'$submit'         => t('Submit'),
 				'$lbl_vis2'       => sprintf( t('Please choose the profile you would like to display to %s when viewing your profile securely.'), $contact['xchan_name']),
 				'$close'          => (($contact['abook_closeness']) ? $contact['abook_closeness'] : 80),
-				'$them'           => t('Their Settings'),
-				'$me'             => t('My Settings'),
-				'$perms'          => $perms,
-				'$permlbl'        => t('Individual Permissions'),
-				'$permnote'       => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can <strong>not</strong> change those settings here.'),
-				'$permnote_self'  => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can change those settings here but they wont have any impact unless the inherited setting changes.'),
+//				'$them'           => t('Their Settings'),
+//				'$me'             => t('My Settings'),
+//				'$perms'          => $perms,
+//				'$permlbl'        => t('Individual Permissions'),
+//				'$permnote'       => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can <strong>not</strong> change those settings here.'),
+//				'$permnote_self'  => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can change those settings here but they wont have any impact unless the inherited setting changes.'),
 				'$lastupdtext'    => t('Last update:'),
 				'$last_update'    => relative_date($contact['abook_connected']),
 				'$profile_select' => contact_profile_assign($contact['abook_profile']),

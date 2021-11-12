@@ -41,7 +41,7 @@ class Permcats extends Controller {
 			}
 		}
 
-		\Zotlabs\Lib\Permcat::update(local_channel(),$name,$pcarr);
+		\Zotlabs\Lib\Permcat::update(local_channel(), $name, $pcarr);
 
 		Libsync::build_sync_packet();
 
@@ -56,12 +56,12 @@ class Permcats extends Controller {
 		if(! local_channel())
 			return;
 
-		if(! Apps::system_app_installed(local_channel(), 'Permission Categories')) {
-			//Do not display any associated widgets at this point
-			App::$pdl = '';
-			$papp = Apps::get_papp('Permission Categories');
-			return Apps::app_render($papp, 'module');
-		}
+		//if(! Apps::system_app_installed(local_channel(), 'Permission Categories')) {
+			////Do not display any associated widgets at this point
+			//App::$pdl = '';
+			//$papp = Apps::get_papp('Permission Categories');
+			//return Apps::app_render($papp, 'module');
+		//}
 
 		$channel = App::get_channel();
 
@@ -76,6 +76,9 @@ class Permcats extends Controller {
 
 		if(argc() > 2 && argv(2) === 'drop') {
 			\Zotlabs\Lib\Permcat::delete(local_channel(),$name);
+
+			// TODO: assign all members of the deleted role to the default role
+
 			Libsync::build_sync_packet();
 			json_return_and_die([ 'success' => true ]);
 		}

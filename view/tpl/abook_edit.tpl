@@ -45,13 +45,11 @@
 		<input type="hidden" name="contact_id" value="{{$contact_id}}">
 		<input type="hidden" name="section" value="{{$section}}">
 
-		{{if $permcat_enable}}
 		<div class="section-content-wrapper">
-			<a href="permcats" class="float-end"><i class="fa fa-plus"></i>&nbsp;{{$permcat_new}}</a>
+			<a href="permcats/{{$permcat_value}}" class="float-end"><i class="fa fa-external-link"></i>&nbsp;{{$permcat_new}}</a>
 			{{include file="field_select.tpl" field=$permcat}}
 			<button type="submit" name="done" value="{{$submit}}" class="btn btn-primary">{{$submit}}</button>
 		</div>
-		{{/if}}
 
 		{{if $notself}}
 		{{foreach $tools as $tool}}
@@ -475,6 +473,8 @@
 			{{/if}}
 
 			{{if ! $is_pending}}
+			{{**
+
 			<div class="panel">
 				{{if $notself}}
 				<div class="section-subtitle-wrapper" role="tab" id="perms-tool">
@@ -520,6 +520,8 @@
 					</div>
 				</div>
 			</div>
+			**}}
+
 			{{/if}}
 		</div>
 		</form>
