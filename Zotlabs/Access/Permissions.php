@@ -221,8 +221,8 @@ class Permissions {
 
 		// If a default permcat exists, use that
 
-		$pc = ((feature_enabled($channel_id, 'permcats')) ? get_pconfig($channel_id, 'system', 'default_permcat') : 'default');
-		if (!in_array($pc, ['', 'default'])) {
+		$pc = get_pconfig($channel_id, 'system', 'default_permcat', 'default');
+		//if (!in_array($pc, ['', 'default'])) {
 			$pcp     = new Zlib\Permcat($channel_id);
 			$permcat = $pcp->fetch($pc);
 			if ($permcat && $permcat['perms']) {
@@ -230,7 +230,7 @@ class Permissions {
 					$my_perms[$p['name']] = $p['value'];
 				}
 			}
-		}
+		//}
 
 		// look up the permission role to see if it specified auto-connect
 		// and if there was no permcat or a default permcat, set the perms

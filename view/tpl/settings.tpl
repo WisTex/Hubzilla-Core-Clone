@@ -44,7 +44,7 @@
 				</div>
 				<div id="privacy-settings-collapse" class="collapse" role="tabpanel" aria-labelledby="privacy-settings" data-bs-parent="#settings">
 					<div class="section-content-tools-wrapper">
-						{{include file="field_select_grouped.tpl" field=$role}}
+						{{include file="field_select.tpl" field=$role}}
 						{{$autoperms}}
 						<div id="advanced-perm" style="display:{{if $permissions_set}}none{{else}}block{{/if}};">
 							<div class="mb-3">
@@ -69,14 +69,14 @@
 								</div><!-- /.modal-dialog -->
 							</div><!-- /.modal -->
 
+						</div>
+						<div class="settings-common-perms">
 							<div id="settings-default-perms" class="mb-3" >
 								<button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#aclModal"><i id="jot-perms-icon" class="fa"></i>&nbsp;{{$permissions}}</button>
 							</div>
 							{{$group_select}}
 							{{include file="field_checkbox.tpl" field=$hide_presence}}
 							{{$profile_in_dir}}
-						</div>
-						<div class="settings-common-perms">
 							{{$suggestme}}
 							{{include file="field_checkbox.tpl" field=$blocktags}}
 							{{include file="field_input.tpl" field=$expire}}

@@ -261,7 +261,8 @@ class Connect {
 					'abook_feed'      => intval(($xchan['xchan_network'] === 'rss') ? 1 : 0),
 					'abook_created'   => datetime_convert(),
 					'abook_updated'   => datetime_convert(),
-					'abook_instance'  => (($singleton) ? z_root() : '')
+					'abook_instance'  => (($singleton) ? z_root() : ''),
+					'abook_role'      => get_pconfig($uid, 'system', 'default_permcat', 'default')
 				]
 			);
 		}

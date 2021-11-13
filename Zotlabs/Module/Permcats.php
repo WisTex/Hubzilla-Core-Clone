@@ -14,15 +14,13 @@ class Permcats extends Controller {
 		if(! local_channel())
 			return;
 
-		if(! Apps::system_app_installed(local_channel(), 'Permission Categories'))
-			return;
+hz_syslog(print_r($_REQUEST,true));
 
 		$channel = App::get_channel();
 
 		check_form_security_token_redirectOnErr('/permcats', 'permcats');
 
 
-		$all_perms = \Zotlabs\Access\Permissions::Perms();
 
 		$name = escape_tags(trim($_POST['name']));
 		if(! $name) {
@@ -30,8 +28,12 @@ class Permcats extends Controller {
 			return;
 		}
 
+		if (isset($_POST['default_role'])) {
+			set_pconfig(local_channel(), 'system', 'default_permcat', $name);
+		}
 
 		$pcarr = [];
+		$all_perms = \Zotlabs\Access\Permissions::Perms();
 
 		if($all_perms) {
 			foreach($all_perms as $perm => $desc) {
@@ -66,9 +68,7 @@ class Permcats extends Controller {
 		$channel = App::get_channel();
 
 		$sys_permcats = [
-			'follower',
-			'contributor',
-			'publisher'
+			'default'
 		];
 
 		if(argc() > 1)
@@ -114,6 +114,9 @@ class Permcats extends Controller {
 					$existing = $pc['perms'];
 				if(! $pc['system'])
 					$permcats[bin2hex($pc['name'])] = $pc['localname'];
+
+				if($pc['name'] == $name)
+					$localname = $pc['localname'];
 			}
 		}
 
@@ -129,12 +132,15 @@ class Permcats extends Controller {
 			$perms[] = array('perms_' . $k, $v, '',$thisperm, 1, (($checkinherited & PERMS_SPECIFIC) ? '' : '1'), '', $checkinherited);
 		}
 
+//TODO: disallow editing of system roles
 
-
+hz_syslog(print_r($permcats,true));
 		$tpl = get_markup_template("permcats.tpl");
 		$o .= replace_macros($tpl, array(
 			'$form_security_token' => get_form_security_token("permcats"),
-			'$title'	=> t('Permission Categories'),
+			'$default_role'      => array('default_role', t('Use this role as default for new contacts'), ((get_pconfig(local_channel(),'system','default_permcat') == $name) ? 1 : 0), '', [t('No'), t('Yes')]),
+
+			'$title'	=> t('Contact Roles'),
 			'$desc'     => $desc,
 			'$desc2' => $desc2,
 			'$tokens' => $t,
@@ -142,13 +148,13 @@ class Permcats extends Controller {
 			'$atoken' => $atoken,
 			'$url1' => z_root() . '/channel/' . $channel['channel_address'],
 			'$url2' => z_root() . '/photos/' . $channel['channel_address'],
-			'$name' => array('name', t('Permission category name') . ' <span class="required">*</span>', (($name) ? $name : ''), ''),
+			'$name' => array('name', t('Role name') . ' <span class="required">*</span>', (($localname) ? $localname : ''), ''),
 			'$me' => t('My Settings'),
 			'$perms' => $perms,
 			'$inherited' => t('inherited'),
 			'$notself' => 0,
 			'$self' => 1,
-			'$permlbl' => t('Individual Permissions'),
+			'$permlbl' => t('Role Permissions'),
 			'$permnote' => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can <strong>not</strong> change those settings here.'),
 			'$submit' 	=> t('Submit')
 		));

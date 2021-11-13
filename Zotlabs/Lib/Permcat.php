@@ -79,7 +79,7 @@ class Permcat {
 
 		$this->permcats[] = [
 			'name'      => 'default',
-			'localname' => t('default','permcat'),
+			'localname' => t('Default','permcat'),
 			'perms'     => Permissions::Operms($perms),
 			'raw_perms' => $perms,
 			'system'    => 1
@@ -130,23 +130,19 @@ class Permcat {
 	}
 
 	public function load_permcats($uid) {
-
+/*
 		$permcats = [
-			[ 'follower', t('follower','permcat'),
-				[ 'view_stream','view_profile','view_contacts','view_storage','view_pages','view_wiki',
-				  'post_like' ], 1
-			],
-			[ 'contributor', t('contributor','permcat'),
-				[ 'view_stream','view_profile','view_contacts','view_storage','view_pages','view_wiki',
-				  'post_wall','post_comments','write_wiki','post_like','tag_deliver','chat' ], 1
-			],
-			[ 'publisher', t('publisher','permcat'),
+			[ 'contributor', t('Contributor','permcat'),
 				[ 'view_stream','view_profile','view_contacts','view_storage','view_pages',
-				  'write_storage','post_wall','write_pages','write_wiki','post_comments','post_like','tag_deliver',
-				  'chat', 'republish' ], 1
-			]
+				  'write_storage','post_wall','write_pages','write_wiki','post_comments', 'post_mail', 'post_like',
+				  'chat' ], 1
+			],
+			[ 'muted', t('Muted','permcat'),
+				[ 'view_stream','view_profile','view_contacts','view_storage','view_pages','view_wiki',
+				  'post_comments','write_wiki','post_like' ], 1
+			],
 		];
-
+*/
 		if($uid) {
 			$x = q("select * from pconfig where uid = %d and cat = 'permcat'",
 				intval($uid)

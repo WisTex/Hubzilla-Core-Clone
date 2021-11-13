@@ -151,17 +151,34 @@ class Connedit extends Controller {
 		$rating_text = trim(escape_tags($_REQUEST['rating_text']));
 */
 
+		$new_friend = false;
+		$perms = [];
 		$permcats = new Permcat(local_channel());
-
 		$role_perms = $permcats->fetch($abook_role);
 		$all_perms = Permissions::Perms();
-hz_syslog(print_r($role_perms,true));
 
-		if($all_perms && !$role_perms['error']) {
+		// if we got a role use the role (default behaviour because a role is mandatory)
+
+		if (!isset($role_perms['error'])) {
+			$perms = $role_perms['raw_perms'];
+			if (intval($orig_record[0]['abook_pending']))
+				$new_friend = true;
+
+		}
+
+		if (!$perms && intval($orig_record[0]['abook_pending'])) {
+			$perms = Permissions::connect_perms(local_channel());
+			$new_friend = true;
+		}
+
+hz_syslog(print_r($perms,true));
+
+
+		if($all_perms && $perms) {
 			foreach($all_perms as $perm => $desc) {
 
-				if(array_key_exists($perm, $role_perms['raw_perms'])) {
-					set_abconfig($channel['channel_id'],$orig_record[0]['abook_xchan'],'my_perms',$perm,intval($role_perms['raw_perms'][$perm]));
+				if(array_key_exists($perm, $perms)) {
+					set_abconfig($channel['channel_id'],$orig_record[0]['abook_xchan'],'my_perms',$perm,intval($perms[$perm]));
 				}
 				else {
 					set_abconfig($channel['channel_id'],$orig_record[0]['abook_xchan'],'my_perms',$perm,0);
@@ -189,7 +206,6 @@ hz_syslog(print_r($role_perms,true));
 //		if(! is_null($autoperms))
 //			set_pconfig($channel['channel_id'],'system','autoperms',$autoperms);
 
-		$new_friend = false;
 
 		// only store a record and notify the directory if the rating changed
 /* ratings are deprecated
@@ -239,7 +255,10 @@ hz_syslog(print_r($role_perms,true));
 			}
 		}
 */
-		if(($_REQUEST['pending']) && intval($orig_record[0]['abook_pending'])) {
+
+
+/*
+		if(false && intval($orig_record[0]['abook_pending'])) {
 
 			$new_friend = true;
 
@@ -260,8 +279,10 @@ hz_syslog(print_r($role_perms,true));
 				}
 			}
 		}
+*/
 
 		$abook_pending = (($new_friend) ? 0 : $orig_record[0]['abook_pending']);
+
 //hz_syslog(print_r($_POST,true));
 		$r = q("UPDATE abook SET abook_profile = '%s', abook_closeness = %d, abook_pending = %d,
 			abook_incl = '%s', abook_excl = '%s', abook_role = '%s'
@@ -814,7 +835,7 @@ hz_syslog(print_r($role_perms,true));
 			if($slide && $multiprofs)
 				$affinity = t('Set Affinity & Profile');
 
-/*
+
 			$theirs = q("select * from abconfig where chan = %d and xchan = '%s' and cat = 'their_perms'",
 					intval(local_channel()),
 					dbesc($contact['abook_xchan'])
@@ -829,15 +850,13 @@ hz_syslog(print_r($role_perms,true));
 
 			foreach($global_perms as $k => $v) {
 				// this does not take channel limits in account
-				//$thisperm = get_abconfig(local_channel(),$contact['abook_xchan'],'my_perms',$k);
+				// $thisperm = get_abconfig(local_channel(),$contact['abook_xchan'],'my_perms',$k);
 
 				// use the values from get_all_perms()
 				$thisperm = $existing[$k];
 
 				$checkinherited = PermissionLimits::Get(local_channel(),$k);
 
-				if(!($checkinherited & PERMS_SPECIFIC))
-					$inherited[] = $k;
 
 				// For auto permissions (when $self is true) we don't want to look at existing
 				// permissions because they are enabled for the channel owner
@@ -846,13 +865,22 @@ hz_syslog(print_r($role_perms,true));
 
 				$perms[] = array('perms_' . $k, $v, ((array_key_exists($k,$their_perms)) ? intval($their_perms[$k]) : ''),$thisperm, 1, (($checkinherited & PERMS_SPECIFIC) ? '0' : '1'), '', $checkinherited);
 			}
-*/
+
 			$pcat = new Permcat(local_channel());
 
 			$pcatlist = $pcat->listing();
-			$current_permcat = $contact['abook_role'];
-			$permcats[] = '';
-			if($pcatlist) {
+
+			$default_role = get_pconfig(local_channel(), 'system', 'default_permcat');
+
+
+			$current_permcat = (($contact['abook_pending']) ? $default_role : $contact['abook_role']);
+
+			if (!$current_permcat) {
+				notice( t('Please select a role for this contact!') . EOL);
+				$permcats[] = '';
+			}
+
+			if ($pcatlist) {
 				foreach($pcatlist as $pc) {
 
 /*
@@ -930,15 +958,15 @@ hz_syslog(print_r($role_perms,true));
 				'$is_pending'     => (intval($contact['abook_pending']) ? 1 : ''),
 				'$unapproved'     => $unapproved,
 				'$inherited'      => t('inherited'),
-				'$submit'         => t('Submit'),
+				'$submit'         => ((intval($contact['abook_pending'])) ? t('Approve contact') : t('Submit')),
 				'$lbl_vis2'       => sprintf( t('Please choose the profile you would like to display to %s when viewing your profile securely.'), $contact['xchan_name']),
 				'$close'          => (($contact['abook_closeness']) ? $contact['abook_closeness'] : 80),
-//				'$them'           => t('Their Settings'),
-//				'$me'             => t('My Settings'),
-//				'$perms'          => $perms,
-//				'$permlbl'        => t('Individual Permissions'),
-//				'$permnote'       => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can <strong>not</strong> change those settings here.'),
-//				'$permnote_self'  => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can change those settings here but they wont have any impact unless the inherited setting changes.'),
+				'$them'           => t('Their Settings'),
+				'$me'             => t('My Settings'),
+				'$perms'          => $perms,
+				'$permlbl'        => t('Individual Permissions'),
+				'$permnote'       => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can <strong>not</strong> change those settings here.'),
+				'$permnote_self'  => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can change those settings here but they wont have any impact unless the inherited setting changes.'),
 				'$lastupdtext'    => t('Last update:'),
 				'$last_update'    => relative_date($contact['abook_connected']),
 				'$profile_select' => contact_profile_assign($contact['abook_profile']),

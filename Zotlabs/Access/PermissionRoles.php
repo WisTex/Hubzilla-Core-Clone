@@ -27,6 +27,36 @@ class PermissionRoles {
 		$ret['role'] = $role;
 
 		switch($role) {
+
+
+			case 'personal':
+				//$ret['perms_auto'] = false;
+				//$ret['default_collection'] = true;
+				//$ret['directory_publish'] = true;
+				//$ret['online'] = true;
+				$ret['perms_connect'] = [
+					'view_stream', 'view_profile', 'view_contacts', 'view_storage', 'view_pages', 'view_wiki',
+					'send_stream', 'post_comments', 'post_mail', 'chat', 'post_like'
+				];
+				$ret['limits'] = PermissionLimits::Std_Limits();
+
+				break;
+
+			case 'forum':
+				//$ret['perms_auto'] = true;
+				//$ret['default_collection'] = true;
+				//$ret['directory_publish'] = true;
+				//$ret['online'] = false;
+				$ret['perms_connect'] = [
+					'view_stream', 'view_profile', 'view_contacts', 'view_storage',
+					'view_pages', 'view_wiki', 'post_wall', 'post_comments',
+					'post_mail', 'post_like', 'chat'
+				];
+				$ret['limits'] = PermissionLimits::Std_Limits();
+				$ret['channel_type'] = 'group';
+
+				break;
+/*
 			case 'social':
 				$ret['perms_auto'] = false;
 				$ret['default_collection'] = false;
@@ -193,7 +223,7 @@ class PermissionRoles {
 				$ret['channel_type'] = 'group';
 
 				break;
-
+*/
 			case 'custom':
 			default:
 				break;
@@ -284,6 +314,7 @@ class PermissionRoles {
 	 */
 	static public function roles() {
 		$roles = [
+
 			t('Social Networking') => [
 				'social_federation' => t('Social - Federation'),
 				'social' => t('Social - Mostly Public'),
@@ -315,6 +346,26 @@ class PermissionRoles {
 		call_hooks('list_permission_roles',$roles);
 
 		return $roles;
+	}
+
+	/**
+	 * @brief Array with translated role names and grouping.
+	 *
+	 * Return an associative array with role names that can be used
+	 * to create select groups like in \e field_select_grouped.tpl.
+	 *
+	 * @return array
+	 */
+	static public function channel_roles() {
+		$channel_roles = [
+			'personal' => t('Personal'),
+			'forum' => t('Forum'),
+			'custom' => t('Custom')
+		];
+
+		call_hooks('list_channel_roles', $channel_roles);
+
+		return $channel_roles;
 	}
 
 }

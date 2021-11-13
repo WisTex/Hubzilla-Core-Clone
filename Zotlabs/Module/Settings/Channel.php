@@ -477,7 +477,7 @@ class Channel {
 
 		$permissions_set = (($permissions_role != 'custom') ? true : false);
 
-		$perm_roles = \Zotlabs\Access\PermissionRoles::roles();
+		$perm_roles = \Zotlabs\Access\PermissionRoles::channel_roles();
 
 		$always_show_in_notices = get_pconfig(local_channel(),'system','always_show_in_notices');
 		$update_notices_per_parent = get_pconfig(local_channel(), 'system', 'update_notices_per_parent', 1);
@@ -539,8 +539,8 @@ class Channel {
 			'$suggestme' => $suggestme,
 			'$group_select' => $group_select,
 			'$role' => array('permissions_role' , t('Channel role and privacy'), $permissions_role, '', $perm_roles),
-			'$defpermcat' => [ 'defpermcat', t('Default permissions category'), $default_permcat, '', $permcats ],
-			'$permcat_enable' => Apps::system_app_installed(local_channel(), 'Permission Categories'),
+			//'$defpermcat' => [ 'defpermcat', t('Default permissions category'), $default_permcat, '', $permcats ],
+			//'$permcat_enable' =>1Apps::system_app_installed(local_channel(), 'Permission Categories'),
 			'$profile_in_dir' => $profile_in_dir,
 			'$hide_friends' => $hide_friends,
 			'$hide_wall' => $hide_wall,

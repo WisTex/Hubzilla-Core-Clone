@@ -472,8 +472,6 @@
 
 			{{/if}}
 
-			{{if ! $is_pending}}
-			{{**
 
 			<div class="panel">
 				{{if $notself}}
@@ -520,9 +518,7 @@
 					</div>
 				</div>
 			</div>
-			**}}
 
-			{{/if}}
 		</div>
 		</form>
 	</div>
