@@ -29,19 +29,13 @@ class Permcats {
 		if(argc() > 1) {
 			$test = $pcatlist[$active]['perms'];
 
-			hz_syslog(print_r($test,true));
-
-
-
-
 			$role_sql = '';
 			$count = 0;
 			foreach ($test as $t) {
 				$checkinherited = PermissionLimits::Get(local_channel(),$t['name']);
-				hz_syslog($t['name'] . ': ' . $checkinherited);
 
 				if($checkinherited & PERMS_SPECIFIC) {
-					$role_sql .= "( k = '" . dbesc($t['name']) . "' AND v = '" . intval($t['value']) . "' ) OR ";
+					$role_sql .= "( abconfig.k = '" . dbesc($t['name']) . "' AND abconfig.v = '" . intval($t['value']) . "' ) OR ";
 					$count++;
 				}
 			}
@@ -49,7 +43,7 @@ class Permcats {
 			$role_sql = rtrim($role_sql, ' OR ');
 
 			// get all xchans belonging to a permission role
-			$q = q("SELECT abconfig.xchan, xchan.xchan_name FROM abconfig LEFT JOIN xchan on xchan = xchan_hash WHERE chan = %d AND cat = 'my_perms' AND ( $role_sql ) GROUP BY xchan HAVING count(xchan) = %d",
+			$q = q("SELECT abconfig.xchan, xchan.xchan_name FROM abconfig LEFT JOIN xchan on xchan = xchan_hash WHERE xchan.xchan_deleted = 0 and abconfig.chan = %d AND abconfig.cat = 'my_perms' AND ( $role_sql ) GROUP BY abconfig.xchan HAVING count(abconfig.xchan) = %d",
 				intval(local_channel()),
 				intval($count)
 			);
@@ -59,8 +53,6 @@ class Permcats {
 			foreach ($q as $qq)
 				$members .= $qq['xchan_name'] . '<br>';
 
-
-			//hz_syslog(print_r($q,true));
 		}
 		return $list . '<br>' . $members;
 

@@ -113,7 +113,7 @@ class Permcats extends Controller {
 			foreach($pcatlist as $pc) {
 				if(($pc['name']) && ($name) && ($pc['name'] == $name)) {
 					$existing = $pc['perms'];
-					if (isset($pc['system']))
+					if (isset($pc['system']) && intval($pc['system']))
 						$is_system_role = true;
 				}
 				if(! $pc['system'])
