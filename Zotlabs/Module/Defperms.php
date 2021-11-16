@@ -23,8 +23,8 @@ class Defperms extends Controller {
 		if(! local_channel())
 			return;
 
-		if(! Apps::system_app_installed(local_channel(), 'Default Permissions'))
-			return;
+		//if(! Apps::system_app_installed(local_channel(), 'Default Permissions'))
+		//	return;
 
 		$r = q("SELECT abook.*, xchan.*
 			FROM abook left join xchan on abook_xchan = xchan_hash
@@ -50,8 +50,8 @@ class Defperms extends Controller {
 		if(! local_channel())
 			return;
 
-		if(! Apps::system_app_installed(local_channel(), 'Default Permissions'))
-			return;
+		//if(! Apps::system_app_installed(local_channel(), 'Default Permissions'))
+		//	return;
 
 		$contact_id = intval(argv(1));
 		if(! $contact_id)
@@ -183,12 +183,12 @@ class Defperms extends Controller {
 			return login();
 		}
 
-		if(! Apps::system_app_installed(local_channel(), 'Default Permissions')) {
-			//Do not display any associated widgets at this point
-			App::$pdl = '';
-			$papp = Apps::get_papp('Default Permissions');
-			return Apps::app_render($papp, 'module');
-		}
+		//~ if(! Apps::system_app_installed(local_channel(), 'Default Permissions')) {
+			//~ //Do not display any associated widgets at this point
+			//~ App::$pdl = '';
+			//~ $papp = Apps::get_papp('Default Permissions');
+			//~ return Apps::app_render($papp, 'module');
+		//~ }
 
 		$section = ((array_key_exists('section',$_REQUEST)) ? $_REQUEST['section'] : '');
 		$channel = App::get_channel();

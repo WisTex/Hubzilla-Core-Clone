@@ -45,8 +45,7 @@
 				<div id="privacy-settings-collapse" class="collapse" role="tabpanel" aria-labelledby="privacy-settings" data-bs-parent="#settings">
 					<div class="section-content-tools-wrapper">
 						{{include file="field_select.tpl" field=$role}}
-						{{$autoperms}}
-						<div id="advanced-perm" style="display:{{if $permissions_set}}none{{else}}block{{/if}};">
+						<div id="advanced-perm" style="display:{{if $permission_limits}}block{{else}}none{{/if}};">
 							<div class="mb-3">
 								<button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#apsModal">{{$lbl_p2macro}}</button>
 							</div>
@@ -71,20 +70,18 @@
 
 						</div>
 						<div class="settings-common-perms">
-							<div id="settings-default-perms" class="mb-3" >
+							<!--div id="settings-default-perms" class="mb-3" >
 								<button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#aclModal"><i id="jot-perms-icon" class="fa"></i>&nbsp;{{$permissions}}</button>
-							</div>
+							</div-->
+							{{$default_acl_select}}
 							{{$group_select}}
-							{{include file="field_checkbox.tpl" field=$hide_presence}}
+							{{$autoperms}}
+							{{include file="field_checkbox.tpl" field=$show_presence}}
 							{{$profile_in_dir}}
 							{{$suggestme}}
-							{{include file="field_checkbox.tpl" field=$blocktags}}
+							{{** include file="field_checkbox.tpl" field=$blocktags **}}
 							{{include file="field_input.tpl" field=$expire}}
 						</div>
-						{{if $permcat_enable}}
-						{{include file="field_select.tpl" field=$defpermcat}}
-						{{/if}}
-
 						{{if $sec_addon}}
 						{{$sec_addon}}
 						{{/if}}

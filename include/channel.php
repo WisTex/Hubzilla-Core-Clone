@@ -240,7 +240,7 @@ function create_identity($arr) {
 
 	// Force a few things on the short term until we can provide a theme or app with choice
 
-	$publish = 1;
+	$publish = 0;
 
 	if(array_key_exists('publish', $arr))
 		$publish = intval($arr['publish']);
@@ -403,7 +403,7 @@ function create_identity($arr) {
 		$myperms = ((array_key_exists('perms_connect',$role_permissions)) ? $role_permissions['perms_connect'] : array());
 	}
 	else {
-		$x = PermissionRoles::role_perms('social');
+		$x = PermissionRoles::role_perms('personal');
 		$myperms = $x['perms_connect'];
 	}
 
@@ -419,19 +419,23 @@ function create_identity($arr) {
 		]
 	);
 
-	$x = Permissions::FilledPerms($myperms);
-	foreach($x as $k => $v) {
-		set_abconfig($newuid,$hash,'my_perms',$k,$v);
-	}
+	//$x = Permissions::FilledPerms($myperms);
+	//foreach($x as $k => $v) {
+		//set_abconfig($newuid,$hash,'my_perms',$k,$v);
+	//}
 
 	if(intval($ret['channel']['channel_account_id'])) {
 
-		// Save our permissions role so we can perhaps call it up and modify it later.
+
+		// Set the default permcat
+		set_pconfig($newuid,'system','default_permcat','default');
 
 		if($role_permissions) {
+			// Save our permissions role so we can perhaps call it up and modify it later.
 			set_pconfig($newuid,'system','permissions_role',$arr['permissions_role']);
+
 			if(array_key_exists('online',$role_permissions))
-				set_pconfig($newuid,'system','hide_presence',1-intval($role_permissions['online']));
+				set_pconfig($newuid,'system','show_online_status', intval($role_permissions['online']));
 			if(array_key_exists('perms_auto',$role_permissions)) {
 				$autoperms = intval($role_permissions['perms_auto']);
 				set_pconfig($newuid,'system','autoperms',$autoperms);
@@ -2062,8 +2066,8 @@ function get_online_status($nick) {
 		dbesc(argv(1))
 	);
 	if($r) {
-		$hide = get_pconfig($r[0]['channel_id'],'system','hide_online_status');
-		if($hide)
+		$show = get_pconfig($r[0]['channel_id'],'system','show_online_status');
+		if(!$show)
 			return $ret;
 
 		$x = q("select cp_status from chatpresence where cp_xchan = '%s' and cp_room = 0 limit 1",

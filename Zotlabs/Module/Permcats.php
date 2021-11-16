@@ -14,8 +14,6 @@ class Permcats extends Controller {
 		if(! local_channel())
 			return;
 
-hz_syslog(print_r($_REQUEST,true));
-
 		$channel = App::get_channel();
 
 		check_form_security_token_redirectOnErr('/permcats', 'permcats');
@@ -27,6 +25,8 @@ hz_syslog(print_r($_REQUEST,true));
 			notice( t('Permission category name is required.') . EOL);
 			return;
 		}
+
+		set_pconfig(local_channel(), 'system', 'default_permcat', 'default');
 
 		if (isset($_POST['default_role'])) {
 			set_pconfig(local_channel(), 'system', 'default_permcat', $name);
@@ -47,7 +47,7 @@ hz_syslog(print_r($_REQUEST,true));
 
 		Libsync::build_sync_packet();
 
-		info( t('Permission category saved.') . EOL);
+		info( t('Contact role saved.') . EOL);
 
 		return;
 	}
@@ -107,11 +107,15 @@ hz_syslog(print_r($_REQUEST,true));
 		);
 */
 
+		$is_system_role = false;
 		$permcats = [];
 		if($pcatlist) {
 			foreach($pcatlist as $pc) {
-				if(($pc['name']) && ($name) && ($pc['name'] == $name))
+				if(($pc['name']) && ($name) && ($pc['name'] == $name)) {
 					$existing = $pc['perms'];
+					if (isset($pc['system']))
+						$is_system_role = true;
+				}
 				if(! $pc['system'])
 					$permcats[bin2hex($pc['name'])] = $pc['localname'];
 
@@ -134,11 +138,12 @@ hz_syslog(print_r($_REQUEST,true));
 
 //TODO: disallow editing of system roles
 
-hz_syslog(print_r($permcats,true));
+		$is_default_role = (get_pconfig(local_channel(),'system','default_permcat','default') == $name);
+
 		$tpl = get_markup_template("permcats.tpl");
 		$o .= replace_macros($tpl, array(
 			'$form_security_token' => get_form_security_token("permcats"),
-			'$default_role'      => array('default_role', t('Use this role as default for new contacts'), ((get_pconfig(local_channel(),'system','default_permcat') == $name) ? 1 : 0), '', [t('No'), t('Yes')]),
+			'$default_role'      => array('default_role', t('Use this role as default for new contacts'), intval($is_default_role), '', [t('No'), t('Yes')]),
 
 			'$title'	=> t('Contact Roles'),
 			'$desc'     => $desc,
@@ -148,12 +153,13 @@ hz_syslog(print_r($permcats,true));
 			'$atoken' => $atoken,
 			'$url1' => z_root() . '/channel/' . $channel['channel_address'],
 			'$url2' => z_root() . '/photos/' . $channel['channel_address'],
-			'$name' => array('name', t('Role name') . ' <span class="required">*</span>', (($localname) ? $localname : ''), ''),
+			'$name' => array('name', t('Role name') . ' <span class="required">*</span>', (($localname) ? $localname : ''), '' , '', (($is_system_role) ? 'disabled' : '')),
 			'$me' => t('My Settings'),
 			'$perms' => $perms,
 			'$inherited' => t('inherited'),
 			'$notself' => 0,
 			'$self' => 1,
+			'$is_system_role' => $is_system_role,
 			'$permlbl' => t('Role Permissions'),
 			'$permnote' => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can <strong>not</strong> change those settings here.'),
 			'$submit' 	=> t('Submit')

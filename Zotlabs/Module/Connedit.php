@@ -171,8 +171,6 @@ class Connedit extends Controller {
 			$new_friend = true;
 		}
 
-hz_syslog(print_r($perms,true));
-
 
 		if($all_perms && $perms) {
 			foreach($all_perms as $perm => $desc) {
@@ -283,7 +281,6 @@ hz_syslog(print_r($perms,true));
 
 		$abook_pending = (($new_friend) ? 0 : $orig_record[0]['abook_pending']);
 
-//hz_syslog(print_r($_POST,true));
 		$r = q("UPDATE abook SET abook_profile = '%s', abook_closeness = %d, abook_pending = %d,
 			abook_incl = '%s', abook_excl = '%s', abook_role = '%s'
 			where abook_id = %d AND abook_channel = %d",

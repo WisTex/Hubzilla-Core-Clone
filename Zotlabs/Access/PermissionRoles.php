@@ -28,25 +28,17 @@ class PermissionRoles {
 
 		switch($role) {
 
-
 			case 'personal':
-				//$ret['perms_auto'] = false;
-				//$ret['default_collection'] = true;
-				//$ret['directory_publish'] = true;
-				//$ret['online'] = true;
 				$ret['perms_connect'] = [
 					'view_stream', 'view_profile', 'view_contacts', 'view_storage', 'view_pages', 'view_wiki',
 					'send_stream', 'post_comments', 'post_mail', 'chat', 'post_like'
 				];
 				$ret['limits'] = PermissionLimits::Std_Limits();
+				$ret['limits']['view_contacts'] = PERMS_SPECIFIC;
 
 				break;
 
 			case 'forum':
-				//$ret['perms_auto'] = true;
-				//$ret['default_collection'] = true;
-				//$ret['directory_publish'] = true;
-				//$ret['online'] = false;
 				$ret['perms_connect'] = [
 					'view_stream', 'view_profile', 'view_contacts', 'view_storage',
 					'view_pages', 'view_wiki', 'post_wall', 'post_comments',
@@ -359,7 +351,7 @@ class PermissionRoles {
 	static public function channel_roles() {
 		$channel_roles = [
 			'personal' => t('Personal'),
-			'forum' => t('Forum'),
+			'forum' => t('Community forum'),
 			'custom' => t('Custom')
 		];
 
