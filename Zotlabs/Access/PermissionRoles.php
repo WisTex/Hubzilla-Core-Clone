@@ -48,6 +48,7 @@ class PermissionRoles {
 				$ret['channel_type'] = 'group';
 
 				break;
+
 /*
 			case 'social':
 				$ret['perms_auto'] = false;

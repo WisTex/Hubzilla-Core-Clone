@@ -18,9 +18,7 @@
 				</div>
 				<div id="basic-settings-collapse" class="collapse show" role="tabpanel" aria-labelledby="basic-settings" data-bs-parent="#settings">
 					<div class="section-content-tools-wrapper">
-						{{**include file="field_input.tpl" field=$username**}}
 						{{include file="field_select.tpl" field=$role}}
-
 						{{include file="field_select_grouped.tpl" field=$timezone}}
 						{{include file="field_input.tpl" field=$defloc}}
 						{{include file="field_checkbox.tpl" field=$allowloc}}
