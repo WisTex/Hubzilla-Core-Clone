@@ -161,7 +161,7 @@ class Permcats extends Controller {
 			'$self' => 1,
 			'$is_system_role' => $is_system_role,
 			'$permlbl' => t('Role Permissions'),
-			'$permnote' => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can <strong>not</strong> change those settings here.'),
+			'$permnote' => t('Some permissions may be inherited from your <a href="settings"><strong>channel role</strong></a>, which have higher priority than individual settings. You can <strong>not</strong> change those settings here.'),
 			'$submit' 	=> t('Submit')
 		));
 		return $o;

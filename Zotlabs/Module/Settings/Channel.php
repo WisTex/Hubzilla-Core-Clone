@@ -19,139 +19,9 @@ class Channel {
 
 		call_hooks('settings_post', $_POST);
 
-		$role = ((x($_POST,'permissions_role')) ? notags(trim($_POST['permissions_role'])) : '');
-		$oldrole = get_pconfig(local_channel(),'system','permissions_role');
+		$role             = ((x($_POST,'permissions_role')) ? notags(trim($_POST['permissions_role'])) : '');
 
-		// This mapping can be removed after 3.4 release
-		//if($oldrole === 'social_party') {
-		//	$oldrole = 'social_federation';
-		//}
-
-/*
-		if(($role != $oldrole) || ($role === 'custom')) {
-
-			if($role === 'custom') {
-
-
-				$global_perms = \Zotlabs\Access\Permissions::Perms();
-
-				foreach($global_perms as $k => $v) {
-					\Zotlabs\Access\PermissionLimits::Set(local_channel(),$k,intval($_POST[$k]));
-				}
-				$acl = new \Zotlabs\Access\AccessList($channel);
-				$acl->set_from_array($_POST);
-				$x = $acl->get();
-
-				$r = q("update channel set channel_allow_cid = '%s', channel_allow_gid = '%s',
-					channel_deny_cid = '%s', channel_deny_gid = '%s' where channel_id = %d",
-					dbesc($x['allow_cid']),
-					dbesc($x['allow_gid']),
-					dbesc($x['deny_cid']),
-					dbesc($x['deny_gid']),
-					intval(local_channel())
-				);
-			}
-			else {
-			   	$role_permissions = \Zotlabs\Access\PermissionRoles::role_perms($_POST['permissions_role']);
-				if(! $role_permissions) {
-					notice('Permissions category could not be found.');
-					return;
-				}
-				//$show_presence    = 1 - (intval($role_permissions['online']));
-				if($role_permissions['default_collection']) {
-					$r = q("select hash from pgrp where uid = %d and gname = '%s' limit 1",
-						intval(local_channel()),
-						dbesc( t('Friends') )
-					);
-					if(! $r) {
-						require_once('include/group.php');
-						group_add(local_channel(), t('Friends'));
-						group_add_member(local_channel(),t('Friends'),$channel['channel_hash']);
-						$r = q("select hash from pgrp where uid = %d and gname = '%s' limit 1",
-							intval(local_channel()),
-							dbesc( t('Friends') )
-						);
-					}
-					if($r) {
-						q("update channel set channel_default_group = '%s', channel_allow_gid = '%s', channel_allow_cid = '', channel_deny_gid = '', channel_deny_cid = '' where channel_id = %d",
-							dbesc($r[0]['hash']),
-							dbesc('<' . $r[0]['hash'] . '>'),
-							intval(local_channel())
-						);
-					}
-					else {
-						notice( sprintf('Default privacy group \'%s\' not found. Please create and re-submit permission change.', t('Friends')) . EOL);
-						return;
-					}
-				}
-				// no default collection
-				else {
-					q("update channel set channel_default_group = '', channel_allow_gid = '', channel_allow_cid = '', channel_deny_gid = '',
-						channel_deny_cid = '' where channel_id = %d",
-							intval(local_channel())
-					);
-				}
-
-				if($role_permissions['perms_connect']) {
-					$x = \Zotlabs\Access\Permissions::FilledPerms($role_permissions['perms_connect']);
-					foreach($x as $k => $v) {
-						set_abconfig(local_channel(),$channel['channel_hash'],'my_perms',$k, $v);
-						if($role_permissions['perms_auto']) {
-							set_pconfig(local_channel(),'autoperms',$k,$v);
-						}
-						else {
-							del_pconfig(local_channel(),'autoperms',$k);
-						}
-					}
-				}
-
-				if($role_permissions['limits']) {
-					foreach($role_permissions['limits'] as $k => $v) {
-						\Zotlabs\Access\PermissionLimits::Set(local_channel(),$k,$v);
-					}
-				}
-				if(array_key_exists('directory_publish',$role_permissions)) {
-					$publish = intval($role_permissions['directory_publish']);
-				}
-			}
-
-
-		}
-*/
-
-		if($role !== $oldrole || $role === 'custom') {
-			if ($role === 'custom') {
-				$global_perms = \Zotlabs\Access\Permissions::Perms();
-
-				foreach($global_perms as $k => $v) {
-					\Zotlabs\Access\PermissionLimits::Set(local_channel(),$k,intval($_POST[$k]));
-				}
-			}
-			else {
-				$role_permissions = \Zotlabs\Access\PermissionRoles::role_perms($_POST['permissions_role']);
-				if(isset($role_permissions['limits'])) {
-					foreach($role_permissions['limits'] as $k => $v) {
-						\Zotlabs\Access\PermissionLimits::Set(local_channel(),$k,$v);
-					}
-				}
-			}
-		}
-
-
-
-
-//		$acl = new \Zotlabs\Access\AccessList($channel);
-//		$acl->set_from_array($_POST);
-//		$def_acl = $acl->get();
-
-
-
-		$default_acl      = ((x($_POST,'default_acl')) ? '<' . notags(trim($_POST['default_acl'])) . '>' : '');
-		$show_presence    = (((x($_POST,'show_presence')) && (intval($_POST['show_presence']) == 1)) ? 1: 0);
-		$publish          = (((x($_POST,'profile_in_directory')) && (intval($_POST['profile_in_directory']) == 1)) ? 1: 0);
-		$def_group        = ((x($_POST,'group-selection')) ? notags(trim($_POST['group-selection'])) : '');
-
-		$username         = ((x($_POST,'username'))   ? notags(trim($_POST['username']))     : '');
+		//$username         = ((x($_POST,'username'))   ? notags(trim($_POST['username']))     : '');
 		$timezone         = ((x($_POST,'timezone_select'))   ? notags(trim($_POST['timezone_select']))     : '');
 		$defloc           = ((x($_POST,'defloc'))     ? notags(trim($_POST['defloc']))       : '');
 		$openid           = ((x($_POST,'openid_url')) ? notags(trim($_POST['openid_url']))   : '');
@@ -178,7 +48,6 @@ class Channel {
 		$post_joingroup   = (($_POST['post_joingroup'] == 1) ? 1: 0);
 		$post_profilechange   = (($_POST['post_profilechange'] == 1) ? 1: 0);
 		$adult            = (($_POST['adult'] == 1) ? 1 : 0);
-		//$defpermcat       = ((x($_POST,'defpermcat')) ? notags(trim($_POST['defpermcat'])) : 'default');
 
 		$mailhost        = ((array_key_exists('mailhost',$_POST)) ? notags(trim($_POST['mailhost'])) : '');
 
@@ -244,27 +113,37 @@ class Channel {
 		$always_show_in_notices = x($_POST, 'always_show_in_notices') ? 1 : 0;
 		$update_notices_per_parent = x($_POST, 'update_notices_per_parent') ? 1 : 0;
 
-		$err = '';
+		//$err = '';
 
-		$name_change = false;
+		//$name_change = false;
 
-		if($username != $channel['channel_name']) {
-			$name_change = true;
-			require_once('include/channel.php');
-			$err = validate_channelname($username);
-			if($err) {
-				notice($err);
-				return;
-			}
-		}
+		//if($username != $channel['channel_name']) {
+			//$name_change = true;
+			//require_once('include/channel.php');
+			//$err = validate_channelname($username);
+			//if($err) {
+				//notice($err);
+				//return;
+			//}
+		//}
 
-		if($timezone != $channel['channel_timezone']) {
+		if($timezone !== $channel['channel_timezone']) {
 			if(strlen($timezone))
 				date_default_timezone_set($timezone);
 		}
 
+		if($role !== get_pconfig(local_channel(),'system','permissions_role')) {
+			$role_permissions = \Zotlabs\Access\PermissionRoles::role_perms($_POST['permissions_role']);
+			if(isset($role_permissions['limits'])) {
+				foreach($role_permissions['limits'] as $k => $v) {
+					\Zotlabs\Access\PermissionLimits::Set(local_channel(),$k,$v);
+				}
+			}
+		}
+
+		set_pconfig(local_channel(),'system','permissions_role',$role);
+
 		set_pconfig(local_channel(),'system','use_browser_location',$allow_location);
-		set_pconfig(local_channel(),'system','suggestme', $suggestme);
 		set_pconfig(local_channel(),'system','post_newfriend', $post_newfriend);
 		set_pconfig(local_channel(),'system','post_joingroup', $post_joingroup);
 		set_pconfig(local_channel(),'system','post_profilechange', $post_profilechange);
@@ -275,51 +154,35 @@ class Channel {
 		set_pconfig(local_channel(),'system','evdays',$evdays);
 		set_pconfig(local_channel(),'system','photo_path',$photo_path);
 		set_pconfig(local_channel(),'system','attach_path',$attach_path);
-		//set_pconfig(local_channel(),'system','default_permcat',$defpermcat);
 		set_pconfig(local_channel(),'system','email_notify_host',$mailhost);
-		set_pconfig(local_channel(),'system','autoperms',$autoperms);
-		set_pconfig(local_channel(),'system','show_online_status',$show_presence);
-		set_pconfig(local_channel(),'system','permissions_role',$role);
 
-		$r = q("update channel set channel_name = '%s', channel_pageflags = %d, channel_timezone = '%s',
+		$r = q("update channel set channel_pageflags = %d, channel_timezone = '%s',
 				channel_location = '%s', channel_notifyflags = %d, channel_max_anon_mail = %d,
-				channel_max_friend_req = %d, channel_expire_days = %d, channel_default_group = '%s',
-				channel_allow_gid = '%s'
+				channel_max_friend_req = %d
 				where channel_id = %d",
-			dbesc($username),
 			intval($pageflags),
 			dbesc($timezone),
 			dbesc($defloc),
 			intval($notify),
 			intval($unkmail),
 			intval($maxreq),
-			intval($expire),
-			dbesc($def_group),
-			dbesc($default_acl),
 			intval(local_channel())
 		);
 		if($r)
 			info( t('Settings updated.') . EOL);
 
-		if(! is_null($publish)) {
-			$r = q("UPDATE profile SET publish = %d WHERE is_default = 1 AND uid = %d",
-				intval($publish),
-				intval(local_channel())
-			);
-		}
-
-		if($name_change) {
-			// change name on all associated xchans by matching the url
-			$r = q("update xchan set xchan_name = '%s', xchan_name_date = '%s' where xchan_url = '%s'",
-				dbesc($username),
-				dbesc(datetime_convert()),
-				dbesc(z_root() . '/channel/' . $channel['channel_address'])
-			);
-			$r = q("update profile set fullname = '%s' where uid = %d and is_default = 1",
-				dbesc($username),
-				intval($channel['channel_id'])
-			);
-		}
+		//if($name_change) {
+			//// change name on all associated xchans by matching the url
+			//$r = q("update xchan set xchan_name = '%s', xchan_name_date = '%s' where xchan_url = '%s'",
+				//dbesc($username),
+				//dbesc(datetime_convert()),
+				//dbesc(z_root() . '/channel/' . $channel['channel_address'])
+			//);
+			//$r = q("update profile set fullname = '%s' where uid = %d and is_default = 1",
+				//dbesc($username),
+				//intval($channel['channel_id'])
+			//);
+		//}
 
 		\Zotlabs\Daemon\Master::Summon(array('Directory',local_channel()));
 
@@ -339,10 +202,6 @@ class Channel {
 
 	function get() {
 
-		require_once('include/acl_selectors.php');
-		require_once('include/permissions.php');
-
-
 		$yes_no = array(t('No'),t('Yes'));
 
 
@@ -356,38 +215,7 @@ class Channel {
 
 		$channel = \App::get_channel();
 
-		$global_perms = \Zotlabs\Access\Permissions::Perms();
-
-		$permiss = array();
-
-		$perm_opts = array(
-			array( t('Nobody except yourself'), 0),
-			array( t('Only those you specifically allow'), PERMS_SPECIFIC),
-			array( t('Approved connections'), PERMS_CONTACTS),
-			array( t('Any connections'), PERMS_PENDING),
-			array( t('Anybody on this website'), PERMS_SITE),
-			array( t('Anybody in this network'), PERMS_NETWORK),
-			array( t('Anybody authenticated'), PERMS_AUTHED),
-			array( t('Anybody on the internet'), PERMS_PUBLIC)
-		);
-
-		$limits = \Zotlabs\Access\PermissionLimits::Get(local_channel());
-		$anon_comments = get_config('system','anonymous_comments',true);
-
-		foreach($global_perms as $k => $perm) {
-			$options = array();
-			$can_be_public = ((strstr($k,'view') || ($k === 'post_comments' && $anon_comments)) ? true : false);
-			foreach($perm_opts as $opt) {
-				if($opt[1] == PERMS_PUBLIC && (! $can_be_public))
-					continue;
-				$options[$opt[1]] = $opt[0];
-			}
-			$permiss[] = array($k,$perm,$limits[$k],'',$options);
-		}
-
-		//logger('permiss: ' . print_r($permiss,true));
-
-		$username   = $channel['channel_name'];
+		//$username   = $channel['channel_name'];
 		$nickname   = $channel['channel_address'];
 		$timezone   = $channel['channel_timezone'];
 		$notify     = $channel['channel_notifyflags'];
@@ -396,13 +224,6 @@ class Channel {
 		$maxreq     = $channel['channel_max_friend_req'];
 		$expire     = $channel['channel_expire_days'];
 		$adult_flag = intval($channel['channel_pageflags'] & PAGE_ADULT);
-		$sys_expire = get_config('system','default_expire_days');
-
-//		$unkmail    = \App::$user['unkmail'];
-//		$cntunkmail = \App::$user['cntunkmail'];
-
-		$show_presence = intval(get_pconfig(local_channel(), 'system','show_online_status'));
-
 
 		$expire_items = get_pconfig(local_channel(), 'expire','items');
 		$expire_items = (($expire_items===false)? '1' : $expire_items); // default if not set: 1
@@ -419,10 +240,6 @@ class Channel {
 		$expire_network_only = get_pconfig(local_channel(), 'expire','network_only');
 		$expire_network_only = (($expire_network_only===false)? '0' : $expire_network_only); // default if not set: 0
 
-
-		$suggestme = get_pconfig(local_channel(), 'system','suggestme');
-		$suggestme = (($suggestme===false)? '0': $suggestme); // default if not set: 0
-
 		$post_newfriend = get_pconfig(local_channel(), 'system','post_newfriend');
 		$post_newfriend = (($post_newfriend===false)? '0': $post_newfriend); // default if not set: 0
 
@@ -437,20 +254,6 @@ class Channel {
 
 		$timezone = date_default_timezone_get();
 
-		$opt_tpl = get_markup_template("field_checkbox.tpl");
-		if(get_config('system','publish_all')) {
-			$profile_in_dir = '<input type="hidden" name="profile_in_directory" value="1" />';
-		}
-		else {
-			$profile_in_dir = replace_macros($opt_tpl,array(
-				'$field' 	=> array('profile_in_directory', t('Publish your default profile in the network directory'), $profile['publish'], '', $yes_no),
-			));
-		}
-
-		$suggestme = replace_macros($opt_tpl,array(
-				'$field' 	=> array('suggestme',  t('Allow us to suggest you as a potential friend to new members'), $suggestme, '', $yes_no),
-
-		));
 
 		$subdir = ((strlen(\App::get_path())) ? '<br />' . t('or') . ' ' . z_root() . '/channel/' . $nickname : '');
 
@@ -470,59 +273,9 @@ class Channel {
 		));
 
 
-/*
-		$pcat = new \Zotlabs\Lib\Permcat(local_channel());
-		$pcatlist = $pcat->listing();
-		$permcats = [];
-		if($pcatlist) {
-			foreach($pcatlist as $pc) {
-				$permcats[$pc['name']] = $pc['localname'];
-			}
-		}
-		$default_permcat = get_pconfig(local_channel(),'system','default_permcat','default');
-*/
-
-
-
-//		$acl = new \Zotlabs\Access\AccessList($channel);
-//		$perm_defaults = $acl->get();
-
-		$group_select_options = [
-			'selected' => $channel['channel_default_group'],
-			'form_id' => 'group-selection',
-			'label' => t('Add approved contacts to this privacy group')
-		];
-		$group_select = \Zotlabs\Lib\Group::select(local_channel(), $group_select_options);
-
-
-		$default_acl_select_options = [
-			'selected' => trim($channel['channel_allow_gid'], '<>'),
-			'form_id' => 'default_acl',
-			'label' => t('Default privacy group for new content')
-		];
-		$default_acl_select = \Zotlabs\Lib\Group::select(local_channel(), $default_acl_select_options);
-
 		$evdays = get_pconfig(local_channel(),'system','evdays');
 		if(! $evdays)
 			$evdays = 3;
-
-		$permissions_role = get_pconfig(local_channel(),'system','permissions_role');
-		if(! $permissions_role)
-			$permissions_role = 'custom';
-		// compatibility mapping - can be removed after 3.4 release
-		//if($permissions_role === 'social_party')
-		//	$permissions_role = 'social_federation';
-
-		//if(in_array($permissions_role,['forum','repository']))
-		$autoperms = replace_macros(get_markup_template('field_checkbox.tpl'), [
-			'$field' =>  [ 'autoperms', t('Automatically approve new contacts'), ((get_pconfig(local_channel(),'system','autoperms')) ? 1 : 0), '', $yes_no ]]
-		);
-		//else
-		//	$autoperms = '<input type="hidden" name="autoperms" value="' . intval(get_pconfig(local_channel(),'system','autoperms')) . '" />';
-
-		$permission_limits = (($permissions_role == 'custom') ? true : false);
-
-		$perm_roles = \Zotlabs\Access\PermissionRoles::channel_roles();
 
 		$always_show_in_notices = get_pconfig(local_channel(),'system','always_show_in_notices');
 		$update_notices_per_parent = get_pconfig(local_channel(), 'system', 'update_notices_per_parent', 1);
@@ -533,10 +286,15 @@ class Channel {
 
 		$disable_discover_tab = intval(get_config('system','disable_discover_tab',1)) == 1;
 		$site_firehose = intval(get_config('system','site_firehose',0)) == 1;
-		$public_limits = ($limits['view_pages'] && $limits['view_storage'] && $limits['view_stream'] && $limits['view_wiki']);
+
+		$permissions_role = get_pconfig(local_channel(),'system','permissions_role');
+		if(! $permissions_role)
+			$permissions_role = 'custom';
+
+		$perm_roles = \Zotlabs\Access\PermissionRoles::channel_roles();
 
 
-		$plugin = [ 'basic' => '', 'security' => '', 'notify' => '' ];
+		$plugin = [ 'basic' => '', 'notify' => '' ];
 		call_hooks('channel_settings',$plugin);
 
 		$stpl = get_markup_template('settings.tpl');
@@ -547,9 +305,11 @@ class Channel {
 			'$baseurl' => z_root(),
 			'$uid' => local_channel(),
 			'$form_security_token' => get_form_security_token("settings"),
+			'$role' => array('permissions_role' , t('Channel role'), $permissions_role, '', $perm_roles),
+
 			'$nickname_block' => $prof_addr,
 			'$h_basic' 	=> t('Basic Settings'),
-			'$username' => array('username',  t('Full Name:'), $username,''),
+			//'$username' => array('username',  t('Full Name:'), $username,''),
 			'$email' 	=> array('email', t('Email Address:'), $email, ''),
 			'$timezone' => array('timezone_select' , t('Your Timezone:'), $timezone, '', get_timezones()),
 			'$defloc'	=> array('defloc', t('Default Post Location:'), $defloc, t('Geographical location to display on your posts')),
@@ -557,52 +317,9 @@ class Channel {
 
 			'$adult'    => array('adult', t('Adult Content'), $adult_flag, t('This channel frequently or regularly publishes adult content. (Please tag any adult material and/or nudity with #NSFW)'), $yes_no),
 
-			'$h_prv' 	=> t('Security and Privacy Settings'),
-			'$permission_limits' => $permission_limits,
-			'$perms_set_msg' => t('Your permissions are already configured. Click to view/adjust'),
-
-			'$show_presence' => array('show_presence', t('Show the online status in my profile'),$show_presence, '', $yes_no),
-
-			'$lbl_pmacro' => t('Simple Privacy Settings:'),
-			'$pmacro3'    => t('Very Public - <em>extremely permissive (should be used with caution)</em>'),
-			'$pmacro2'    => t('Typical - <em>default public, privacy when desired (similar to social network permissions but with improved privacy)</em>'),
-			'$pmacro1'    => t('Private - <em>default private, never open or public</em>'),
-			'$pmacro0'    => t('Blocked - <em>default blocked to/from everybody</em>'),
-			'$permiss_arr' => $permiss,
 			//'$blocktags' => array('blocktags',t('Allow others to tag your posts'), 1-$blocktags, t('Often used by the community to retro-actively flag inappropriate content'), $yes_no),
-
-			'$lbl_p2macro' => t('Channel Permission Limits'),
-
-			'$expire' => array('expire',t('Expire other channel content after this many days'),$expire, t('0 or blank to use the website limit.') . ' ' . ((intval($sys_expire)) ? sprintf( t('This website expires after %d days.'),intval($sys_expire)) : t('This website does not expire imported content.')) . ' ' . t('The website limit takes precedence if lower than your limit.')),
 			'$maxreq' 	=> array('maxreq', t('Maximum Friend Requests/Day:'), intval($channel['channel_max_friend_req']) , t('May reduce spam activity')),
-			//~ '$permissions' => t('Default Privacy Group'),
-			//~ '$permdesc' => t("\x28click to open/close\x29"),
-			//~ '$aclselect' => populate_acl(
-				//~ $perm_defaults,
-				//~ false,
-				//~ \Zotlabs\Lib\PermissionDescription::fromDescription(
-					//~ (($public_limits) ? t('Public') : t('My default audience for the type of object published'))
-				//~ )
-			//~ ),
 
-			//~ '$allow_cid' => acl2json($perm_defaults['allow_cid']),
-			//~ '$allow_gid' => acl2json($perm_defaults['allow_gid']),
-			//~ '$deny_cid' => acl2json($perm_defaults['deny_cid']),
-			//~ '$deny_gid' => acl2json($perm_defaults['deny_gid']),
-
-			'$suggestme' => $suggestme,
-			'$group_select' => $group_select,
-			'$default_acl_select' => $default_acl_select,
-			'$role' => array('permissions_role' , t('Channel role'), $permissions_role, '', $perm_roles),
-			//'$defpermcat' => [ 'defpermcat', t('Default permissions category'), $default_permcat, '', $permcats ],
-			//'$permcat_enable' => Apps::system_app_installed(local_channel(), 'Permission Categories'),
-			'$profile_in_dir' => $profile_in_dir,
-			'$hide_friends' => $hide_friends,
-			'$hide_wall' => $hide_wall,
-			'$unkmail' => $unkmail,
-			'$cntunkmail' 	=> array('cntunkmail', t('Maximum private messages per day from unknown people:'), intval($channel['channel_max_anon_mail']) ,t("Useful to reduce spamming")),
-
-			'$autoperms' => $autoperms,
 			'$h_not' 	=> t('Notification Settings'),
 			'$activity_options' => t('By default post a status message when:'),
 			'$post_newfriend' => array('post_newfriend',  t('accepting a friend request'), $post_newfriend, '', $yes_no),
@@ -645,13 +362,8 @@ class Channel {
 			'$desktop_notifications_request' => t('Grant permission'),
 			'$evdays' => array('evdays', t('Notify me of events this many days in advance'), $evdays, t('Must be greater than 0')),
 			'$basic_addon' => $plugin['basic'],
-			'$sec_addon'  => $plugin['security'],
 			'$notify_addon' => $plugin['notify'],
 
-			'$h_advn' => t('Advanced Account/Page Type Settings'),
-			'$h_descadvn' => t('Change the behaviour of this account for special situations'),
-			'$pagetype' => $pagetype,
-			'$lbl_misc' => t('Miscellaneous Settings'),
 			'$photo_path' => array('photo_path', t('Default photo upload folder'), get_pconfig(local_channel(),'system','photo_path'), t('%Y - current year, %m -  current month')),
 			'$attach_path' => array('attach_path', t('Default file upload folder'), get_pconfig(local_channel(),'system','attach_path'), t('%Y - current year, %m -  current month')),
 			'$removeme' => t('Remove Channel'),
@@ -659,8 +371,6 @@ class Channel {
 		));
 
 		call_hooks('settings_form',$o);
-
-		//$o .= '</form>' . "\r\n";
 
 		return $o;
 	}

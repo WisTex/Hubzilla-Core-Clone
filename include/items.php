@@ -1218,8 +1218,6 @@ function map_scope($scope, $strip = false) {
 			if($strip)
 				return '';
 			return 'public';
-		case PERMS_SPECIFIC:
-			return 'specific';
 		case PERMS_NETWORK:
 			return 'network: red';
 		case PERMS_AUTHED:
