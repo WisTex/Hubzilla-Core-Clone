@@ -344,6 +344,7 @@ function can_comment_on_post($observer_xchan, $item) {
 			return true;
 			break;
 		case 'any connections':
+		case 'specific':
 		case 'contacts':
 		case '':
 			if(local_channel() && get_abconfig(local_channel(),$item['owner_xchan'],'their_perms','post_comments')) {
@@ -1226,6 +1227,9 @@ function map_scope($scope, $strip = false) {
 			return 'site: ' . App::get_hostname();
 		case PERMS_PENDING:
 			return 'any connections';
+// uncomment after Hubzilla version 7.0 is running on the majority of active hubs
+//		case PERMS_SPECIFIC:
+//			return 'specific';
 		case PERMS_CONTACTS:
 		default:
 			return 'contacts';
