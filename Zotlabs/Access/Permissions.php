@@ -281,7 +281,7 @@ class Permissions {
 			}
 		}
 
-		return (['perms' => $my_perms, 'automatic' => $automatic]);
+		return (['perms' => $my_perms, 'automatic' => $automatic, 'role' => $pc]);
 	}
 
 	static public function serialise($p) {

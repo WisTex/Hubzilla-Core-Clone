@@ -127,7 +127,6 @@ class Connedit extends Controller {
 		$abook_excl = ((array_key_exists('abook_excl',$_POST)) ? escape_tags($_POST['abook_excl']) : $orig_record[0]['abook_excl']);
 		$abook_role = ((array_key_exists('permcat',$_POST)) ? escape_tags($_POST['permcat']) : $orig_record[0]['abook_role']);
 
-
 		$hidden = intval($_POST['hidden']);
 
 		$priority = intval($_POST['poll']);
@@ -157,20 +156,21 @@ class Connedit extends Controller {
 		$role_perms = $permcats->fetch($abook_role);
 		$all_perms = Permissions::Perms();
 
-		// if we got a role use the role (default behaviour because a role is mandatory)
-
+		// if we got a valid role use the role (default behaviour because a role is mandatory since version 7.0)
 		if (!isset($role_perms['error'])) {
 			$perms = $role_perms['raw_perms'];
 			if (intval($orig_record[0]['abook_pending']))
 				$new_friend = true;
-
 		}
 
+		// approve shortcut (no role provided)
 		if (!$perms && intval($orig_record[0]['abook_pending'])) {
-			$perms = Permissions::connect_perms(local_channel());
+			$connect_perms = Permissions::connect_perms(local_channel());
+			$perms = $connect_perms['perms'];
+			// set the role from $connect_perms
+			$abook_role = $connect_perms['role'];
 			$new_friend = true;
 		}
-
 
 		if($all_perms && $perms) {
 			foreach($all_perms as $perm => $desc) {
@@ -728,9 +728,9 @@ class Connedit extends Controller {
 
 			$vctmp = (($vc) ? \Sabre\VObject\Reader::read($vc) : null);
 			$vcard = (($vctmp) ? get_vcard_array($vctmp,$contact['abook_id']) : [] );
-			if(! $vcard)
+			if(! $vcard['fn'])
 				$vcard['fn'] = $contact['xchan_name'];
-
+hz_syslog(print_r($contact,true));
 
 			$tpl = get_markup_template("abook_edit.tpl");
 
@@ -917,6 +917,7 @@ class Connedit extends Controller {
 			if(intval($contact['abook_not_here']) && $unclonable)
 				$not_here = t('This contact is unreachable from this location. Location independence is not supported by their network.');
 
+
 			$o .= replace_macros($tpl, [
 				'$header'         => (($self) ? t('Connection Default Permissions') : sprintf( t('Contact: %s'),$contact['xchan_name'])),
 //				'$autoperms'      => array('autoperms',t('Apply these permissions automatically'), ((get_pconfig(local_channel(),'system','autoperms')) ? 1 : 0), t('Connection requests will be approved without your interaction'), $yes_no),
@@ -958,8 +959,8 @@ class Connedit extends Controller {
 				'$submit'         => ((intval($contact['abook_pending'])) ? t('Approve contact') : t('Submit')),
 				'$lbl_vis2'       => sprintf( t('Please choose the profile you would like to display to %s when viewing your profile securely.'), $contact['xchan_name']),
 				'$close'          => (($contact['abook_closeness']) ? $contact['abook_closeness'] : 80),
-				'$them'           => t('Their Settings'),
-				'$me'             => t('My Settings'),
+				'$them'           => t('Their'),
+				'$me'             => t('My'),
 				'$perms'          => $perms,
 				'$permlbl'        => t('Individual Permissions'),
 				'$permnote'       => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can <strong>not</strong> change those settings here.'),
