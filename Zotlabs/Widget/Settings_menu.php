@@ -38,15 +38,19 @@ class Settings_menu {
 				'label'	=> t('Channel settings'),
 				'url' 	=> z_root().'/settings/channel',
 				'selected'	=> ((argv(1) === 'channel') ? 'active' : ''),
-			),
-
-			array(
-				'label'	=> t('Privacy settings'),
-				'url' 	=> z_root().'/settings/privacy',
-				'selected'	=> ((argv(1) === 'privacy') ? 'active' : ''),
-			),
-
+			)
 		);
+
+		$cutom_role = get_pconfig(local_channel(), 'system', 'permissions_role', 'custom');
+		$cutom_role_limits  = ($cutom_role === 'custom');
+
+		if ($cutom_role_limits) {
+			$tabs[] = array(
+				'label'	=> t('Custom role settings'),
+				'url' 	=> z_root().'/settings/custom_role',
+				'selected'	=> ((argv(1) === 'custom_role') ? 'active' : '')
+			);
+		}
 
 		$tabs[] =	array(
 			'label'	=> t('Display settings'),

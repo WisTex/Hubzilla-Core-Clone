@@ -25,6 +25,7 @@
 						{{include file="field_checkbox.tpl" field=$adult}}
 						{{include file="field_input.tpl" field=$photo_path}}
 						{{include file="field_input.tpl" field=$attach_path}}
+						{{include file="field_input.tpl" field=$expire}}
 						{{if $basic_addon}}
 						{{$basic_addon}}
 						{{/if}}

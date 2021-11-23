@@ -34,6 +34,7 @@ class Channel {
 		$mailhost           = ((array_key_exists('mailhost', $_POST)) ? notags(trim($_POST['mailhost'])) : '');
 		$pageflags          = $channel['channel_pageflags'];
 		$existing_adult     = (($pageflags & PAGE_ADULT) ? 1 : 0);
+		$expire             = ((x($_POST, 'expire')) ? intval($_POST['expire']) : 0);
 
 		if ($adult != $existing_adult) {
 			$pageflags = ($pageflags ^ PAGE_ADULT);
@@ -121,12 +122,13 @@ class Channel {
 		set_pconfig(local_channel(), 'system', 'email_notify_host', $mailhost);
 
 		$r = q("update channel set channel_pageflags = %d, channel_timezone = '%s',
-				channel_location = '%s', channel_notifyflags = %d, 
+				channel_location = '%s', channel_notifyflags = %d, channel_expire_days = %d
 				where channel_id = %d",
 			intval($pageflags),
 			dbesc($timezone),
 			dbesc($defloc),
 			intval($notify),
+			intval($expire),
 			intval(local_channel())
 		);
 		if ($r)
@@ -167,6 +169,9 @@ class Channel {
 		$intl_nickname        = unpunify($nickname) . '@' . unpunify(App::get_hostname());
 		$disable_discover_tab = intval(get_config('system', 'disable_discover_tab', 1)) == 1;
 		$site_firehose        = intval(get_config('system', 'site_firehose', 0)) == 1;
+
+		$expire        = $channel['channel_expire_days'];
+		$sys_expire    = get_config('system', 'default_expire_days');
 
 		$tpl_addr  = get_markup_template("settings_nick_set.tpl");
 		$prof_addr = replace_macros($tpl_addr, [
@@ -211,10 +216,10 @@ class Channel {
 			'$role'                          => ['permissions_role', t('Channel role'), $permissions_role, '', $perm_roles],
 			'$nickname_block'                => $prof_addr,
 			'$h_basic'                       => t('Basic Settings'),
-			'$timezone'                      => ['timezone_select', t('Your Timezone:'), $timezone, '', get_timezones()],
-			'$defloc'                        => ['defloc', t('Default Post Location:'), $defloc, t('Geographical location to display on your posts')],
-			'$allowloc'                      => ['allow_location', t('Use Browser Location:'), ((get_pconfig(local_channel(), 'system', 'use_browser_location')) ? 1 : ''), '', $yes_no],
-			'$adult'                         => ['adult', t('Adult Content'), $adult_flag, t('This channel frequently or regularly publishes adult content. (Please tag any adult material and/or nudity with #NSFW)'), $yes_no],
+			'$timezone'                      => ['timezone_select', t('Channel timezone:'), $timezone, '', get_timezones()],
+			'$defloc'                        => ['defloc', t('Default post location:'), $defloc, t('Geographical location to display on your posts')],
+			'$allowloc'                      => ['allow_location', t('Use browser location:'), ((get_pconfig(local_channel(), 'system', 'use_browser_location')) ? 1 : ''), '', $yes_no],
+			'$adult'                         => ['adult', t('Adult Content'), $adult_flag, t('This channel frequently or regularly publishes adult content')],
 			'$maxreq'                        => ['maxreq', t('Maximum Friend Requests/Day:'), intval($channel['channel_max_friend_req']), t('May reduce spam activity')],
 			'$h_not'                         => t('Notification Settings'),
 			'$activity_options'              => t('By default post a status message when:'),
@@ -259,6 +264,7 @@ class Channel {
 			'$attach_path'                   => ['attach_path', t('Default file upload folder'), get_pconfig(local_channel(), 'system', 'attach_path'), t('%Y - current year, %m -  current month')],
 			'$removeme'                      => t('Remove Channel'),
 			'$removechannel'                 => t('Remove this channel.'),
+			'$expire'                        => ['expire', t('Expire other channel content after this many days'), $expire, t('0 or blank to use the website limit.') . ' ' . ((intval($sys_expire)) ? sprintf(t('This website expires after %d days.'), intval($sys_expire)) : t('This website does not expire imported content.')) . ' ' . t('The website limit takes precedence if lower than your limit.')],
 		]);
 
 		call_hooks('settings_form', $o);

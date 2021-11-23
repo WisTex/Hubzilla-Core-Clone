@@ -730,7 +730,6 @@ class Connedit extends Controller {
 			$vcard = (($vctmp) ? get_vcard_array($vctmp,$contact['abook_id']) : [] );
 			if(! $vcard['fn'])
 				$vcard['fn'] = $contact['xchan_name'];
-hz_syslog(print_r($contact,true));
 
 			$tpl = get_markup_template("abook_edit.tpl");
 

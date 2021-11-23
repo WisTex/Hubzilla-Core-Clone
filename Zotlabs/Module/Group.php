@@ -42,15 +42,16 @@ class Group extends Controller {
 			$name = notags(trim($_POST['groupname']));
 			$public = intval($_POST['public']);
 			$r = group_add(local_channel(),$name,$public);
+			$group_hash = $r;
+
 			if($r) {
 				info( t('Privacy group created.') . EOL );
 			}
 			else {
 				notice( t('Could not create privacy group.') . EOL );
 			}
-			goaway(z_root() . '/group');
-
 		}
+
 		if((argc() == 2) && (intval(argv(1)))) {
 			check_form_security_token_redirectOnErr('/group', 'group_edit');
 
@@ -65,10 +66,11 @@ class Group extends Controller {
 			}
 			$group = $r[0];
 			$groupname = notags(trim($_POST['groupname']));
+			$group_hash = $group['hash'];
 			$public = intval($_POST['public']);
 
 			$hookinfo = [ 'pgrp_extras' => '', 'group'=>$group['id'] ];
-                       	call_hooks ('privacygroup_extras_post',$hookinfo);
+			call_hooks('privacygroup_extras_post',$hookinfo);
 
 			if((strlen($groupname))  && (($groupname != $group['gname']) || ($public != $group['visible']))) {
 				$r = q("UPDATE pgrp SET gname = '%s', visible = %d  WHERE uid = %d AND id = %d",
@@ -79,13 +81,25 @@ class Group extends Controller {
 				);
 				if($r)
 					info( t('Privacy group updated.') . EOL );
-
-
-				Libsync::build_sync_packet(local_channel(),null,true);
 			}
-
-			goaway(z_root() . '/group/' . argv(1) . '/' . argv(2));
 		}
+
+		$channel = App::get_channel();
+
+		$default_group = ((isset($_POST['set_default_group'])) ? $group_hash : (($channel['channel_default_group'] === $group_hash) ? '' : $channel['channel_default_group']));
+		$default_acl = ((isset($_POST['set_default_acl'])) ? '<' . $group_hash . '>' : (($channel['channel_allow_gid'] === '<' . $group_hash . '>') ? '' : $channel['channel_allow_gid']));
+
+		q("update channel set channel_default_group = '%s', channel_allow_gid = '%s'
+			where channel_id = %d",
+			dbesc($default_group),
+			dbesc($default_acl),
+			intval(local_channel())
+		);
+
+		Libsync::build_sync_packet(local_channel(),null,true);
+
+		goaway(z_root() . '/group/' . argv(1) . ((argv(2)) ? '/' . argv(2) : ''));
+
 		return;
 	}
 
@@ -135,6 +149,10 @@ class Group extends Controller {
 			call_hooks ('privacygroup_extras',$hookinfo);
 			$pgrp_extras = $hookinfo['pgrp_extras'];
 
+			$is_default_acl = ['set_default_acl', t('Post to this group by default'), 0, '', [t('No'), t('Yes')]];
+			$is_default_group = ['set_default_group', t('Add new contacts to this group by default'), 0, '', [t('No'), t('Yes')]];
+
+
 			$tpl = get_markup_template('privacy_groups.tpl');
 			$o = replace_macros($tpl, [
 				'$title' => t('Privacy Groups'),
@@ -143,16 +161,19 @@ class Group extends Controller {
 
 				// new group form
 				'$gname' => array('groupname',t('Privacy group name')),
-				'$public' => array('public',t('Members are visible to other channels'), false),
+				'$public' => array('public',t('Members are visible to other channels'), 0, '', [t('No'), t('Yes')]),
 				'$pgrp_extras' => $pgrp_extras,
 				'$form_security_token' => get_form_security_token("group_edit"),
 				'$submit' => t('Submit'),
+				'$is_default_acl' => $is_default_acl,
+				'$is_default_group' => $is_default_group,
 
 				// groups list
 				'$title' => t('Privacy Groups'),
 				'$name_label' => t('Name'),
 				'$count_label' => t('Members'),
 				'$entries' => $entries
+
 			]);
 
 			return $o;
@@ -252,7 +273,7 @@ class Group extends Controller {
 				'$gname' => array('groupname',t('Privacy group name: '),$group['gname'], ''),
 				'$gid' => $group['id'],
 				'$drop' => $drop_txt,
-				'$public' => array('public',t('Members are visible to other channels'), $group['visible'], ''),
+				'$public' => array('public',t('Members are visible to other channels'), $group['visible'], '', [t('No'), t('Yes')]),
 				'$form_security_token_edit' => get_form_security_token('group_edit'),
 				'$delete' => t('Delete Group'),
 				'$form_security_token_drop' => get_form_security_token("group_drop"),
@@ -301,6 +322,15 @@ class Group extends Controller {
 		$context['$groupeditor'] = $groupeditor;
 		$context['$desc'] = t('Click a channel to toggle membership');
 		$context['$pgrp_extras'] = $pgrp_extras;
+
+		$channel = App::get_channel();
+
+//hz_syslog(print_r($group,true));
+//hz_syslog(print_r($channel,true));
+
+		$context['$is_default_acl'] = ['set_default_acl', t('Post to this group by default'), intval($group['hash'] === trim($channel['channel_allow_gid'], '<>')), '', [t('No'), t('Yes')]];
+		$context['$is_default_group'] = ['set_default_group', t('Add new contacts to this group by default'), intval($group['hash'] === $channel['channel_default_group']), '', [t('No'), t('Yes')]];
+
 
 		if($change) {
 			$tpl = get_markup_template('groupeditor.tpl');

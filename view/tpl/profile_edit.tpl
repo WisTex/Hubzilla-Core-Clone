@@ -50,7 +50,7 @@
 					<div class="section-subtitle-wrapper" role="tab" id="personal">
 						<h3>
 							<a data-bs-toggle="collapse" data-bs-target="#personal-collapse" href="#" aria-expanded="true" aria-controls="personal-collapse">
-								{{$personal}}
+								{{$basic}}
 							</a>
 						</h3>
 					</div>
