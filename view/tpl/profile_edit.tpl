@@ -84,7 +84,17 @@
 							{{$dob}}
 							{{/if}}
 
+							{{$profile_in_dir}}
+
+							{{$suggestme}}
+
+							{{if $show_presence}}
+							{{include file="field_checkbox.tpl" field=$show_presence}}
+							{{/if}}
+
+							{{if $hide_friends}}
 							{{include file="field_checkbox.tpl" field=$hide_friends}}
+							{{/if}}
 
 							<div class="mb-3" >
 							<button type="submit" name="submit" class="btn btn-primary" value="{{$submit}}">{{$submit}}</button>
