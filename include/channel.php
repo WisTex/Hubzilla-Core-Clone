@@ -1492,6 +1492,7 @@ function profile_load($nickname, $profile = '') {
 
 	if($can_view_profile) {
 		$online = get_online_status($nickname);
+
 		App::$profile['online_status'] = $online['result'];
 	}
 
@@ -1677,7 +1678,6 @@ function profile_sidebar($profile, $block = 0, $show_connect = true, $zcard = fa
 		'$homepage'      => $homepage,
 		'$chanmenu'      => $channel_menu,
 		'$reddress'      => $reddress,
-		'$rating'        => '',
 		'$contact_block' => $contact_block,
 		'$change_photo'  => t('Change your profile photo'),
 		'$editmenu'      => profile_edit_menu($profile['uid'])
@@ -2063,8 +2063,9 @@ function get_online_status($nick) {
 		return $ret;
 
 	$r = q("select channel_id, channel_hash from channel where channel_address = '%s' limit 1",
-		dbesc(argv(1))
+		dbesc($nick)
 	);
+
 	if($r) {
 		$show = get_pconfig($r[0]['channel_id'],'system','show_online_status');
 		if(!$show)
