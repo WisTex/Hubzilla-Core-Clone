@@ -399,14 +399,6 @@ function create_identity($arr) {
 		]
 	);
 
-	if($role_permissions) {
-		$myperms = ((array_key_exists('perms_connect',$role_permissions)) ? $role_permissions['perms_connect'] : array());
-	}
-	else {
-		$x = PermissionRoles::role_perms('personal');
-		$myperms = $x['perms_connect'];
-	}
-
 	$r = abook_store_lowlevel(
 		[
 			'abook_account'   => intval($ret['channel']['channel_account_id']),
@@ -418,11 +410,6 @@ function create_identity($arr) {
 			'abook_self'      => 1
 		]
 	);
-
-	//$x = Permissions::FilledPerms($myperms);
-	//foreach($x as $k => $v) {
-		//set_abconfig($newuid,$hash,'my_perms',$k,$v);
-	//}
 
 	if(intval($ret['channel']['channel_account_id'])) {
 

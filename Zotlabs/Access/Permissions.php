@@ -283,7 +283,7 @@ class Permissions {
 */
 		return (['perms' => $my_perms, 'automatic' => $automatic, 'role' => $pc]);
 	}
-
+/*
 	static public function serialise($p) {
 		$n = [];
 		if ($p) {
@@ -295,4 +295,5 @@ class Permissions {
 		}
 		return implode(',', $n);
 	}
+*/
 }

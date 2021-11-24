@@ -29,6 +29,7 @@ class PermissionRoles {
 		switch($role) {
 
 			case 'public':
+				$ret['default_collection'] = false;
 				$ret['perms_connect'] = [
 					'view_stream', 'view_profile', 'view_contacts', 'view_storage', 'view_pages', 'view_wiki',
 					'send_stream', 'post_comments', 'post_mail', 'post_wall', 'chat', 'post_like', 'republish'
@@ -40,7 +41,9 @@ class PermissionRoles {
 				$ret['limits']['chat'] = PERMS_AUTHED;
 				break;
 
+			// Hubzilla default role
 			case 'personal':
+				$ret['default_collection'] = true;
 				$ret['perms_connect'] = [
 					'view_stream', 'view_profile', 'view_contacts', 'view_storage', 'view_pages', 'view_wiki',
 					'send_stream', 'post_comments', 'post_mail', 'chat', 'post_like'
@@ -50,6 +53,7 @@ class PermissionRoles {
 				break;
 
 			case 'forum':
+				$ret['default_collection'] = false;
 				$ret['perms_connect'] = [
 					'view_stream', 'view_profile', 'view_contacts', 'view_storage',
 					'view_pages', 'view_wiki', 'post_wall', 'post_comments',
@@ -59,8 +63,10 @@ class PermissionRoles {
 				$ret['channel_type'] = 'group';
 				break;
 
-			// Provide some defaults for the custom role so that we do not start with no permissions at all.
+			// Provide some defaults for the custom role so that we do not start
+			// with no permissions at all if we create a new channel with this role
 			case 'custom':
+				$ret['default_collection'] = true;
 				$ret['perms_connect'] = [
 					'view_stream', 'view_profile', 'view_contacts', 'view_storage', 'view_pages', 'view_wiki',
 					'send_stream', 'post_comments', 'post_mail', 'chat', 'post_like'
@@ -236,7 +242,7 @@ class PermissionRoles {
 
 				break;
 */
-			case 'custom':
+
 			default:
 				break;
 		}
