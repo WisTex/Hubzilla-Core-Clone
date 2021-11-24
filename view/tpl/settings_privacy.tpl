@@ -7,11 +7,10 @@
 		<input type='hidden' name='form_security_token' value='{{$form_security_token}}' />
 
 		<div class="section-content-tools-wrapper">
-			<div class="settings-common-perms">
-				<!--div id="settings-default-perms" class="mb-3" >
-					<button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#aclModal"><i id="jot-perms-icon" class="fa"></i>&nbsp;{{$permissions}}</button>
-				</div-->
-			</div>
+
+			{{include file="field_checkbox.tpl" field=$autoperms}}
+			{{include file="field_checkbox.tpl" field=$index_opt_out}}
+
 			{{if $sec_addon}}
 			{{$sec_addon}}
 			{{/if}}

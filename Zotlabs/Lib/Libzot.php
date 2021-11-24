@@ -386,9 +386,10 @@ class Libzot {
 			else {
 
 				$p = Permissions::connect_perms($channel['channel_id']);
-				$my_perms = $p['perms'];
 
+				$my_perms = $p['perms'];
 				$automatic = $p['automatic'];
+				$role = $p['role'];
 
 				// new connection
 
@@ -410,7 +411,8 @@ class Libzot {
 						'abook_created'   => datetime_convert(),
 						'abook_updated'   => datetime_convert(),
 						'abook_dob'       => $next_birthday,
-						'abook_pending'   => intval(($automatic) ? 0 : 1)
+						'abook_pending'   => intval(($automatic) ? 0 : 1),
+						'abook_role'      => $role
 					]
 				);
 

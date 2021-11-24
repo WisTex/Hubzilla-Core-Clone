@@ -16,6 +16,12 @@ class Privacy {
 		check_form_security_token_redirectOnErr('/settings/privacy', 'settings');
 		call_hooks('settings_post', $_POST);
 
+		$index_opt_out = (((x($_POST, 'index_opt_out')) && (intval($_POST['index_opt_out']) == 1)) ? 1 : 0);
+		set_pconfig(local_channel(), 'system', 'index_opt_out', $index_opt_out);
+
+		$autoperms = (((x($_POST, 'autoperms')) && (intval($_POST['autoperms']) == 1)) ? 1 : 0);
+		set_pconfig(local_channel(), 'system', 'autoperms', $autoperms);
+
 		$role = get_pconfig(local_channel(), 'system', 'permissions_role');
 		if ($role === 'custom') {
 			$global_perms = Permissions::Perms();
@@ -27,7 +33,6 @@ class Privacy {
 
 		$default_acl   = ((x($_POST, 'default_acl')) ? '<' . notags(trim($_POST['default_acl'])) . '>' : '');
 		$def_group     = ((x($_POST, 'group-selection')) ? notags(trim($_POST['group-selection'])) : '');
-
 
 		$r = q("update channel set channel_default_group = '%s', channel_allow_gid = '%s'
 				where channel_id = %d",
@@ -95,6 +100,8 @@ class Privacy {
 
 		//logger('permiss: ' . print_r($permiss,true));
 
+		$autoperms = get_pconfig(local_channel(), 'system', 'autoperms');
+		$index_opt_out   = get_pconfig(local_channel(), 'system', 'index_opt_out');
 
 		$permissions_role   = get_pconfig(local_channel(), 'system', 'permissions_role', 'custom');
 		$permission_limits  = ($permissions_role === 'custom');
@@ -102,7 +109,7 @@ class Privacy {
 		$stpl = get_markup_template('settings_privacy.tpl');
 
 		$o = replace_macros($stpl, [
-			'$ptitle'                    => t('Custom Role Settings'),
+			'$ptitle'                    => t('Privacy Settings'),
 			'$submit'                    => t('Submit'),
 			'$form_security_token'       => get_form_security_token("settings"),
 			'$permission_limits'         => $permission_limits,
@@ -113,8 +120,8 @@ class Privacy {
 				t('Changing advanced configuration preferences can impact your channels functionality and security.'),
 				t('Accept the risk and continue')
 			],
-			//'$group_select'              => $group_select,
-			//'$default_acl_select'        => $default_acl_select,
+			'$autoperms' => ['autoperms', t('Automatically approve new contacts'), $autoperms, '', [t('No'), t('Yes')]],
+			'$index_opt_out' => ['index_opt_out', t('Opt-out of search engine indexing'), $index_opt_out, '', [t('No'), t('Yes')]]
 		]);
 
 		return $o;
