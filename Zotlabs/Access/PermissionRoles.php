@@ -17,7 +17,7 @@ class PermissionRoles {
 	 * @return number
 	 */
 	static public function version() {
-		return 2;
+		return 3;
 	}
 
 	static function role_perms($role) {
@@ -248,6 +248,7 @@ class PermissionRoles {
 		}
 
 		$x = get_config('system','role_perms');
+
 		// let system settings over-ride any or all
 		if($x && is_array($x) && array_key_exists($role,$x))
 			$ret = array_merge($ret,$x[$role]);
