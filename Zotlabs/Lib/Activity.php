@@ -1093,6 +1093,8 @@ class Activity {
 			if (strpos($role, 'forum') !== false) {
 				$ret['type'] = 'Group';
 			}
+
+			$ret['manuallyApprovesFollowers'] = ((get_pconfig($c['channel_id'], 'system', 'autoperms')) ? false : true);
 		}
 
 		if ($c) {
