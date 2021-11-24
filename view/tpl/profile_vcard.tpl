@@ -5,10 +5,12 @@
 				{{if $editmenu}}
 				<a href="profile_photo" title="{{$change_photo}}">
 				{{/if}}
-					<img class="rounded-start u-photo" src="{{$profile.photo}}?rev={{$profile.picdate}}" alt="{{$profile.fullname}}" style="width: 6rem; height:6rem;">
+					<div id="profile-photo-wrapper">
+						<img class="rounded-start u-photo" src="{{$profile.photo}}?rev={{$profile.picdate}}" alt="{{$profile.fullname}}" style="width: 6rem; height:6rem;">
+					</div>
 				{{if $editmenu}}
-				{{/if}}
 				</a>
+				{{/if}}
 			</div>
 			<div class="col-7 m-1 p-0">
 				{{if $editmenu.multi}}

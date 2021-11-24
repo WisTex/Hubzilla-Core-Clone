@@ -418,20 +418,6 @@ footer {
 	filter:alpha(opacity=100);
 }
 
-#profile-photo-wrapper img {
-	width: 100%;
-	height: 100%;
-	max-width: 300px;
-	max-height: 300px;
-}
-
-#profile-photo-wrapper {
-	width: 251px;
-	height: 251px;
-	margin-bottom: 10px;
-	border-radius: $radius;
-}
-
 #hide-friends-yes-label,
 #hide-friends-no-label {
 	margin-left: 125px;
