@@ -858,7 +858,7 @@ class App {
 
 	private static $baseurl;
 
-	private static $meta;
+	public static $meta;
 
 	/**
 	 * App constructor.

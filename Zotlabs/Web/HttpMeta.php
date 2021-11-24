@@ -24,10 +24,10 @@ class HttpMeta {
 
 	function check_required() {
 		if(
-			($this->og) 
-			&& array_key_exists('og:title',$this->og) 
-			&& array_key_exists('og:type', $this->og) 
-			&& array_key_exists('og:image',$this->og) 
+			($this->og)
+			&& array_key_exists('og:title',$this->og)
+			&& array_key_exists('og:type', $this->og)
+			&& array_key_exists('og:image',$this->og)
 			&& array_key_exists('og:url',  $this->og)
 		)
 			return true;

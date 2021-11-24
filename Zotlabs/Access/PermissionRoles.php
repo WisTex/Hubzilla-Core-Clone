@@ -28,6 +28,18 @@ class PermissionRoles {
 
 		switch($role) {
 
+			case 'public':
+				$ret['perms_connect'] = [
+					'view_stream', 'view_profile', 'view_contacts', 'view_storage', 'view_pages', 'view_wiki',
+					'send_stream', 'post_comments', 'post_mail', 'post_wall', 'chat', 'post_like', 'republish'
+				];
+				$ret['limits'] = PermissionLimits::Std_Limits();
+				$ret['limits']['post_comments'] = PERMS_AUTHED;
+				$ret['limits']['post_mail'] = PERMS_AUTHED;
+				$ret['limits']['post_like'] = PERMS_AUTHED;
+				$ret['limits']['chat'] = PERMS_AUTHED;
+				break;
+
 			case 'personal':
 				$ret['perms_connect'] = [
 					'view_stream', 'view_profile', 'view_contacts', 'view_storage', 'view_pages', 'view_wiki',
@@ -35,7 +47,6 @@ class PermissionRoles {
 				];
 				$ret['limits'] = PermissionLimits::Std_Limits();
 				$ret['limits']['view_contacts'] = PERMS_SPECIFIC;
-
 				break;
 
 			case 'forum':
@@ -46,7 +57,15 @@ class PermissionRoles {
 				];
 				$ret['limits'] = PermissionLimits::Std_Limits();
 				$ret['channel_type'] = 'group';
+				break;
 
+			// Provide some defaults for the custom role so that we do not start with no permissions at all.
+			case 'custom':
+				$ret['perms_connect'] = [
+					'view_stream', 'view_profile', 'view_contacts', 'view_storage', 'view_pages', 'view_wiki',
+					'send_stream', 'post_comments', 'post_mail', 'chat', 'post_like'
+				];
+				$ret['limits'] = PermissionLimits::Std_Limits();
 				break;
 
 /*
@@ -351,6 +370,11 @@ class PermissionRoles {
 	 */
 	static public function channel_roles() {
 		$channel_roles = [
+			//'public' => [t('Public'), t('A very permissive role suited for participation in the fediverse')],
+			//'personal' => [t('Personal'), t('The $Projectname default role suited for a personal channel')],
+			//'forum' => [t('Community forum'), t('This role configures your channel to act as an community forum')],
+			//'custom' => [t('Custom'), t('This role comes with the presets of the personal role but allows you to configure it to your needs')]
+			'public' => t('Public'),
 			'personal' => t('Personal'),
 			'forum' => t('Community forum'),
 			'custom' => t('Custom')
