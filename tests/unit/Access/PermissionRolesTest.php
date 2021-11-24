@@ -62,16 +62,6 @@ class PermissionRolesTest extends UnitTestCase {
 		$r = new PermissionRoles();
 		$this->assertEquals($roles, $r->channel_roles());
 
-		$roles_arr = [
-			'public' => t('Public'),
-			'personal' => t('Personal'),
-			'forum' => t('Community forum'),
-			'custom' => t('Custom')
-		];
-
-		Assert::assertArraySubset(['Social Networking' => $roles_arr], $roles);
-		$this->assertEquals($roles_arr, $roles);
-
 		$this->assertCount(4, $roles, 'There should be 4 channel roles.');
 
 	}
