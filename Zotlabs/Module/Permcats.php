@@ -19,9 +19,11 @@ class Permcats extends Controller {
 		check_form_security_token_redirectOnErr('/permcats', 'permcats');
 
 
-
 		$name = escape_tags(trim($_POST['name']));
-		if(! $name) {
+		$is_system_role = isset($_POST['is_system_role']);
+		$return_path = z_root() . '/permcats/' . $_POST['return_path'];
+
+		if(! $name ) {
 			notice( t('Permission category name is required.') . EOL);
 			return;
 		}
@@ -30,6 +32,14 @@ class Permcats extends Controller {
 
 		if (isset($_POST['default_role'])) {
 			set_pconfig(local_channel(), 'system', 'default_permcat', $name);
+		}
+
+		if ($is_system_role) {
+			// if we have a system role just set the default if aplicable and be done with it
+			info( t('Contact role saved.') . EOL);
+			Libsync::build_sync_packet();
+			goaway($return_path);
+			return;
 		}
 
 		$pcarr = [];
@@ -48,6 +58,7 @@ class Permcats extends Controller {
 		Libsync::build_sync_packet();
 
 		info( t('Contact role saved.') . EOL);
+		goaway($return_path);
 
 		return;
 	}
@@ -57,13 +68,6 @@ class Permcats extends Controller {
 
 		if(! local_channel())
 			return;
-
-		//if(! Apps::system_app_installed(local_channel(), 'Permission Categories')) {
-			////Do not display any associated widgets at this point
-			//App::$pdl = '';
-			//$papp = Apps::get_papp('Permission Categories');
-			//return Apps::app_render($papp, 'module');
-		//}
 
 		$channel = App::get_channel();
 
@@ -83,8 +87,6 @@ class Permcats extends Controller {
 			json_return_and_die([ 'success' => true ]);
 		}
 
-
-		$desc = t('Use this form to create permission rules for various classes of people or connections.');
 
 		$existing = [];
 
@@ -114,7 +116,7 @@ class Permcats extends Controller {
 				if(($pc['name']) && ($name) && ($pc['name'] == $name)) {
 					$existing = $pc['perms'];
 					if (isset($pc['system']) && intval($pc['system']))
-						$is_system_role = true;
+						$is_system_role = $pc['name'];
 				}
 				if(! $pc['system'])
 					$permcats[bin2hex($pc['name'])] = $pc['localname'];
@@ -131,12 +133,19 @@ class Permcats extends Controller {
 			$checkinherited = \Zotlabs\Access\PermissionLimits::Get(local_channel(),$k);
 
 			if($existing[$k])
-				$thisperm = "1";
+				$thisperm = 1;
 
-			$perms[] = array('perms_' . $k, $v, '',$thisperm, 1, (($checkinherited & PERMS_SPECIFIC) ? '' : '1'), '', $checkinherited);
+			$perms[] = [
+				'perms_' . $k,
+				$v,
+				'',
+				$thisperm,
+				1,
+				(($checkinherited & PERMS_SPECIFIC) ? '' : '1'),
+				'',
+				$checkinherited
+			];
 		}
-
-//TODO: disallow editing of system roles
 
 		$is_default_role = (get_pconfig(local_channel(),'system','default_permcat','default') == $name);
 
@@ -146,23 +155,19 @@ class Permcats extends Controller {
 			'$default_role'      => array('default_role', t('Use this role as default for new contacts'), intval($is_default_role), '', [t('No'), t('Yes')]),
 
 			'$title'	=> t('Contact Roles'),
-			'$desc'     => $desc,
-			'$desc2' => $desc2,
 			'$tokens' => $t,
 			'$permcats' => $permcats,
 			'$atoken' => $atoken,
 			'$url1' => z_root() . '/channel/' . $channel['channel_address'],
 			'$url2' => z_root() . '/photos/' . $channel['channel_address'],
-			'$name' => array('name', t('Role name') . ' <span class="required">*</span>', (($localname) ? $localname : ''), '' , '', (($is_system_role) ? 'disabled' : '')),
-			'$me' => t('My Settings'),
+			'$name' => ['name', t('Role name') . ' <span class="required">*</span>', (($localname) ? $localname : ''), (($is_system_role) ? t('System role - not editable') : '') , '', (($is_system_role) ? 'disabled' : '')],
 			'$perms' => $perms,
 			'$inherited' => t('inherited'),
-			'$notself' => 0,
-			'$self' => 1,
 			'$is_system_role' => $is_system_role,
 			'$permlbl' => t('Role Permissions'),
-			'$permnote' => t('Some permissions may be inherited from your <a href="settings"><strong>channel role</strong></a>, which have higher priority than individual settings. You can <strong>not</strong> change those settings here.'),
-			'$submit' 	=> t('Submit')
+			'$permnote' => t('Some permissions may be inherited from your <a href="settings">channel role</a>, which have higher priority than role settings.'),
+			'$submit' 	=> t('Submit'),
+			'$return_path' => argv(1)
 		));
 		return $o;
 	}
