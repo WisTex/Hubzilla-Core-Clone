@@ -4,6 +4,8 @@ namespace Zotlabs\Lib;
 
 use Zotlabs\Access\PermissionRoles;
 use Zotlabs\Access\Permissions;
+use Zotlabs\Lib\Libsync;
+use Zotlabs\Daemon\Master;
 
 /**
  * @brief Permission Categories. Permission rules for various classes of connections.
@@ -221,29 +223,64 @@ class Permcat {
 
 		$perms = $role_perms['raw_perms'];
 
+		$values_sql = '';
+		stringify_array_elms($contacts, true);
+
 		if ($all_perms && $perms) {
-			foreach ($all_perms as $perm => $desc) {
-				if (array_key_exists($perm, $perms)) {
-					foreach($contacts as $contact) {
-						set_abconfig($channel['channel_id'], $contact, 'my_perms', $perm, intval($perms[$perm]));
+
+			foreach ($contacts as $contact) {
+				foreach ($all_perms as $perm => $desc) {
+					if (array_key_exists($perm, $perms)) {
+						$values_sql .= " (" . intval($channel['channel_id']) . ", " .  protect_sprintf($contact) . ", 'my_perms', '" .  dbesc($perm) . "', " .  intval($perms[$perm]) . "),";
 					}
-				}
-				else {
-					foreach($contacts as $contact) {
-						set_abconfig($channel['channel_id'], $contact, 'my_perms', $perm, 0);
+					else {
+						$values_sql .= " (" . intval($channel['channel_id']) . ", " .  protect_sprintf($contact) . ", 'my_perms', '" .  dbesc($perm) . "', 0), ";
 					}
 				}
 			}
 		}
 
-		stringify_array_elms($contacts, true);
-		$contacts_str = implode(',', $contacts);
+		$values_sql = rtrim($values_sql, ',');
+
+		dbq("DELETE FROM abconfig WHERE chan = " . intval($channel['channel_id']) . " AND cat = 'my_perms' AND xchan IN (" . protect_sprintf(implode(',', $contacts)) . ")");
+
+		dbq("INSERT INTO abconfig ( chan, xchan, cat, k, v ) VALUES $values_sql");
 
 		q("UPDATE abook SET abook_role = '%s'
-			WHERE abook_xchan IN (" . protect_sprintf($contacts_str) . ") AND abook_channel = %d",
+			WHERE abook_xchan IN (" . protect_sprintf(implode(',', $contacts)) . ") AND abook_channel = %d",
 			dbesc($role),
 			intval($channel['channel_id'])
 		);
+
+		$r = q("SELECT abook.*, xchan.* FROM abook LEFT JOIN xchan ON abook.abook_xchan = xchan.xchan_hash WHERE abook.abook_xchan IN (" . protect_sprintf(implode(',', $contacts)) . ") AND abook.abook_channel = %d AND abook_self = 0",
+			intval($channel['channel_id'])
+		);
+
+		foreach ($r as $rr) {
+
+			if (intval($rr['abook_self'])) {
+				continue;
+			}
+
+			Master::Summon([
+				'Notifier',
+				'permission_update',
+				$rr['abook_id']
+			]);
+
+			$clone = $rr;
+
+			unset($clone['abook_id']);
+			unset($clone['abook_account']);
+			unset($clone['abook_channel']);
+
+			$abconfig = load_abconfig($channel['channel_id'], $clone['abook_xchan']);
+			if ($abconfig)
+				$clone['abconfig'] = $abconfig;
+
+			Libsync::build_sync_packet(0 /* use the current local_channel */, ['abook' => [$clone]]);
+
+		}
 
 		return true;
 	}
