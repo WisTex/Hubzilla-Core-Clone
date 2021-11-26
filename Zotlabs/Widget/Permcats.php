@@ -43,7 +43,7 @@ class Permcats {
 			$role_sql = rtrim($role_sql, ' OR ');
 
 			// get all xchans belonging to a permission role
-			$q = q("SELECT abconfig.xchan, xchan.xchan_name FROM abconfig LEFT JOIN xchan on xchan = xchan_hash WHERE xchan.xchan_deleted = 0 and abconfig.chan = %d AND abconfig.cat = 'my_perms' AND ( $role_sql ) GROUP BY abconfig.xchan HAVING count(abconfig.xchan) = %d",
+			$q = q("SELECT abconfig.xchan, xchan.xchan_name, abook.abook_id FROM abconfig LEFT JOIN xchan on abconfig.xchan = xchan.xchan_hash LEFT JOIN abook ON abconfig.xchan = abook.abook_xchan WHERE xchan.xchan_deleted = 0 and abconfig.chan = %d AND abconfig.cat = 'my_perms' AND ( $role_sql ) GROUP BY abconfig.xchan HAVING count(abconfig.xchan) = %d ORDER BY xchan.xchan_name",
 				intval(local_channel()),
 				intval($count)
 			);
@@ -51,7 +51,7 @@ class Permcats {
 			$members = '<b>Role members:</b><br>';
 
 			foreach ($q as $qq)
-				$members .= $qq['xchan_name'] . '<br>';
+				$members .= '<a href="connedit/' . $qq['abook_id'] . '">' . $qq['xchan_name'] . '</a><br>';
 
 		}
 		return $list . '<br>' . $members;

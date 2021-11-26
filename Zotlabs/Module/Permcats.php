@@ -22,6 +22,13 @@ class Permcats extends Controller {
 		$name = escape_tags(trim($_POST['name']));
 		$is_system_role = isset($_POST['is_system_role']);
 		$return_path = z_root() . '/permcats/' . $_POST['return_path'];
+		$group_hash = ((isset($_POST['group_select'])) ? $_POST['group_select'] : '');
+
+		if ($group_hash)
+			$group = \Zotlabs\Lib\AccessList::rec_byhash(local_channel(), $group_hash);
+
+		if ($group)
+			$contacts = \Zotlabs\Lib\AccessList::members_xchan(local_channel(), $group['id']);
 
 		if(! $name ) {
 			notice( t('Permission category name is required.') . EOL);
@@ -35,7 +42,10 @@ class Permcats extends Controller {
 		}
 
 		if ($is_system_role) {
-			// if we have a system role just set the default if aplicable and be done with it
+			// if we have a system role just set the default and assign if aplicable and be done with it
+			if ($contacts)
+				\Zotlabs\Lib\Permcat::assign($channel, $name, $contacts);
+
 			info( t('Contact role saved.') . EOL);
 			Libsync::build_sync_packet();
 			goaway($return_path);
@@ -54,6 +64,10 @@ class Permcats extends Controller {
 		}
 
 		\Zotlabs\Lib\Permcat::update(local_channel(), $name, $pcarr);
+
+		if ($contacts) {
+			\Zotlabs\Lib\Permcat::assign($channel, $name, $contacts);
+		}
 
 		Libsync::build_sync_packet();
 
@@ -149,6 +163,13 @@ class Permcats extends Controller {
 
 		$is_default_role = (get_pconfig(local_channel(),'system','default_permcat','default') == $name);
 
+		$group_select_options = [
+			'selected' => '',
+			'form_id' => 'group_select',
+			'label' => t('Assign this role to')
+		];
+		$group_select = \Zotlabs\Lib\Group::select(local_channel(), $group_select_options);
+
 		$tpl = get_markup_template("permcats.tpl");
 		$o .= replace_macros($tpl, array(
 			'$form_security_token' => get_form_security_token("permcats"),
@@ -167,7 +188,9 @@ class Permcats extends Controller {
 			'$permlbl' => t('Role Permissions'),
 			'$permnote' => t('Some permissions may be inherited from your <a href="settings">channel role</a>, which have higher priority than role settings.'),
 			'$submit' 	=> t('Submit'),
-			'$return_path' => argv(1)
+			'$return_path' => argv(1),
+			'$group_select' => $group_select,
+
 		));
 		return $o;
 	}

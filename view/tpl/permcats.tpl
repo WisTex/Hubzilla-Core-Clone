@@ -16,6 +16,8 @@
 			{{include file="field_input.tpl" field=$name}}
 			{{include file="field_checkbox.tpl" field=$default_role}}
 
+			{{$group_select}}
+
 			<div class="section-subtitle-wrapper" id="perms-tool">
 				<h3>
 					{{$permlbl}}

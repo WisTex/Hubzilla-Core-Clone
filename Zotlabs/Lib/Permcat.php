@@ -182,4 +182,70 @@ class Permcat {
 		PConfig::Delete($channel_id, 'permcat', $name);
 	}
 
+	/**
+	 * @brief assign a contact role to contacts
+	 *
+	 * @param int $channel_id
+	 * @param string $role the name of the role
+	 * @param array $contacts an array of contact hashes
+	 */
+	public static function assign($channel, $role, $contacts) {
+
+		if(!isset($channel['channel_id'])) {
+			return;
+		}
+
+		if(!is_array($contacts) || empty($contacts)) {
+			return;
+		}
+
+		if(!$role) {
+			// lookup the default
+			$role = get_pconfig($channel_id, 'system', 'default_permcat', 'default');
+		}
+
+
+		// Doublecheck that we do not assign a role to ourself.
+		// It does not make a difference but could be confusing.
+		if (in_array($channel['channel_hash'], $contacts)) {
+			$contacts = array_diff($contacts, [$channel['channel_hash']]);
+		}
+
+		$all_perms  = Permissions::Perms();
+		$permcats   = new Permcat($channel['channel_id']);
+		$role_perms = $permcats->fetch($role);
+
+		if (isset($role_perms['error'])) {
+			return false;
+		}
+
+		$perms = $role_perms['raw_perms'];
+
+		if ($all_perms && $perms) {
+			foreach ($all_perms as $perm => $desc) {
+				if (array_key_exists($perm, $perms)) {
+					foreach($contacts as $contact) {
+						set_abconfig($channel['channel_id'], $contact, 'my_perms', $perm, intval($perms[$perm]));
+					}
+				}
+				else {
+					foreach($contacts as $contact) {
+						set_abconfig($channel['channel_id'], $contact, 'my_perms', $perm, 0);
+					}
+				}
+			}
+		}
+
+		stringify_array_elms($contacts, true);
+		$contacts_str = implode(',', $contacts);
+
+		q("UPDATE abook SET abook_role = '%s'
+			WHERE abook_xchan IN (" . protect_sprintf($contacts_str) . ") AND abook_channel = %d",
+			dbesc($role),
+			intval($channel['channel_id'])
+		);
+
+		return true;
+	}
+
 }

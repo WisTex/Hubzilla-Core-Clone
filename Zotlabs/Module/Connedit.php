@@ -115,7 +115,9 @@ class Connedit extends Controller {
 			$closeness = 80;
 		}
 
-		$new_friend = false;
+		$new_friend = ((intval($orig_record[0]['abook_pending'])) ? true : false);
+
+/*
 		$perms      = [];
 		$permcats   = new Permcat(local_channel());
 		$role_perms = $permcats->fetch($abook_role);
@@ -147,18 +149,20 @@ class Connedit extends Controller {
 				}
 			}
 		}
+*/
+
+		\Zotlabs\Lib\Permcat::assign($channel, $abook_role, [$orig_record[0]['abook_xchan']]);
 
 		$abook_pending = (($new_friend) ? 0 : $orig_record[0]['abook_pending']);
 
 		$r = q("UPDATE abook SET abook_profile = '%s', abook_closeness = %d, abook_pending = %d,
-			abook_incl = '%s', abook_excl = '%s', abook_role = '%s'
+			abook_incl = '%s', abook_excl = '%s'
 			where abook_id = %d AND abook_channel = %d",
 			dbesc($profile_id),
 			intval($closeness),
 			intval($abook_pending),
 			dbesc($abook_incl),
 			dbesc($abook_excl),
-			dbesc($abook_role),
 			intval($contact_id),
 			intval(local_channel())
 		);
