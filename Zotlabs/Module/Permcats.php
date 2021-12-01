@@ -85,12 +85,8 @@ class Permcats extends Controller {
 
 		$channel = App::get_channel();
 
-		$sys_permcats = [
-			'default'
-		];
-
 		if(argc() > 1)
-			$name = ((in_array(argv(1), $sys_permcats)) ? argv(1) : hex2bin(argv(1)));
+			$name = hex2bin(argv(1));
 
 		if(argc() > 2 && argv(2) === 'drop') {
 			\Zotlabs\Lib\Permcat::delete(local_channel(),$name);
@@ -132,8 +128,8 @@ class Permcats extends Controller {
 					if (isset($pc['system']) && intval($pc['system']))
 						$is_system_role = $pc['name'];
 				}
-				if(! $pc['system'])
-					$permcats[bin2hex($pc['name'])] = $pc['localname'];
+
+				$permcats[bin2hex($pc['name'])] = $pc['localname'];
 
 				if($pc['name'] == $name)
 					$localname = $pc['localname'];

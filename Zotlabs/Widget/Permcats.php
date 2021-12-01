@@ -19,13 +19,13 @@ class Permcats {
 			$i = 0;
 			foreach($pcatlist as $pc) {
 				if(argc() > 1) {
-					if($pc['name'] == (($pc['system']) ? argv(1) : hex2bin(argv(1)))) {
+					if($pc['name'] == hex2bin(argv(1))) {
 						$active = $i;
 						$active_name = $pc['name'];
 					}
 				}
 
-				$list .= '<a href="permcats/' . (($pc['system']) ? $pc['name'] : bin2hex($pc['name'])) . '">' . $pc['localname'] . '</a><br>';
+				$list .= '<a href="permcats/' . bin2hex($pc['name']) . '">' . $pc['localname'] . '</a><br>';
 				$i++;
 			}
 		}

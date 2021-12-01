@@ -1,6 +1,9 @@
 <div id="contact-entry-wrapper-{{$contact.id}}">
 	<div class="section-subtitle-wrapper clearfix">
 		<div class="float-end">
+			{{if $contact.role}}
+				<span id="contact-role-{{$contact.id}}" class="badge rounded-pill bg-warning text-dark me-1" title="{{$role_label}}">{{$contact.role}}</span>
+			{{/if}}
 			{{if $contact.approve && $contact.ignore}}
 			<form action="connedit/{{$contact.id}}" method="post" >
 			<button type="submit" class="btn btn-success btn-sm" name="pending" value="1" title="{{$contact.approve_hover}}"><i class="fa fa-check"></i> {{$contact.approve}}</button>
@@ -11,8 +14,12 @@
 			{{if $contact.connect}}
 				<a href="{{$contact.follow}}" class="btn btn-success btn-sm" title="{{$contact.connect_hover}}"><i class="fa fa-plus"></i> {{$contact.connect}}</a>
 			{{/if}}
-			<a href="#" class="btn btn-danger btn-sm contact-delete-btn" title="{{$contact.delete_hover}}" onclick="dropItem('{{$contact.deletelink}}', '#contact-entry-wrapper-{{$contact.id}}'); return false;"><i class="fa fa-trash-o"></i> {{$contact.delete}}</a>
-			<a href="{{$contact.link}}" class="btn btn-outline-secondary btn-sm" title="{{$contact.edit_hover}}"><i class="fa fa-pencil"></i> {{$contact.edit}}</a>
+			<!--a href="#" class="btn btn-danger btn-sm contact-delete-btn" title="{{$contact.delete_hover}}" onclick="dropItem('{{$contact.deletelink}}', '#contact-entry-wrapper-{{$contact.id}}'); return false;"><i class="fa fa-trash-o"></i> {{$contact.delete}}</a-->
+			<!--a href="{{$contact.link}}" class="btn btn-outline-secondary btn-sm" title="{{$contact.edit_hover}}"><i class="fa fa-pencil"></i> {{$contact.edit}}</a-->
+			<button type="button" class="btn btn-outline-secondary btn-sm contact-edit" title="{{$contact.edit_hover}}" data-bs-toggle="modal" data-bs-target="#edit-modal" data-id="{{$contact.id}}">
+				<i class="fa fa-pencil"></i> {{$contact.edit}}
+			</button>
+
 			{{if $contact.approve}}
 			</form>
 			{{/if}}

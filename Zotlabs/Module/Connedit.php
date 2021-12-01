@@ -660,14 +660,9 @@ class Connedit extends Controller {
 				$permcats[] = '';
 			}
 
-			$system_permcats = [];
-
 			if ($pcatlist) {
 				foreach ($pcatlist as $pc) {
 					$permcats[$pc['name']] = $pc['localname'];
-					if (isset($pc['system']) && $pc['system']) {
-						$system_permcats[] = $pc['name'];
-					}
 				}
 			}
 
@@ -691,7 +686,7 @@ class Connedit extends Controller {
 				'$header'           => sprintf(t('Contact: %s'), $contact['xchan_name']),
 				'$permcat'          => ['permcat', t('Contact role'), $current_permcat, '', $permcats],
 				'$permcat_new'      => t('Manage contact roles'),
-				'$permcat_value'    => ((in_array($current_permcat, $system_permcats)) ? $current_permcat : bin2hex($current_permcat)),
+				'$permcat_value'    => bin2hex($current_permcat),
 				'$addr'             => unpunify($contact['xchan_addr']),
 				'$primeurl'         => unpunify($contact['xchan_url']),
 				'$section'          => $section,
