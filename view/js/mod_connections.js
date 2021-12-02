@@ -76,8 +76,8 @@ $(document).ready(function() {
 		$('#edit-modal-body').css('filter', 'blur(7px)');
 		$('#contact-tools').addClass('disabled');
 		$('#contact-save').addClass('disabled');
-		$('#contact-save').addClass('btn-primary'),
-		$('#contact-save').removeClass('btn-success')
+		$('#contact-save').addClass('btn-primary');
+		$('#contact-save').removeClass('btn-success');
 		$('#contact-save').html(aStr['submit']);
 
 	}
@@ -109,8 +109,12 @@ $(document).ready(function() {
 		}
 
 		if (data.pending) {
-			$('#contact-save').removeClass('btn-primary'),
-			$('#contact-save').addClass('btn-success')
+			$('#contact-save').removeClass('btn-primary');
+			$('#contact-save').addClass('btn-success');
+		}
+		else {
+			$('#contact-save').addClass('btn-primary');
+			$('#contact-save').removeClass('btn-success');
 		}
 	}
 

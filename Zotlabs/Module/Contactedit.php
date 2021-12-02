@@ -387,6 +387,12 @@ class Contactedit extends Controller {
 
 		$header_card = '<img src="' . $contact['xchan_photo_s'] . '" class="rounded" style="width: 3rem; height: 3rem;">&nbsp; ' . $contact['xchan_name'];
 
+		$header_html =  replace_macros(get_markup_template("contact_edit_header.tpl"), [
+			'$img_src' => $contact['xchan_photo_s'],
+			'$name' => $contact['xchan_name'],
+			'$addr' => (($contact['xchan_addr']) ? $contact['xchan_addr'] : $contact['xchan_url'])
+		]);
+
 		$tools_html =  replace_macros(get_markup_template("contact_edit_tools.tpl"), [
 			'$tools_label'      => t('Contact Tools'),
 			'$tools'            => $this->get_tools($contact),
@@ -438,7 +444,7 @@ class Contactedit extends Controller {
 				'success' => ((intval($_REQUEST['success'])) ? intval($_REQUEST['success']) : 1),
 				'message' => (($_REQUEST['success']) ? t('Contact updated') : t('Contact update failed')),
 				'id' => $contact_id,
-				'title' => $header_card,
+				'title' => $header_html,
 				'role' => ((intval($contact['abook_pending'])) ? '' : $roles_dict[$current_permcat]),
 				'body' => $arr['output'],
 				'tools' => $tools_html,

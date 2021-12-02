@@ -54,7 +54,7 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
-				<div id="edit-modal-title" class="modal-title h3">
+				<div id="edit-modal-title" class="modal-title w-75">
 					<div class="placeholder-wave">
 						<span class="placeholder placeholder-lg" style="width: 200px;"></span>
 					</div>
