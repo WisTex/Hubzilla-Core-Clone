@@ -163,10 +163,10 @@ class Contactedit extends Controller {
 		if ($new_friend) {
 			$default_group = $channel['channel_default_group'];
 			if ($default_group) {
-				require_once('include/group.php');
-				$g = group_rec_byhash(local_channel(), $default_group);
-				if ($g)
-					group_add_member(local_channel(), '', $contact['abook_xchan'], $g['id']);
+				$g = AccessList::rec_byhash(local_channel(), $default_group);
+				if ($g) {
+					AccessList::member_add(local_channel(), '', $contact['abook_xchan'], $g['id']);
+				}
 			}
 
 			// Check if settings permit ("post new friend activity" is allowed, and
