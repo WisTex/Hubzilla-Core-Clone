@@ -4,7 +4,7 @@
 			<div class="section-subtitle-wrapper" role="tab" id="roles-tool">
 				<h3>
 					<a class="section" data-bs-toggle="collapse" data-bs-target="#roles-tool-collapse" href="#" aria-expanded="true" aria-controls="roles-tool-collapse" data-section="roles">
-						Role
+						Roles
 					</a>
 				</h3>
 			</div>
@@ -51,6 +51,7 @@
 				</div>
 			</div>
 		</div>
+		{{if $groups}}
 		<div class="panel">
 			<div class="section-subtitle-wrapper" role="tab" id="group-tool">
 				<h3>
@@ -70,7 +71,27 @@
 				</div>
 			</div>
 		</div>
-		{{if $affinity}}
+		{{/if}}
+		{{if $multiprofs}}
+		<div class="panel">
+			<div class="section-subtitle-wrapper" role="tab" id="profile-tool">
+				<h3>
+					<a class="section" data-bs-toggle="collapse" data-bs-target="#profile-tool-collapse" href="#" aria-expanded="true" aria-controls="profile-tool-collapse" data-section="profile">
+						Profiles
+					</a>
+				</h3>
+			</div>
+			<div id="profile-tool-collapse" class="panel-collapse collapse{{if $section == 'profile'}} show{{/if}}" role="tabpanel" aria-labelledby="profile-tool" data-bs-parent="#contact-edit-tools">
+				<div class="section-content-tools-wrapper">
+					{{$profile_select}}
+					<a href="profiles" class="btn btn-sm btn-outline-primary">
+						<i class="fa fa-external-link"></i>&nbsp;Profiles
+					</a>
+				</div>
+			</div>
+		</div>
+		{{/if}}
+		{{if $slide}}
 		<div class="panel">
 			<div class="section-subtitle-wrapper" role="tab" id="affinity-tool">
 				<h3>
@@ -84,22 +105,6 @@
 						<div class="mb-2"><label>{{$lbl_slider}}</label></div>
 						{{$slide}}
 						<input id="contact-closeness-mirror" type="hidden" name="closeness" value="{{$close}}" />
-				</div>
-			</div>
-		</div>
-		{{/if}}
-		{{if $multiprofs}}
-		<div class="panel">
-			<div class="section-subtitle-wrapper" role="tab" id="profile-tool">
-				<h3>
-					<a class="section" data-bs-toggle="collapse" data-bs-target="#profile-tool-collapse" href="#" aria-expanded="true" aria-controls="profile-tool-collapse" data-section="profile">
-						Profile
-					</a>
-				</h3>
-			</div>
-			<div id="profile-tool-collapse" class="panel-collapse collapse{{if $section == 'profile'}} show{{/if}}" role="tabpanel" aria-labelledby="profile-tool" data-bs-parent="#contact-edit-tools">
-				<div class="section-content-tools-wrapper">
-						{{$profile_select}}
 				</div>
 			</div>
 		</div>

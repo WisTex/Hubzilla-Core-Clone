@@ -45,8 +45,10 @@ class Contactedit extends Controller {
 				intval(argv(1))
 			);
 			if (!$r) {
-				notice(t('Invalid abook_id'));
-				killme();
+				json_return_and_die([
+					'success' => false,
+					'message' => t('Invalid abook_id')
+				]);
 			}
 
 			App::$poi = $r[0];
@@ -79,26 +81,21 @@ class Contactedit extends Controller {
 
 		call_hooks('contact_edit_post', $_REQUEST);
 
-		$pgrp_ids = q("SELECT id FROM pgrp WHERE deleted = 0 AND uid = %d",
-			intval(local_channel())
-		);
+		if (Apps::system_app_installed(local_channel(), 'Privacy Groups')) {
+			$pgrp_ids = q("SELECT id FROM pgrp WHERE deleted = 0 AND uid = %d",
+				intval(local_channel())
+			);
 
-		foreach($pgrp_ids as $pgrp) {
-			if (array_key_exists('pgrp_id_' . $pgrp['id'], $_REQUEST)) {
-				AccessList::member_add(local_channel(), '', $contact['abook_xchan'], $pgrp['id']);
-			}
-			else {
-				AccessList::member_remove(local_channel(), '', $contact['abook_xchan'], $pgrp['id']);
+			foreach($pgrp_ids as $pgrp) {
+				if (array_key_exists('pgrp_id_' . $pgrp['id'], $_REQUEST)) {
+					AccessList::member_add(local_channel(), '', $contact['abook_xchan'], $pgrp['id']);
+				}
+				else {
+					AccessList::member_remove(local_channel(), '', $contact['abook_xchan'], $pgrp['id']);
+				}
 			}
 		}
 
-/*
-		$vc               = get_abconfig(local_channel(), $orig_record['abook_xchan'], 'system', 'vcard');
-		$vcard            = (($vc) ? Reader::read($vc) : null);
-		$serialised_vcard = update_vcard($_REQUEST, $vcard);
-		if ($serialised_vcard)
-			set_abconfig(local_channel(), $orig_record[0]['abook_xchan'], 'system', 'vcard', $serialised_vcard);
-*/
 		$profile_id = ((array_key_exists('profile_assign', $_REQUEST)) ? $_REQUEST['profile_assign'] : $contact['abook_profile']);
 
 		if ($profile_id) {
@@ -238,8 +235,8 @@ class Contactedit extends Controller {
 			killme();
 		}
 
-		$abook_prev = 0;
-		$abook_next = 0;
+
+		$channel = App::get_channel();
 		$contact_id = App::$poi['abook_id'];
 		$contact    = App::$poi;
 		$section = ((array_key_exists('section', $_REQUEST)) ? $_REQUEST['section'] : 'roles');
@@ -261,28 +258,36 @@ class Contactedit extends Controller {
 			json_return_and_die($ret);
 		}
 
-
 		$groups = [];
 
-		$r = q("SELECT * FROM pgrp WHERE deleted = 0 AND uid = %d ORDER BY gname ASC",
-			intval(local_channel())
-		);
+		if (Apps::system_app_installed(local_channel(), 'Privacy Groups')) {
 
-		$member_of = AccessList::containing(local_channel(), $contact['xchan_hash']);
+			$r = q("SELECT * FROM pgrp WHERE deleted = 0 AND uid = %d ORDER BY gname ASC",
+				intval(local_channel())
+			);
 
-		if ($r) {
-			foreach ($r as $rr) {
+			$member_of = AccessList::containing(local_channel(), $contact['xchan_hash']);
 
-				$groups[] = [
-					'pgrp_id_' . $rr['id'],
-					$rr['gname'],
-					in_array($rr['id'], $member_of),
-					'',
-					[t('No'), t('Yes')]
-				];
+			if ($r) {
+				foreach ($r as $rr) {
+					$default_group = false;
+					if ($rr['hash'] === $channel['channel_default_group']) {
+						$default_group = true;
+					}
+
+					$groups[] = [
+						'pgrp_id_' . $rr['id'],
+						$rr['gname'],
+						// if it's a new contact preset the default group if we have one
+						(($default_group && $contact['abook_pending']) ? 1 : in_array($rr['id'], $member_of)),
+						'',
+						[t('No'), t('Yes')]
+					];
+				}
 			}
 		}
 
+		$slide = '';
 
 		if (Apps::system_app_installed(local_channel(), 'Affinity Tool')) {
 
@@ -323,15 +328,6 @@ class Contactedit extends Controller {
 		$existing     = get_all_perms(local_channel(), $contact['abook_xchan'], false);
 		$unapproved   = ['pending', t('Approve this contact'), '', t('Accept contact to allow communication'), [t('No'), ('Yes')]];
 		$multiprofs   = ((feature_enabled(local_channel(), 'multi_profiles')) ? true : false);
-
-		if ($slide && !$multiprofs)
-			$affinity = t('Assign Affinity');
-
-		if (!$slide && $multiprofs)
-			$affinity = t('Assign Profile');
-
-		if ($slide && $multiprofs)
-			$affinity = t('Assign Affinity & Profile');
 
 		$theirs = q("select * from abconfig where chan = %d and xchan = '%s' and cat = 'their_perms'",
 			intval(local_channel()),
@@ -399,79 +395,38 @@ class Contactedit extends Controller {
 		$tpl = get_markup_template("contact_edit.tpl");
 
 		$o = replace_macros($tpl, [
-			'$header'           => sprintf(t('Contact: %s'), $contact['xchan_name']),
 			'$permcat'          => ['permcat', t('Select a role for this contact'), $current_permcat, '', $permcats],
 			'$permcat_new'      => t('Contact roles'),
 			'$permcat_value'    => bin2hex($current_permcat),
-			'$addr'             => unpunify($contact['xchan_addr']),
-			'$primeurl'         => unpunify($contact['xchan_url']),
+//			'$addr'             => unpunify($contact['xchan_addr']),
+//			'$primeurl'         => unpunify($contact['xchan_url']),
 			'$section'          => $section,
 			'$sub_section'      => $sub_section,
-			'$sections'         => $sections,
 			'$groups'           => $groups,
-
-			'$vcard'            => $vcard,
-			'$addr_text'        => t('This contacts\'s primary address is'),
-			'$loc_text'         => t('Available locations:'),
-			'$locstr'           => $locstr,
-			'$unclonable'       => $clone_warn,
-			'$autolbl'          => t('The permissions indicated on this page will be applied to all new connections.'),
-
+//			'$addr_text'        => t('This contacts\'s primary address is'),
+//			'$loc_text'         => t('Available locations:'),
+//			'$locstr'           => $locstr,
+//			'$unclonable'       => $clone_warn,
 			'$lbl_slider'       => t('Slide to adjust your degree of friendship'),
 			'$connfilter'       => feature_enabled(local_channel(), 'connfilter'),
 			'$connfilter_label' => t('Custom Filter'),
 			'$incl'             => ['abook_incl', t('Only import posts with this text'), $contact['abook_incl'], t('words one per line or #tags or /patterns/ or lang=xx, leave blank to import all posts')],
 			'$excl'             => ['abook_excl', t('Do not import posts with this text'), $contact['abook_excl'], t('words one per line or #tags or /patterns/ or lang=xx, leave blank to import all posts')],
 			'$slide'            => $slide,
-			'$affinity'         => $affinity,
-			'$pending_label'    => t('Contact Pending Approval'),
-			'$is_pending'       => (intval($contact['abook_pending']) ? 1 : ''),
-			'$unapproved'       => $unapproved,
-			'$inherited'        => t('inherited'),
+//			'$pending_label'    => t('Contact Pending Approval'),
+//			'$is_pending'       => (intval($contact['abook_pending']) ? 1 : ''),
+//			'$unapproved'       => $unapproved,
 			'$submit'           => ((intval($contact['abook_pending'])) ? t('Approve contact') : t('Submit')),
-			'$lbl_vis2'         => sprintf(t('Please choose the profile you would like to display to %s when viewing your profile securely.'), $contact['xchan_name']),
 			'$close'            => (($contact['abook_closeness']) ? $contact['abook_closeness'] : 80),
 			'$them'             => t('Their'),
 			'$me'               => t('My'),
 			'$perms'            => $perms,
-			'$permlbl'          => t('Individual Permissions'),
-			'$permnote'         => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can <strong>not</strong> change those settings here.'),
-			'$permnote_self'    => t('Some permissions may be inherited from your channel\'s <a href="settings"><strong>privacy settings</strong></a>, which have higher priority than individual settings. You can change those settings here but they wont have any impact unless the inherited setting changes.'),
-			'$lastupdtext'      => t('Last update:'),
-			'$last_update'      => relative_date($contact['abook_connected']),
+//			'$lastupdtext'      => t('Last update:'),
+//			'$last_update'      => relative_date($contact['abook_connected']),
 			'$profile_select'   => contact_profile_assign($contact['abook_profile']),
 			'$multiprofs'       => $multiprofs,
 			'$contact_id'       => $contact['abook_id'],
-			'$name'             => $contact['xchan_name'],
-			'$abook_prev'       => $abook_prev,
-			'$abook_next'       => $abook_next,
-			'$vcard_label'      => t('Details'),
-			'$name_label'       => t('Name'),
-			'$org_label'        => t('Organisation'),
-			'$title_label'      => t('Title'),
-			'$tel_label'        => t('Phone'),
-			'$email_label'      => t('Email'),
-			'$impp_label'       => t('Instant messenger'),
-			'$url_label'        => t('Website'),
-			'$adr_label'        => t('Address'),
-			'$note_label'       => t('Note'),
-			'$mobile'           => t('Mobile'),
-			'$home'             => t('Home'),
-			'$work'             => t('Work'),
-			'$other'            => t('Other'),
-			'$add_card'         => t('Add Contact'),
-			'$add_field'        => t('Add Field'),
-			'$create'           => t('Create'),
-			'$update'           => t('Update'),
-			'$delete'           => t('Delete'),
-			'$cancel'           => t('Cancel'),
-			'$po_box'           => t('P.O. Box'),
-			'$extra'            => t('Additional'),
-			'$street'           => t('Street'),
-			'$locality'         => t('Locality'),
-			'$region'           => t('Region'),
-			'$zip_code'         => t('ZIP Code'),
-			'$country'          => t('Country')
+//			'$name'             => $contact['xchan_name'],
 		]);
 
 		$arr = ['contact' => $contact, 'output' => $o];
@@ -480,13 +435,15 @@ class Contactedit extends Controller {
 
 		if (is_ajax()) {
 			json_return_and_die([
-				'success' => intval($_REQUEST['success']),
+				'success' => ((intval($_REQUEST['success'])) ? intval($_REQUEST['success']) : 1),
 				'message' => (($_REQUEST['success']) ? t('Contact updated') : t('Contact update failed')),
 				'id' => $contact_id,
 				'title' => $header_card,
-				'role' => $roles_dict[$current_permcat],
+				'role' => ((intval($contact['abook_pending'])) ? '' : $roles_dict[$current_permcat]),
 				'body' => $arr['output'],
 				'tools' => $tools_html,
+				'submit' => ((intval($contact['abook_pending'])) ? t('Approve connection') : t('Submit')),
+				'pending' => intval($contact['abook_pending'])
 			]);
 		}
 

@@ -389,7 +389,7 @@ class Libzot {
 
 				$my_perms = $p['perms'];
 				$automatic = $p['automatic'];
-				$role = $p['role'];
+				$role = (($automatic) ? $p['role'] : '');
 
 				// new connection
 
@@ -437,7 +437,7 @@ class Libzot {
 								'type'       => NOTIFY_INTRO,
 								'from_xchan' => $x['hash'],
 								'to_xchan'   => $channel['channel_hash'],
-								'link'       => z_root() . '/connedit/' . $new_connection[0]['abook_id']
+								'link'       => z_root() . '/connections#' . $new_connection[0]['abook_id']
 							]
 						);
 

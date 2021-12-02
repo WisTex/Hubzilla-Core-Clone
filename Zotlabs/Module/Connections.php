@@ -389,7 +389,7 @@ class Connections extends \Zotlabs\Web\Controller {
 		else {
 			$o .= "<script> var page_query = '" . escape_tags(urlencode($_GET['q'])) . "'; var extra_args = '" . extra_query_args() . "' ; </script>";
 			$o .= replace_macros(get_markup_template('connections.tpl'), [
-				'$header' => t('Contacts') . (($head) ? ': ' . $head : ''),
+				'$header' => t('Connections') . (($head) ? ': ' . $head : ''),
 				'$tabs' => $tabs,
 				'$total' => $total,
 				'$search' => $search_hdr,

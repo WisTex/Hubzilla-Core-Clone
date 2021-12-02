@@ -6,29 +6,36 @@ $(document).ready(function() {
 	var section = 'roles';
 	var sub_section;
 
+	init_hash();
+	window.onhashchange = init_hash;
+
+	$('#edit-modal').on('hidden.bs.modal', function (e) {
+		deactivate();
+		history.pushState(null, '', 'connections');
+	})
+
 	$(document).on('click', '.contact-edit', function () {
 		poi = this.dataset.id;
-		deactivate();
+		history.pushState(null, '', 'connections#' + poi);
 
 		$.get('contactedit/' + poi, function(data) {
-			activate();
-			$('#edit-modal-title').html(data.title);
-			$('#edit-modal-body').html(data.body);
-			$('#edit-modal-tools').html(data.tools);
-
+			if (!data.success) {
+				$.jGrowl(data.message, {sticky: false, theme: 'notice', life: 10000});
+				return;
+			}
+			activate(data);
 		});
 	});
 
 	$(document).on('click', '#contact-save', function () {
 		let form_data = $('#contact-edit-form').serialize() + '&section=' + section + '&sub_section=' + sub_section;
 
-		deactivate();
 		$.post('contactedit/' + poi, form_data, function(data) {
-			activate();
-			$('#edit-modal-title').html(data.title);
-			$('#edit-modal-body').html(data.body);
-			$('#edit-modal-tools').html(data.tools);
-			$('#contact-role-' + poi).html(data.role);
+			if (!data.success) {
+				$.jGrowl(data.message, {sticky: false, theme: 'notice', life: 10000});
+				return;
+			}
+			activate(data);
 			$.jGrowl(data.message, {sticky: false, theme: ((data.success) ? 'info' : 'notice'), life: ((data.success) ? 3000 : 10000)});
 		});
 
@@ -64,19 +71,63 @@ $(document).ready(function() {
 		}
 	});
 
-	function deactivate() {
+	function deactivate(data) {
 		$('#edit-modal-title').css('filter', 'blur(7px)');
 		$('#edit-modal-body').css('filter', 'blur(7px)');
-		$('#contact-save').addClass('disabled');
 		$('#contact-tools').addClass('disabled');
+		$('#contact-save').addClass('disabled');
+		$('#contact-save').addClass('btn-primary'),
+		$('#contact-save').removeClass('btn-success')
+		$('#contact-save').html(aStr['submit']);
+
 	}
 
-	function activate() {
+	function activate(data) {
 		$('#edit-modal-title').css('filter', 'blur(0px)');
 		$('#edit-modal-body').css('filter', 'blur(0px)');
 		$('#contact-save').removeClass('disabled');
 		$('#contact-tools').removeClass('disabled');
+
+		if (data.title) {
+			$('#edit-modal-title').html(data.title);
+		}
+
+		if (data.body) {
+			$('#edit-modal-body').html(data.body);
+		}
+
+		if (data.tools) {
+			$('#edit-modal-tools').html(data.tools);
+		}
+
+		if (data.submit) {
+			$('#contact-save').html(data.submit);
+		}
+
+		if (data.role) {
+			$('#contact-role-' + poi).html(data.role);
+		}
+
+		if (data.pending) {
+			$('#contact-save').removeClass('btn-primary'),
+			$('#contact-save').addClass('btn-success')
+		}
 	}
 
+	function init_hash() {
+		if(window.location.hash) {
+			poi = window.location.hash.substr(1);
+			deactivate();
+
+			$.get('contactedit/' + poi, function(data) {
+				if (!data.success) {
+					$.jGrowl(data.message, {sticky: false, theme: 'notice', life: 10000});
+					return;
+				}
+				activate(data);
+				$('#edit-modal').modal('show');
+			});
+		}
+	}
 });
 

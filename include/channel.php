@@ -487,8 +487,7 @@ function create_identity($arr) {
 				if($acct) {
 					$f = connect_and_sync($ret['channel'], $acct);
 					if($f['success']) {
-						$can_view_stream = their_perms_contains($ret['channel']['channel_id'],$f['abook']['abook_xchan'],'view_stream');
-
+						$can_view_stream = intval(get_abconfig($ret['channel']['channel_id'], $f['abook']['abook_xchan'], 'their_perms', 'view_stream'));
 						// If we can view their stream, pull in some posts
 						if(($can_view_stream) || ($f['abook']['xchan_network'] === 'rss')) {
 							Master::Summon([ 'Onepoll',$f['abook']['abook_id'] ]);

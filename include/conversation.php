@@ -1070,7 +1070,7 @@ function thread_author_menu($item, $mode = '') {
 	if($contact) {
 		$poke_link = ((Apps::system_app_installed($local_channel, 'Poke')) ? z_root() . '/poke/?f=&c=' . $contact['abook_id'] : '');
 		if (! intval($contact['abook_self']))
-			$contact_url = z_root() . '/connedit/' . $contact['abook_id'];
+			$contact_url = z_root() . '/connections#' . $contact['abook_id'];
 		$posts_link = z_root() . '/network/?cid=' . $contact['abook_id'];
 
 		$clean_url = normalise_link($item['author-link']);
