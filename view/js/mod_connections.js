@@ -11,12 +11,12 @@ $(document).ready(function() {
 
 	$('#edit-modal').on('hidden.bs.modal', function (e) {
 		deactivate();
-		history.pushState(null, '', 'connections');
+		history.replaceState(null, '', 'connections');
 	})
 
 	$(document).on('click', '.contact-edit', function () {
 		poi = this.dataset.id;
-		history.pushState(null, '', 'connections#' + poi);
+		history.replaceState(null, '', 'connections#' + poi);
 
 		$.get('contactedit/' + poi, function(data) {
 			if (!data.success) {
