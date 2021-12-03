@@ -50,28 +50,5 @@
 <div id="page-spinner" class="spinner-wrapper">
 	<div class="spinner m"></div>
 </div>
-<div id="edit-modal" class="modal" tabindex="-1">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<div id="edit-modal-title" class="modal-title w-75">
-					<div class="placeholder-wave">
-						<span class="placeholder placeholder-lg" style="width: 200px;"></span>
-					</div>
-				</div>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-			</div>
-			<div id="edit-modal-body" class="modal-body">
-				<div class="placeholder-wave">
-					<span class="placeholder placeholder-lg w-100 mb-4"></span>
-					<span class="placeholder placeholder-lg w-100 mb-4"></span>
-					<span class="placeholder placeholder-lg w-100 mb-4"></span>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<div id="edit-modal-tools" class="me-auto"></div>
-				<button id="contact-save" type="button" class="btn btn-primary">Submit</button>
-			</div>
-		</div>
-	</div>
-</div>
+{{include file="contact_edit_modal.tpl"}}
+

@@ -68,7 +68,7 @@ class Permcats {
 
 			$members .= '<div class="border rounded" style="height: 20rem; overflow: auto;">';
 			foreach ($r as $rr)
-				$members .= '<a href="connedit/' . $rr['abook_id'] . '" class="p-1 d-block"><img src="' . $rr['xchan_photo_s'] . '" class="menu-img-1" loading="lazy">&nbsp;' . $rr['xchan_name'] . '</a>';
+				$members .= '<a href="connections#' . $rr['abook_id'] . '" class="p-1 d-block"><img src="' . $rr['xchan_photo_s'] . '" class="menu-img-1" loading="lazy">&nbsp;' . $rr['xchan_name'] . '</a>';
 
 			$members .= '</div>';
 

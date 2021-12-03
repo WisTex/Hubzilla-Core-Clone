@@ -2,7 +2,7 @@
 	<div class="section-subtitle-wrapper clearfix">
 		<div class="float-end">
 			<span id="contact-role-{{$contact.id}}" class="badge rounded-pill bg-warning text-dark me-1" title="{{$role_label}}">{{$contact.role}}</span>
-			<button type="button" class="btn btn-outline-secondary btn-sm contact-edit" title="{{$contact.edit_hover}}" data-bs-toggle="modal" data-bs-target="#edit-modal" data-id="{{$contact.id}}">
+			<button type="button" class="btn btn-outline-secondary btn-sm contact-edit" title="{{$contact.edit_hover}}" data-id="{{$contact.id}}">
 				<i class="fa fa-pencil"></i> {{$contact.edit}}
 			</button>
 		</div>
