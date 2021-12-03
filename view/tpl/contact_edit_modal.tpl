@@ -41,13 +41,14 @@
 	}
 
 	window.onhashchange = function() {
-		poi = window.location.hash.substr(1);
-		init_contact_edit(poi);
+		if (window.location.hash) {
+			poi = window.location.hash.substr(1);
+			init_contact_edit(poi);
+		}
 	};
 
 
 	$(document).on('click', '.contact-edit', function (e) {
-		console.log('clicked')
 		e.preventDefault();
 		poi = this.dataset.id
 		init_contact_edit(poi);
@@ -101,8 +102,9 @@
 	});
 
 	function init_contact_edit(poi) {
+		if (!poi)
+			return
 		$.get('contactedit/' + poi, function(data) {
-			console.log(data);
 			if (!data.success) {
 				$.jGrowl(data.message, {sticky: false, theme: 'notice', life: 10000});
 				return;
