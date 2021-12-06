@@ -57,7 +57,7 @@ class PermissionRoles {
 				$ret['perms_connect'] = [
 					'view_stream', 'view_profile', 'view_contacts', 'view_storage',
 					'view_pages', 'view_wiki', 'post_wall', 'post_comments',
-					'post_mail', 'post_like', 'chat'
+					'post_mail', 'post_like', 'tag_deliver', 'chat'
 				];
 				$ret['limits'] = PermissionLimits::Std_Limits();
 				$ret['channel_type'] = 'group';

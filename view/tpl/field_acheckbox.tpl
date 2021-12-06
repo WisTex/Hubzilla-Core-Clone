@@ -5,7 +5,7 @@
 	</td>
 	<td>
 		{{if $field.5}}
-		<span class="permission-inherited">
+		<span class="text-nowrap text-danger">
 			{{$inherited}}
 			{{if $field.7}}
 			<i class="fa fa-check-square-o"></i>
