@@ -2587,6 +2587,10 @@ function tag_deliver($uid, $item_id) {
 		if(perm_is_allowed($uid,$item['owner_xchan'],'post_wall')) {
 			logger('group DM delivery for ' . $u[0]['channel_address']);
 			start_delivery_chain($u[0], $item, $item_id, 0, true, (($item['edited'] != $item['created']) || $item['item_deleted']));
+			q("update item set item_blocked = %d where id = %d",
+				intval(ITEM_HIDDEN),
+				intval($item_id)
+			);
 		}
 		return;
 	}
@@ -2700,6 +2704,7 @@ function tag_deliver($uid, $item_id) {
 				}
 				logger('group_comment');
 				start_delivery_chain($u[0], $item, $item_id, $x[0], true, (($item['edited'] != $item['created']) || $item['item_deleted']));
+
 			}
 			elseif (intval($x[0]['item_uplink'])) {
 				start_delivery_chain($u,$item,$item_id,$x[0]);
@@ -3145,6 +3150,15 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 
 		$arr = [];
 
+
+		if ($item['obj_type'] === 'Question') {
+			return;
+		}
+
+		q("update item set item_hidden = 1 where id = %d",
+			intval($item_id)
+		);
+
 		if ($edit) {
 
 			// process edit or delete action
@@ -3212,6 +3226,26 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 		$bb .= "[/share]";
 
 		$arr['body'] = $bb;
+
+		// Conversational objects shouldn't be copied, but other objects should.
+		if (in_array($item['obj_type'], [ 'Image', 'Event', 'Question' ])) {
+			$arr['obj'] = $item['obj'];
+			$t = json_decode($arr['obj'],true);
+			if ($t !== NULL) {
+				$arr['obj'] = $t;
+			}
+			$arr['obj']['content'] = bbcode($bb, [ 'export' => true ]);
+			$arr['obj']['source']['content'] = $bb;
+			$arr['obj']['id'] = $arr['mid'];
+
+			if (! array_path_exists('obj/source/mediaType',$arr)) {
+				$arr['obj']['source']['mediaType'] = 'text/bbcode';
+			}
+		}
+
+		$arr['tgt_type'] = $item['tgt_type'];
+		$arr['target'] = $item['target'];
+
 		$arr['term'] = $item['term'];
 
 		$arr['author_xchan'] = $channel['channel_hash'];
@@ -3243,7 +3277,7 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 
 
 	if ($group && $parent) {
-		hz_syslog('comment arrived in group', LOGGER_DEBUG);
+		logger('comment arrived in group', LOGGER_DEBUG);
 		$arr = [];
 
 		// don't let this recurse. We checked for this before calling, but this ensures
@@ -3268,11 +3302,11 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 			return;
 		}
 		else {
-			$arr['mid'] = item_message_id();
+			$arr['uuid'] = item_message_id();
+			$arr['mid'] = $arr['uuid'];
 			$arr['parent_mid'] = $item['parent_mid'];
-		//	IConfig::Set($arr,'activitypub','context', str_replace('/item/','/conversation/',$item['parent_mid']));
+			//IConfig::Set($arr,'activitypub','context', str_replace('/item/','/conversation/',$item['parent_mid']));
 		}
-
 		$arr['aid'] = $channel['channel_account_id'];
 		$arr['uid'] = $channel['channel_id'];
 
@@ -3302,6 +3336,7 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 		$arr['item_private'] = (($channel['channel_allow_cid'] || $channel['channel_allow_gid'] || $channel['channel_deny_cid'] || $channel['channel_deny_gid']) ? 1 : 0);
 
 		$arr['item_origin'] = 1;
+		$arr['item_notshown'] = 1;
 
 		$arr['item_thread_top'] = 0;
 
@@ -3310,10 +3345,6 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 		$arr['deny_cid']  = $channel['channel_deny_cid'];
 		$arr['deny_gid']  = $channel['channel_deny_gid'];
 		$arr['comment_policy'] = map_scope(PermissionLimits::Get($channel['channel_id'],'post_comments'));
-
-		//$arr['replyto'] = z_root() . '/channel/' . $channel['channel_address'];
-
-//hz_syslog(print_r($arr,true));
 
 		$post = item_store($arr);
 		$post_id = $post['item_id'];

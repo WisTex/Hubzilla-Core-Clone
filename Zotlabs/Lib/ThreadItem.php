@@ -120,6 +120,16 @@ class ThreadItem {
 		if($item['author']['xchan_network'] === 'rss')
 			$shareable = true;
 
+		// @fixme
+		// Have recently added code to properly handle polls in group reshares by redirecting all of the poll responses to the group.
+		// Sharing a poll using a regular embedded share is harder because the poll will need to fork. This is due to comment permissions.
+		// The original poll author may not accept responses from strangers. Forking the poll will receive responses from the sharer's
+		// followers, but there's no elegant way to merge these two sets of results together. For now, we'll disable sharing polls.
+
+		if ($item['obj_type'] === 'Question') {
+			$shareable = false;
+		}
+
 		$privacy_warning = false;
 		if(intval($item['item_private']) && ($item['owner']['xchan_network'] === 'activitypub')) {
 			$recips = get_iconfig($item['parent'], 'activitypub', 'recips');
