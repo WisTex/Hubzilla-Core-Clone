@@ -2694,6 +2694,17 @@ class Activity {
 				// set the owner to the owner of the parent
 				$item['owner_xchan'] = $p[0]['owner_xchan'];
 
+				// quietly reject group comment boosts by group owner
+				// (usually only sent via ActivityPub so groups will work on microblog platforms)
+				// This catches those activities if they slipped in via a conversation fetch
+
+				if ($p[0]['parent_mid'] !== $item['parent_mid']) {
+					if ($item['verb'] === 'Announce' && $item['author_xchan'] === $item['owner_xchan']) {
+						logger('group boost activity by group owner rejected');
+						return;
+					}
+				}
+
 				// check permissions against the author, not the sender
 				$allowed = perm_is_allowed($channel['channel_id'], $item['author_xchan'], 'post_comments');
 				if ((!$allowed)/* && $permit_mentions*/) {

@@ -1145,6 +1145,7 @@ class Libzot {
 		if ($env['encoding'] === 'activitystreams') {
 
 			$AS = new ActivityStreams($data);
+
 			if (!$AS->is_valid()) {
 				logger('Activity rejected: ' . print_r($data, true));
 				return;
@@ -2787,28 +2788,6 @@ class Libzot {
 		if ($deleted || $censored || $sys_channel)
 			$searchable = false;
 
-		$public_forum = false;
-
-		$role = get_pconfig($e['channel_id'], 'system', 'permissions_role');
-		if ($role === 'forum' || $role === 'repository') {
-			$public_forum = true;
-		}
-		else {
-			// check if it has characteristics of a public forum based on custom permissions.
-			$m = Permissions::FilledAutoperms($e['channel_id']);
-			if ($m) {
-				foreach ($m as $k => $v) {
-					if ($k == 'tag_deliver' && intval($v) == 1)
-						$ch++;
-					if ($k == 'send_stream' && intval($v) == 0)
-						$ch++;
-				}
-				if ($ch == 2)
-					$public_forum = true;
-			}
-		}
-
-
 		//  This is for birthdays and keywords, but must check access permissions
 		$p = q("select * from profile where uid = %d and is_default = 1",
 			intval($e['channel_id'])
@@ -2877,6 +2856,7 @@ class Libzot {
 		];
 
 		$ret['channel_role']  = get_pconfig($e['channel_id'], 'system', 'permissions_role', 'custom');
+		$ret['channel_type']  = ((get_pconfig($e['channel_id'], 'system', 'group_actor')) ? 'group' : 'normal');
 
 		$hookinfo = [
 			'channel_id' => $id,
@@ -2892,8 +2872,10 @@ class Libzot {
 		$ret['protocols']     = $hookinfo['protocols'];
 		$ret['searchable']    = $searchable;
 		$ret['adult_content'] = $adult_channel;
-		$ret['public_forum']  = $public_forum;
 
+		// now all forums (public, restricted, and private) set the public_forum flag. So it really means "is a group"
+		// and has nothing to do with accessibility.
+		$ret['public_forum'] = get_pconfig($e['channel_id'], 'system', 'group_actor');
 		$ret['comments'] = map_scope(PermissionLimits::Get($e['channel_id'], 'post_comments'));
 		$ret['mail']     = map_scope(PermissionLimits::Get($e['channel_id'], 'post_mail'));
 

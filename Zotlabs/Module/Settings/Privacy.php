@@ -24,25 +24,20 @@ class Privacy {
 
 		$role = get_pconfig(local_channel(), 'system', 'permissions_role');
 		if ($role === 'custom') {
+
 			$global_perms = Permissions::Perms();
 
 			foreach ($global_perms as $k => $v) {
 				PermissionLimits::Set(local_channel(), $k, intval($_POST[$k]));
 			}
+
+			$group_actor = (((x($_POST, 'group_actor')) && (intval($_POST['group_actor']) == 1)) ? 1 : 0);
+			set_pconfig(local_channel(), 'system', 'group_actor', $group_actor);
+
 		}
 
-		$default_acl   = ((x($_POST, 'default_acl')) ? '<' . notags(trim($_POST['default_acl'])) . '>' : '');
-		$def_group     = ((x($_POST, 'group-selection')) ? notags(trim($_POST['group-selection'])) : '');
-
-		$r = q("update channel set channel_default_group = '%s', channel_allow_gid = '%s'
-				where channel_id = %d",
-			dbesc($def_group),
-			dbesc($default_acl),
-			intval(local_channel())
-		);
-		if ($r)
-			info(t('Privacy settings updated.') . EOL);
-
+		info(t('Privacy settings updated.') . EOL);
+		Master::Summon(['Directory', local_channel()]);
 		Libsync::build_sync_packet();
 
 		goaway(z_root() . '/settings/privacy');
@@ -58,7 +53,7 @@ class Privacy {
 		$permiss      = [];
 
 		$perm_opts = [
-			[t('Nobody except yourself'), 0],
+			[t('Only me'), 0],
 			[t('Only those you specifically allow'), PERMS_SPECIFIC],
 			[t('Approved connections'), PERMS_CONTACTS],
 			[t('Any connections'), PERMS_PENDING],
@@ -68,7 +63,7 @@ class Privacy {
 			[t('Anybody on the internet'), PERMS_PUBLIC]
 		];
 
-		$recommend_public = [
+		$help = [
 			'view_stream',
 			'view_wiki',
 			'view_pages',
@@ -86,6 +81,7 @@ class Privacy {
 			foreach ($perm_opts as $opt) {
 				if ($opt[1] == PERMS_PUBLIC && (!$can_be_public))
 					continue;
+
 				$options[$opt[1]] = $opt[0];
 			}
 
@@ -93,7 +89,7 @@ class Privacy {
 				$k,
 				$perm,
 				$limits[$k],
-				((in_array($k, $recommend_public)) ? $help_txt : ''),
+				((in_array($k, $help)) ? $help_txt : ''),
 				$options
 			];
 		}
@@ -101,7 +97,8 @@ class Privacy {
 		//logger('permiss: ' . print_r($permiss,true));
 
 		$autoperms = get_pconfig(local_channel(), 'system', 'autoperms');
-		$index_opt_out   = get_pconfig(local_channel(), 'system', 'index_opt_out');
+		$index_opt_out = get_pconfig(local_channel(), 'system', 'index_opt_out');
+		$group_actor = get_pconfig(local_channel(), 'system', 'group_actor');
 
 		$permissions_role   = get_pconfig(local_channel(), 'system', 'permissions_role', 'custom');
 		$permission_limits  = ($permissions_role === 'custom');
@@ -117,11 +114,12 @@ class Privacy {
 			'$permission_limits_label'   => t('Channel permission limits'),
 			'$permission_limits_warning' => [
 				t('Proceed with caution'),
-				t('Changing advanced configuration preferences can impact your channels functionality and security.'),
+				t('Changing advanced configuration preferences can impact your channels and your contacts channels functionality and security.'),
 				t('Accept the risk and continue')
 			],
 			'$autoperms' => ['autoperms', t('Automatically approve new contacts'), $autoperms, '', [t('No'), t('Yes')]],
-			'$index_opt_out' => ['index_opt_out', t('Opt-out of search engine indexing'), $index_opt_out, '', [t('No'), t('Yes')]]
+			'$index_opt_out' => ['index_opt_out', t('Opt-out of search engine indexing'), $index_opt_out, '', [t('No'), t('Yes')]],
+			'$group_actor' => ['group_actor', t('Group actor'), $group_actor, t('Allow this channel to act as a forum'), [t('No'), t('Yes')]],
 		]);
 
 		return $o;

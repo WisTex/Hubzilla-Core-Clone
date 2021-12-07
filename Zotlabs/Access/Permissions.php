@@ -69,7 +69,7 @@ class Permissions {
 			'post_like'     => t('Can like/dislike profiles and profile things'),
 			'chat'          => t('Can chat with me'),
 			'republish'     => t('Can source/mirror my public posts in derived channels'),
-			'tag_deliver'   => t('Can forward to my contacts via direct messages (forum)'),
+			//'tag_deliver'   => t('Can forward to my contacts via direct messages (forum)'),
 			'delegate'      => t('Can administer my channel')
 		];
 

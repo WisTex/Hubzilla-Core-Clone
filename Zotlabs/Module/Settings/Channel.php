@@ -91,8 +91,8 @@ class Channel {
 		if (x($_POST, 'vnotify15'))
 			$vnotify += intval($_POST['vnotify15']);
 
-		$always_show_in_notices    = x($_POST, 'always_show_in_notices') ? 1 : 0;
-		$update_notices_per_parent = x($_POST, 'update_notices_per_parent') ? 1 : 0;
+		$always_show_in_notices    = ((x($_POST, 'always_show_in_notices')) ? 1 : 0);
+		$update_notices_per_parent = ((x($_POST, 'update_notices_per_parent')) ? 1 : 0);
 
 		if ($timezone !== $channel['channel_timezone']) {
 			if (strlen($timezone))
@@ -101,10 +101,16 @@ class Channel {
 
 		if ($role !== get_pconfig(local_channel(), 'system', 'permissions_role')) {
 			$role_permissions = PermissionRoles::role_perms($_POST['permissions_role']);
+
 			if (isset($role_permissions['limits'])) {
 				foreach ($role_permissions['limits'] as $k => $v) {
 					PermissionLimits::Set(local_channel(), $k, $v);
 				}
+			}
+
+			set_pconfig(local_channel(), 'system', 'group_actor', 0);
+			if (isset($role_permissions['channel_type']) && $role_permissions['channel_type'] === 'group') {
+				set_pconfig(local_channel(), 'system', 'group_actor', 1);
 			}
 		}
 

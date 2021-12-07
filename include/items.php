@@ -13,6 +13,7 @@ use Zotlabs\Lib\IConfig;
 use Zotlabs\Lib\Activity;
 use Zotlabs\Lib\Libsync;
 use Zotlabs\Lib\Libzot;
+use Zotlabs\Lib\ActivityStreams;
 use Zotlabs\Access\PermissionLimits;
 use Zotlabs\Access\PermissionRoles;
 use Zotlabs\Access\AccessList;
@@ -2541,12 +2542,7 @@ function get_item_contact($item,$contacts) {
  */
 function tag_deliver($uid, $item_id) {
 
-	$role = get_pconfig($uid,'system','permissions_role');
-	$rolesettings = PermissionRoles::role_perms($role);
-	$channel_type = isset($rolesettings['channel_type']) ? $rolesettings['channel_type'] : 'normal';
-
-	$is_group = (($channel_type === 'group') ? true : false);
-
+	$is_group = get_pconfig($uid, 'system', 'group_actor');
 	$mention = false;
 
 	/*
@@ -2583,13 +2579,12 @@ function tag_deliver($uid, $item_id) {
 	}
 
 	if ($is_group && intval($item['item_private']) === 2 && intval($item['item_thread_top'])) {
-
 		// do not turn the groups own direkt messages into group items
 		if($item['item_wall'] && $item['author_xchan'] === $u[0]['channel_hash'])
 			return;
 
 		// group delivery via DM
-		if(perm_is_allowed($uid,$item['owner_xchan'],'post_wall') || perm_is_allowed($uid,$item['owner_xchan'],'tag_deliver')) {
+		if(perm_is_allowed($uid,$item['owner_xchan'],'post_wall')) {
 			logger('group DM delivery for ' . $u[0]['channel_address']);
 			start_delivery_chain($u[0], $item, $item_id, 0, true, (($item['edited'] != $item['created']) || $item['item_deleted']));
 		}
@@ -2681,9 +2676,36 @@ function tag_deliver($uid, $item_id) {
 			intval($uid)
 		);
 
-		if(($x) && intval($x[0]['item_uplink'])) {
-			start_delivery_chain($u[0],$item,$item_id,$x[0]);
+		if ($x) {
+
+			// group comments don't normally require a second delivery chain
+			// but we create a linked Announce so they will show up in the home timeline
+			// on microblog platforms and this creates a second delivery chain
+
+			if ($is_group && intval($x[0]['item_wall'])) {
+				// don't let the forked delivery chain recurse
+				if ($item['verb'] === 'Announce' && $item['author_xchan'] === $u['channel_hash']) {
+					return;
+				}
+				// don't announce moderated content until it has been approved
+				if (intval($item['item_blocked']) === ITEM_MODERATED) {
+					return;
+				}
+
+				// don't boost likes and other response activities as it is likely that
+				// few platforms will handle this in an elegant way
+
+				if (ActivityStreams::is_response_activity($item['verb'])) {
+					return;
+				}
+				logger('group_comment');
+				start_delivery_chain($u[0], $item, $item_id, $x[0], true, (($item['edited'] != $item['created']) || $item['item_deleted']));
+			}
+			elseif (intval($x[0]['item_uplink'])) {
+				start_delivery_chain($u,$item,$item_id,$x[0]);
+			}
 		}
+
 	}
 
 
@@ -2924,13 +2946,7 @@ function item_community_tag($channel,$item) {
  */
 function tgroup_check($uid, $item) {
 
-
-	$role = get_pconfig($uid,'system','permissions_role');
-	$rolesettings = PermissionRoles::role_perms($role);
-	$channel_type = isset($rolesettings['channel_type']) ? $rolesettings['channel_type'] : 'normal';
-
-	$is_group = (($channel_type === 'group') ? true : false);
-
+	$is_group = get_pconfig($uid, 'system', 'group_actor');
 	$mention = false;
 
 	// check that the message originated elsewhere and is a top-level post
@@ -3222,6 +3238,95 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 		if($post_id) {
 			Master::Summon([ 'Notifier','tgroup',$post_id ]);
 		}
+		return;
+	}
+
+
+	if ($group && $parent) {
+		hz_syslog('comment arrived in group', LOGGER_DEBUG);
+		$arr = [];
+
+		// don't let this recurse. We checked for this before calling, but this ensures
+		// it doesn't sneak through another way because recursion is nasty.
+
+		if ($item['verb'] === 'Announce' && $item['author_xchan'] === $channel['channel_hash']) {
+			return;
+		}
+
+		// Don't send Announce activities for poll responses.
+
+		if ($item['obj_type'] === 'Answer') {
+			return;
+		}
+
+		if ($edit) {
+			if (intval($item['item_deleted'])) {
+				drop_item($item['id'],false,DROPITEM_PHASE1);
+				Master::Summon([ 'Notifier','drop',$item['id'] ]);
+				return;
+			}
+			return;
+		}
+		else {
+			$arr['mid'] = item_message_id();
+			$arr['parent_mid'] = $item['parent_mid'];
+		//	IConfig::Set($arr,'activitypub','context', str_replace('/item/','/conversation/',$item['parent_mid']));
+		}
+
+		$arr['aid'] = $channel['channel_account_id'];
+		$arr['uid'] = $channel['channel_id'];
+
+		$arr['verb'] = 'Announce';
+
+		if (is_array($item['obj'])) {
+			$arr['obj'] = $item['obj'];
+		}
+		elseif (is_string($item['obj']) && strlen($item['obj'])) {
+			$arr['obj'] = json_decode($item['obj'],true);
+		}
+
+		if (! $arr['obj']) {
+			$arr['obj'] = $item['mid'];
+		}
+
+		if (is_array($arr['obj'])) {
+			$obj_actor = ((isset($arr['obj']['actor'])) ? ((is_array($arr['obj']['actor'])) ? $arr['obj']['actor']['id'] : $arr['obj']['actor']) : $arr['obj']['attributedTo']);
+			$mention = Activity::get_actor_bbmention($obj_actor);
+			$arr['body'] = sprintf( t('&#x1f501; Repeated %1$s\'s %2$s'), $mention, $arr['obj']['type']);
+		}
+
+		$arr['author_xchan'] = $channel['channel_hash'];
+
+		$arr['item_wall'] = 1;
+
+		$arr['item_private'] = (($channel['channel_allow_cid'] || $channel['channel_allow_gid'] || $channel['channel_deny_cid'] || $channel['channel_deny_gid']) ? 1 : 0);
+
+		$arr['item_origin'] = 1;
+
+		$arr['item_thread_top'] = 0;
+
+		$arr['allow_cid'] = $channel['channel_allow_cid'];
+		$arr['allow_gid'] = $channel['channel_allow_gid'];
+		$arr['deny_cid']  = $channel['channel_deny_cid'];
+		$arr['deny_gid']  = $channel['channel_deny_gid'];
+		$arr['comment_policy'] = map_scope(PermissionLimits::Get($channel['channel_id'],'post_comments'));
+
+		//$arr['replyto'] = z_root() . '/channel/' . $channel['channel_address'];
+
+//hz_syslog(print_r($arr,true));
+
+		$post = item_store($arr);
+		$post_id = $post['item_id'];
+
+		if ($post_id) {
+			Master::Summon([ 'Notifier','tgroup',$post_id ]);
+		}
+
+		q("update channel set channel_lastpost = '%s' where channel_id = %d",
+			dbesc(datetime_convert()),
+			intval($channel['channel_id'])
+		);
+
 		return;
 	}
 

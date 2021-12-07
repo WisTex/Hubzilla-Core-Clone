@@ -33,6 +33,7 @@
 								{{foreach $permiss_arr as $permit}}
 									{{include file="field_select.tpl" field=$permit}}
 								{{/foreach}}
+								{{include file="field_checkbox.tpl" field=$group_actor}}
 								</div>
 
 							</div>

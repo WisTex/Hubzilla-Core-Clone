@@ -794,13 +794,7 @@ class Item extends Controller {
 
 		// if this is a wall-to-wall post to a group, turn it into a direct message
 
-		$role = get_pconfig($profile_uid, 'system', 'permissions_role');
-
-		$rolesettings = PermissionRoles::role_perms($role);
-
-		$channel_type = isset($rolesettings['channel_type']) ? $rolesettings['channel_type'] : 'normal';
-
-		$is_group = (($channel_type === 'group') ? true : false);
+		$is_group = get_pconfig($profile_uid, 'system', 'group_actor');
 
 		if (($is_group) && ($walltowall) && (!$walltowall_comment)) {
 			$groupww           = true;
