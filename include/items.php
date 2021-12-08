@@ -2603,13 +2603,6 @@ function tag_deliver($uid, $item_id) {
 			return;
 		}
 
-		/* this should not be required anymore due to the check above
-		if (strpos($item['body'],'[/share]')) {
-			logger('W2W post already shared');
-			return;
-		}
-		*/
-
 		// group delivery via W2W
 		logger('rewriting W2W post for ' . $u[0]['channel_address']);
 		start_delivery_chain($u[0], $item, $item_id, 0, true, (($item['edited'] != $item['created']) || $item['item_deleted']));
@@ -3150,11 +3143,6 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 
 		$arr = [];
 
-
-		if ($item['obj_type'] === 'Question') {
-			return;
-		}
-
 		q("update item set item_hidden = 1 where id = %d",
 			intval($item_id)
 		);
@@ -3189,7 +3177,7 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 		}
 		else {
 			$arr['uuid'] = item_message_id();
-			$arr['mid'] = z_root() . '/activity/' . $arr['uuid'];
+			$arr['mid'] = z_root() . '/item/' . $arr['uuid'];
 			$arr['parent_mid'] = $arr['mid'];
 		}
 
@@ -3206,6 +3194,10 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 
 		$arr['item_private'] = (($channel['channel_allow_cid'] || $channel['channel_allow_gid']
 		|| $channel['channel_deny_cid'] || $channel['channel_deny_gid']) ? 1 : 0);
+
+		if ($channel['channel_allow_cid'] && empty($channel['channel_allow_gid'])) {
+			$arr['item_private'] = 2;
+		}
 
 		$arr['item_origin'] = 1;
 		$arr['item_wall'] = 1;
@@ -3226,21 +3218,24 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 		$bb .= "[/share]";
 
 		$arr['body'] = $bb;
-
 		// Conversational objects shouldn't be copied, but other objects should.
 		if (in_array($item['obj_type'], [ 'Image', 'Event', 'Question' ])) {
 			$arr['obj'] = $item['obj'];
 			$t = json_decode($arr['obj'],true);
+
 			if ($t !== NULL) {
 				$arr['obj'] = $t;
 			}
-			$arr['obj']['content'] = bbcode($bb, [ 'export' => true ]);
+			$arr['obj']['content'] = bbcode($bb);
 			$arr['obj']['source']['content'] = $bb;
 			$arr['obj']['id'] = $arr['mid'];
 
 			if (! array_path_exists('obj/source/mediaType',$arr)) {
 				$arr['obj']['source']['mediaType'] = 'text/bbcode';
 			}
+
+			$arr['obj']['directMessage'] = (intval($arr['item_private']) === 2);
+
 		}
 
 		$arr['tgt_type'] = $item['tgt_type'];
@@ -3303,7 +3298,7 @@ function start_delivery_chain($channel, $item, $item_id, $parent, $group = false
 		}
 		else {
 			$arr['uuid'] = item_message_id();
-			$arr['mid'] = $arr['uuid'];
+			$arr['mid'] = z_root() . '/activity/' . $arr['uuid'];
 			$arr['parent_mid'] = $item['parent_mid'];
 			//IConfig::Set($arr,'activitypub','context', str_replace('/item/','/conversation/',$item['parent_mid']));
 		}

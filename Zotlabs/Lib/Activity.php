@@ -886,10 +886,6 @@ class Activity {
 		else
 			return [];
 
-		if (strpos($i['body'], '[/share]') !== false) {
-			$i['obj'] = null;
-		}
-
 		if ($i['obj']) {
 			if (!is_array($i['obj'])) {
 				$i['obj'] = json_decode($i['obj'], true);
@@ -899,8 +895,10 @@ class Activity {
 			}
 
 			$obj = self::encode_object($i['obj']);
-			if ($obj)
+
+			if ($obj) {
 				$ret['object'] = $obj;
+			}
 			else
 				return [];
 		}
@@ -1042,7 +1040,7 @@ class Activity {
 			$tmp  = expand_acl($i['allow_cid']);
 			$list = stringify_array($tmp, true);
 			if ($list) {
-				$details = q("select hubloc_id_url from hubloc where hubloc_hash in (" . $list . ") and hubloc_id_url != ''");
+				$details = q("select hubloc_id_url from hubloc where hubloc_hash in (" . $list . ") and hubloc_id_url != '' and hubloc_deleted = 0");
 				if ($details) {
 					foreach ($details as $d) {
 						$ret[] = $d['hubloc_id_url'];

@@ -988,8 +988,9 @@ class Item extends Controller {
 
 		$notify_type = (($parent) ? 'comment-new' : 'wall-new');
 
+		$uuid = (($message_id) ? $message_id : item_message_id());
+
 		if (!$mid) {
-			$uuid = (($message_id) ? $message_id : item_message_id());
 			$mid  = z_root() . '/item/' . $uuid;
 		}
 
@@ -1009,11 +1010,19 @@ class Item extends Controller {
 		}
 
 		if ($obj) {
-			$obj['url']          = $mid;
-			$obj['id']          = $mid;
-			$obj['attributedTo'] = channel_url($channel);
-			$datarray['obj']     = $obj;
-			$obj_type            = 'Question';
+			$obj['url']           = $mid;
+			$obj['id']            = $mid;
+			$obj['diaspora:guid'] = $uuid;
+			$obj['attributedTo']  = channel_url($channel);
+			$datarray['obj']      = $obj;
+
+			if ($obj['endTime']) {
+				$d = datetime_convert('UTC','UTC', $obj['endTime']);
+				if ($d > NULL_DATE) {
+					$comments_closed = $d;
+				}
+			}
+			$obj_type             = 'Question';
 		}
 
 		if (!$parent_mid) {
@@ -1588,6 +1597,8 @@ class Item extends Controller {
 		}
 
 		$obj['endTime'] = datetime_convert(date_default_timezone_get(), 'UTC', 'now + ' . $expire_value . ' ' . $expire_unit, ATOM_TIME);
+
+		$obj['directMessage'] = (intval($item['item_private']) === 2);
 
 		if ($item['item_private']) {
 			$obj['to'] = Activity::map_acl($item);

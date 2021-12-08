@@ -1753,6 +1753,7 @@ function prepare_body(&$item,$attach = false,$opts = false) {
 		}
 	}
 
+
 	$poll = (($item['obj_type'] === 'Question' && in_array($item['verb'],[ ACTIVITY_POST, ACTIVITY_UPDATE, ACTIVITY_SHARE ])) ? format_poll($item, $s, $opts) : false);
 	if ($poll) {
 		$s = $poll;
@@ -1842,7 +1843,6 @@ function prepare_binary($item) {
 
 
 function format_poll($item,$s,$opts) {
-
 	if (! is_array($item['obj'])) {
 		$act = json_decode($item['obj'],true);
 	}
@@ -1856,7 +1856,6 @@ function format_poll($item,$s,$opts) {
 
 	$commentable = can_comment_on_post(((local_channel()) ? get_observer_hash() : EMPTY_STR),$item);
 
-	//logger('format_poll: ' . print_r($item,true));
 	$activated = ((local_channel() && local_channel() == $item['uid']) ? true : false);
 	$output = $s . EOL. EOL;
 

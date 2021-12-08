@@ -1161,8 +1161,6 @@ class Libzot {
 
 		}
 
-
-
 		$deliveries = null;
 
 		if (array_key_exists('recipients', $env) && count($env['recipients'])) {
@@ -1595,6 +1593,7 @@ class Libzot {
 
 			if ((!$tag_delivery) && (!$local_public)) {
 				$allowed = (perm_is_allowed($channel['channel_id'], $sender, $perm));
+
 				if ((!$allowed) && $perm === 'post_comments') {
 					$parent = q("select * from item where mid = '%s' and uid = %d limit 1",
 						dbesc($arr['parent_mid']),
