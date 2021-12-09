@@ -154,7 +154,6 @@ class PermissionsTest extends UnitTestCase {
 								'post_comments' => 0,
 								'post_mail' => 0,
 								'post_like' => 0,
-								'tag_deliver' => 0,
 								'chat' => 0,
 								'republish' => 0,
 								'delegate' => 0
@@ -177,7 +176,6 @@ class PermissionsTest extends UnitTestCase {
 								'post_comments' => 0,
 								'post_mail' => 0,
 								'post_like' => 0,
-								'tag_deliver' => 0,
 								'chat' => 0,
 								'republish' => 0,
 								'delegate' => 0
@@ -200,7 +198,6 @@ class PermissionsTest extends UnitTestCase {
 								'post_comments' => 0,
 								'post_mail' => 0,
 								'post_like' => 0,
-								'tag_deliver' => 0,
 								'chat' => 0,
 								'republish' => 0,
 								'delegate' => 0
@@ -234,7 +231,6 @@ class PermissionsTest extends UnitTestCase {
 				'post_comments' => 0,
 				'post_mail' => 0,
 				'post_like' => 0,
-				'tag_deliver' => 0,
 				'chat' => 0,
 				'republish' => 0,
 				'delegate' => 0
