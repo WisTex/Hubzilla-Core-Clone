@@ -390,7 +390,8 @@ class Contactedit extends Controller {
 		$header_html =  replace_macros(get_markup_template("contact_edit_header.tpl"), [
 			'$img_src' => $contact['xchan_photo_s'],
 			'$name' => $contact['xchan_name'],
-			'$addr' => (($contact['xchan_addr']) ? $contact['xchan_addr'] : $contact['xchan_url'])
+			'$addr' => (($contact['xchan_addr']) ? $contact['xchan_addr'] : $contact['xchan_url']),
+			'href' => zid($contact['xchan_url'])
 		]);
 
 		$tools_html =  replace_macros(get_markup_template("contact_edit_tools.tpl"), [
