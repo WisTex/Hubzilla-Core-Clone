@@ -1906,7 +1906,7 @@ function format_poll($item,$s,$opts) {
 						$total = 0;
 					}
 					if ($activated && $commentable) {
-						$output .= '<input type="radio" name="answer" value="' . htmlspecialchars($text) . '">&nbsp;&nbsp;' . $text . '</input>' . ' ' . (($totalResponses) ? intval($total / $totalResponses * 100) . '%' : '0%') . EOL;
+						$output .= '<input type="radio" name="answer" value="' . htmlspecialchars($text) . '">&nbsp;&nbsp;<strong>' . $text . '</strong>&nbsp;' . (($totalResponses) ? intval($total / $totalResponses * 100) . '%' : '0%') . EOL;
 						$output .= '<div class="progress bg-secondary bg-opacity-25" style="height: 3px;">';
 						$output .= '<div class="progress-bar bg-info" role="progressbar" style="width: ' . (($totalResponses) ?  intval($total / $totalResponses * 100) : 0). '%;" aria-valuenow="" aria-valuemin="0" aria-valuemax="100"></div>';
 						$output .= '</div>';
@@ -1915,7 +1915,7 @@ function format_poll($item,$s,$opts) {
 					}
 
 					else {
-						$output .= '<input type="radio" name="answer" value="' . htmlspecialchars($text) . '" disabled="disabled">&nbsp;&nbsp;' . $text . '</input>' . ' ' . (($totalResponses) ? intval($total / $totalResponses * 100) . '%' : '0%') . EOL;
+						$output .= '<input type="radio" name="answer" value="' . htmlspecialchars($text) . '" disabled="disabled">&nbsp;&nbsp;<strong>' . $text . '</strong>&nbsp;' . (($totalResponses) ? intval($total / $totalResponses * 100) . '%' : '0%') . EOL;
 						$output .= '<div class="progress bg-secondary bg-opacity-25" style="height: 3px;">';
 						$output .= '<div class="progress-bar bg-info" role="progressbar" style="width: ' . (($totalResponses) ?  intval($total / $totalResponses * 100) : 0) . '%;" aria-valuenow="" aria-valuemin="0" aria-valuemax="100"></div>';
 						$output .= '</div>';
