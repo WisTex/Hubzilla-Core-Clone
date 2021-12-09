@@ -111,10 +111,10 @@ class Privacy {
 			'$form_security_token'       => get_form_security_token("settings"),
 			'$permission_limits'         => $permission_limits,
 			'$permiss_arr'               => $permiss,
-			'$permission_limits_label'   => t('Channel permission limits'),
+			'$permission_limits_label'   => t('Advanced configuration'),
 			'$permission_limits_warning' => [
 				t('Proceed with caution'),
-				t('Changing advanced configuration preferences can impact your channels and your contacts channels functionality and security.'),
+				t('Changing advanced configuration settings can impact your, and your contacts channels functionality and security.'),
 				t('Accept the risk and continue')
 			],
 			'$autoperms' => ['autoperms', t('Automatically approve new contacts'), $autoperms, '', [t('No'), t('Yes')]],
