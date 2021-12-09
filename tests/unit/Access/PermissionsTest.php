@@ -60,8 +60,8 @@ class PermissionsTest extends UnitTestCase {
 	 * @uses ::call_hooks
 	 */
 	public function testPerms() {
-		// There are 18 default perms
-		$permsCount = 18;
+		// There are 17 default perms
+		$permsCount = 17;
 
 		// Create a stub for global function t() with expectation
 		$t = $this->getFunctionMock('Zotlabs\Access', 't');
@@ -94,8 +94,8 @@ class PermissionsTest extends UnitTestCase {
 	 * @uses ::call_hooks
 	 */
 	public function testPermsFilter() {
-		// There are 18 default perms
-		$permsCount = 18;
+		// There are 17 default perms
+		$permsCount = 17;
 
 		// Create a stub for global function t() with expectation
 		$t = $this->getFunctionMock('Zotlabs\Access', 't');

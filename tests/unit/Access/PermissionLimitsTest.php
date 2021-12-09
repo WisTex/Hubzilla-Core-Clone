@@ -45,7 +45,7 @@ class PermissionLimitsTest extends UnitTestCase {
 	 * @uses ::call_hooks
 	 */
 	public function testStd_Limits() {
-		// There are 18 default perms
+		// There are 17 default perms
 		$permsCount = 17;
 
 		// Create a stub for global function t() with expectation
