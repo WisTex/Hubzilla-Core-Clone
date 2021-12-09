@@ -59,6 +59,9 @@ class ThreadItem {
 				$child = new ThreadItem($item);
 				$this->add_child($child);
 			}
+
+			// performance: we have already added the children
+			unset($this->data['children']);
 		}
 
 		// allow a site to configure the order and content of the reaction emoji list
