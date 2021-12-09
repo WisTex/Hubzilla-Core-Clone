@@ -391,7 +391,10 @@ class Contactedit extends Controller {
 			'$img_src' => $contact['xchan_photo_s'],
 			'$name' => $contact['xchan_name'],
 			'$addr' => (($contact['xchan_addr']) ? $contact['xchan_addr'] : $contact['xchan_url']),
-			'href' => zid($contact['xchan_url'])
+			'$href' => ((is_matrix_url($contact['xchan_url'])) ? zid($contact['xchan_url']) : $contact['xchan_url']),
+			'$link_label' => t('View profile'),
+			'$is_group' => $contact['xchan_pubforum'],
+			'$group_label' => t('This is a group/forum channel')
 		]);
 
 		$tools_html =  replace_macros(get_markup_template("contact_edit_tools.tpl"), [

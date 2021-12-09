@@ -6,7 +6,7 @@
 				<i class="fa fa-pencil"></i> {{$contact.edit}}
 			</button>
 		</div>
-		<h3>{{if $contact.public_forum}}<i class="fa fa-comments-o"></i>&nbsp;{{/if}}<a href="{{$contact.url}}" title="{{$contact.img_hover}}" >{{$contact.name}}</a>{{if $contact.phone}}&nbsp;<a class="btn btn-outline-secondary btn-sm" href="tel:{{$contact.phone}}" title="{{$contact.call}}"><i class="fa fa-phone connphone"></i></a>{{/if}}</h3>
+		<h3>{{if $contact.public_forum}}<i class="fa fa-comments-o" title="{{$group_label}}"></i>&nbsp;{{/if}}<a href="{{$contact.url}}" title="{{$contact.img_hover}}" >{{$contact.name}}</a>{{if $contact.phone}}&nbsp;<a class="btn btn-outline-secondary btn-sm" href="tel:{{$contact.phone}}" title="{{$contact.call}}"><i class="fa fa-phone connphone"></i></a>{{/if}}</h3>
 	</div>
 	<div class="section-content-tools-wrapper">
 		<div class="contact-photo-wrapper" >

@@ -402,7 +402,8 @@ class Connections extends \Zotlabs\Web\Controller {
 				'$cmd' => App::$cmd,
 				'$contacts' => $contacts,
 				'$paginate' => paginate($a),
-				'$abook_usage_message' => $abook_usage_message
+				'$abook_usage_message' => $abook_usage_message,
+				'$group_label' => t('This is a group/forum channel')
 			]);
 		}
 
