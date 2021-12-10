@@ -3,6 +3,7 @@
 namespace Zotlabs\Module;
 
 use Zotlabs\Lib\Libzotdir;
+use Zotlabs\Lib\AccessList;
 
 require_once 'include/acl_selectors.php';
 
@@ -145,14 +146,14 @@ class Acl extends \Zotlabs\Web\Controller {
 
 			if($r) {
 				foreach($r as $g){
-		//		logger('acl: group: ' . $g['gname'] . ' members: ' . AccessList::members_xchan($g['id']));
+		//		logger('acl: group: ' . $g['gname'] . ' members: ' . AccessList::members_xchan(local_channel(), $g['id']));
 					$groups[] = array(
 						"type"  => "g",
 						"photo" => "images/twopeople.png",
 						"name"  => $g['gname'],
 						"id"	=> $g['id'],
 						"xid"   => $g['hash'],
-						"uids"  => AccessList::members_xchan($g['id']),
+						"uids"  => AccessList::members_xchan(local_channel(), $g['id']),
 						"link"  => ''
 					);
 				}

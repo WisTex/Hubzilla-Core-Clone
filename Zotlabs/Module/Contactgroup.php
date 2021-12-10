@@ -32,7 +32,7 @@ class Contactgroup extends Controller {
 			}
 
 			$group = $r[0];
-			$members = AccessList::members($group['id']);
+			$members = AccessList::members(local_channel(), $group['id']);
 			$preselected = array();
 			if(count($members))	{
 				foreach($members as $member)

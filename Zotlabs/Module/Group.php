@@ -140,7 +140,7 @@ class Group extends Controller {
 			foreach($groups as $group) {
 				$entries[$i]['name'] = $group['gname'];
 				$entries[$i]['id'] = $group['id'];
-				$entries[$i]['count'] = count(AccessList::members($group['id']));
+				$entries[$i]['count'] = count(AccessList::members(local_channel(), $group['id']));
 				$i++;
 			}
 
@@ -235,7 +235,7 @@ class Group extends Controller {
 			$group = $r[0];
 
 
-			$members = AccessList::members($group['id']);
+			$members = AccessList::members(local_channel(), $group['id']);
 
 			$preselected = array();
 			if(count($members))	{
@@ -253,7 +253,7 @@ class Group extends Controller {
 					AccessList::member_add(local_channel(),$group['gname'],$change);
 				}
 
-				$members = AccessList::members($group['id']);
+				$members = AccessList::members(local_channel(), $group['id']);
 
 				$preselected = array();
 				if(count($members))	{
