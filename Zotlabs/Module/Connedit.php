@@ -19,6 +19,7 @@ use Zotlabs\Access\Permissions;
 use Zotlabs\Access\PermissionLimits;
 use Zotlabs\Web\HTTPHeaders;
 use Zotlabs\Lib\Permcat;
+use Zotlabs\Lib\AccessList;
 
 require_once('include/socgraph.php');
 require_once('include/selectors.php');
@@ -188,9 +189,9 @@ class Connedit extends Controller {
 			$default_group = $channel['channel_default_group'];
 			if ($default_group) {
 				require_once('include/group.php');
-				$g = group_rec_byhash(local_channel(), $default_group);
+				$g = AccessList::rec_byhash(local_channel(), $default_group);
 				if ($g)
-					group_add_member(local_channel(), '', App::$poi['abook_xchan'], $g['id']);
+					AccessList::member_add(local_channel(), '', App::$poi['abook_xchan'], $g['id']);
 			}
 
 			// Check if settings permit ("post new friend activity" is allowed, and

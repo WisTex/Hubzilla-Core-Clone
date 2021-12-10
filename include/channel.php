@@ -15,6 +15,7 @@ use Zotlabs\Render\Comanche;
 use Zotlabs\Lib\Libzot;
 use Zotlabs\Lib\Connect;
 use Zotlabs\Lib\Libsync;
+use Zotlabs\Lib\AccessList;
 
 require_once('include/crypto.php');
 require_once('include/menu.php');
@@ -445,10 +446,10 @@ function create_identity($arr) {
 		// right away as a default group for new contacts.
 
 		require_once('include/group.php');
-		$group_hash = group_add($newuid, t('Friends'));
+		$group_hash = AccessList::add($newuid, t('Friends'));
 
 		if($group_hash) {
-			group_add_member($newuid,t('Friends'),$ret['channel']['channel_hash']);
+			AccessList::member_add($newuid,t('Friends'),$ret['channel']['channel_hash']);
 
 			$default_collection_str = '';
 			// if our role_permissions indicate that we're using a default collection ACL, add it.

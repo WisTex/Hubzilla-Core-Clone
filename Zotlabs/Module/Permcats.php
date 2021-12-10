@@ -6,6 +6,7 @@ use App;
 use Zotlabs\Web\Controller;
 use Zotlabs\Lib\Apps;
 use Zotlabs\Lib\Libsync;
+use Zotlabs\Lib\AccessList;
 
 class Permcats extends Controller {
 
@@ -25,10 +26,10 @@ class Permcats extends Controller {
 		$group_hash = ((isset($_POST['group_select'])) ? $_POST['group_select'] : '');
 
 		if ($group_hash)
-			$group = \Zotlabs\Lib\AccessList::rec_byhash(local_channel(), $group_hash);
+			$group = AccessList::rec_byhash(local_channel(), $group_hash);
 
 		if ($group)
-			$contacts = \Zotlabs\Lib\AccessList::members_xchan(local_channel(), $group['id']);
+			$contacts = AccessList::members_xchan(local_channel(), $group['id']);
 
 		if(! $name ) {
 			notice( t('Permission category name is required.') . EOL);
@@ -164,7 +165,7 @@ class Permcats extends Controller {
 			'form_id' => 'group_select',
 			'label' => t('Assign this role to')
 		];
-		$group_select = \Zotlabs\Lib\Group::select(local_channel(), $group_select_options);
+		$group_select = AccessList::select(local_channel(), $group_select_options);
 
 		$tpl = get_markup_template("permcats.tpl");
 		$o .= replace_macros($tpl, array(

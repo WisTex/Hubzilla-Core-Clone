@@ -2,16 +2,14 @@
 
 namespace Zotlabs\Lib;
 
-use Zotlabs\Lib\Libsync;
-
-
 class AccessList {
 
-	static function add($uid,$name,$public = 0) {
+	static function add($uid, $name, $public = 0) {
 
-		$ret = false;
+		$ret  = false;
+		$hash = '';
 		if ($uid && $name) {
-			$r = self::byname($uid,$name); // check for dups
+			$r = self::byname($uid, $name); // check for dups
 			if ($r !== false) {
 
 				// This could be a problem.
@@ -23,16 +21,17 @@ class AccessList {
 				$z = q("SELECT * FROM pgrp WHERE id = %d LIMIT 1",
 					intval($r)
 				);
-				if(($z) && $z[0]['deleted']) {
+				if (($z) && $z[0]['deleted']) {
 					q('UPDATE pgrp SET deleted = 0 WHERE id = %d', intval($z[0]['id']));
-					notice( t('A deleted list with this name was revived. Existing item permissions <strong>may</strong> apply to this list and any future members. If this is not what you intended, please create another list with a different name.') . EOL);
+					notice(t('A deleted list with this name was revived. Existing item permissions <strong>may</strong> apply to this list and any future members. If this is not what you intended, please create another list with a different name.') . EOL);
 				}
-				return true;
+				$hash = self::by_id($uid, $r);
+				return $hash;
 			}
 
 			$hash = new_uuid();
 
-			$r = q("INSERT INTO pgrp ( hash, uid, visible, gname )
+			$r   = q("INSERT INTO pgrp ( hash, uid, visible, gname )
 				VALUES( '%s', %d, %d, '%s' ) ",
 				dbesc($hash),
 				intval($uid),
@@ -42,12 +41,12 @@ class AccessList {
 			$ret = $r;
 		}
 
-		Libsync::build_sync_packet($uid,null,true);
-		return $ret;
+		Libsync::build_sync_packet($uid, null, true);
+
+		return (($ret) ? $hash : $ret);
 	}
 
-
-	static function remove($uid,$name) {
+	static function remove($uid, $name) {
 		$ret = false;
 		if ($uid && $name) {
 			$r = q("SELECT id, hash FROM pgrp WHERE uid = %d AND gname = '%s' LIMIT 1",
@@ -55,7 +54,7 @@ class AccessList {
 				dbesc($name)
 			);
 			if ($r) {
-				$group_id = $r[0]['id'];
+				$group_id   = $r[0]['id'];
 				$group_hash = $r[0]['hash'];
 			}
 			else {
@@ -64,23 +63,23 @@ class AccessList {
 
 			// remove group from default posting lists
 			$r = q("SELECT channel_default_group, channel_allow_gid, channel_deny_gid FROM channel WHERE channel_id = %d LIMIT 1",
-			       intval($uid)
+				intval($uid)
 			);
 			if ($r) {
 				$user_info = array_shift($r);
-				$change = false;
+				$change    = false;
 
 				if ($user_info['channel_default_group'] == $group_hash) {
 					$user_info['channel_default_group'] = '';
-					$change = true;
+					$change                             = true;
 				}
 				if (strpos($user_info['channel_allow_gid'], '<' . $group_hash . '>') !== false) {
 					$user_info['channel_allow_gid'] = str_replace('<' . $group_hash . '>', '', $user_info['channel_allow_gid']);
-					$change = true;
+					$change                         = true;
 				}
 				if (strpos($user_info['channel_deny_gid'], '<' . $group_hash . '>') !== false) {
 					$user_info['channel_deny_gid'] = str_replace('<' . $group_hash . '>', '', $user_info['channel_deny_gid']);
-					$change = true;
+					$change                        = true;
 				}
 
 				if ($change) {
@@ -110,7 +109,7 @@ class AccessList {
 
 		}
 
-		Libsync::build_sync_packet($uid,null,true);
+		Libsync::build_sync_packet($uid, null, true);
 
 		return $ret;
 	}
@@ -118,8 +117,8 @@ class AccessList {
 	// returns the integer id of an access group owned by $uid and named $name
 	// or false.
 
-	static function byname($uid,$name) {
-		if (! ($uid && $name)) {
+	static function byname($uid, $name) {
+		if (!($uid && $name)) {
 			return false;
 		}
 		$r = q("SELECT id FROM pgrp WHERE uid = %d AND gname = '%s' LIMIT 1",
@@ -132,8 +131,8 @@ class AccessList {
 		return false;
 	}
 
-	static function by_id($uid,$id) {
-		if (! ($uid && $id)) {
+	static function by_id($uid, $id) {
+		if (!($uid && $id)) {
 			return false;
 		}
 
@@ -147,10 +146,8 @@ class AccessList {
 		return false;
 	}
 
-
-
-	static function rec_byhash($uid,$hash) {
-		if (! ( $uid && $hash)) {
+	static function rec_byhash($uid, $hash) {
+		if (!($uid && $hash)) {
 			return false;
 		}
 		$r = q("SELECT * FROM pgrp WHERE uid = %d AND hash = '%s' LIMIT 1",
@@ -163,13 +160,10 @@ class AccessList {
 		return false;
 	}
 
+	static function member_remove($uid, $name, $member) {
+		$gid = self::byname($uid, $name);
 
-	static function member_remove($uid,$name,$member,$gid = 0) {
-		if (! $gid) {
-			$gid = self::byname($uid,$name);
-		}
-
-		if (! ($uid && $gid && $member)) {
+		if (!($uid && $gid && $member)) {
 			return false;
 		}
 
@@ -179,17 +173,16 @@ class AccessList {
 			dbesc($member)
 		);
 
-		Libsync::build_sync_packet($uid,null,true);
+		Libsync::build_sync_packet($uid, null, true);
 
 		return $r;
 	}
 
-
-	static function member_add($uid,$name,$member,$gid = 0) {
-		if (! $gid) {
-			$gid = self::byname($uid,$name);
+	static function member_add($uid, $name, $member, $gid = 0) {
+		if (!$gid) {
+			$gid = self::byname($uid, $name);
 		}
-		if (! ($gid && $uid && $member)) {
+		if (!($gid && $uid && $member)) {
 			return false;
 		}
 
@@ -199,11 +192,11 @@ class AccessList {
 			dbesc($member)
 		);
 		if ($r) {
-			return true;	// You might question this, but
-				// we indicate success because the group member was in fact created
-				// -- It was just created at another time
+			return true;    // You might question this, but
+			// we indicate success because the group member was in fact created
+			// -- It was just created at another time
 		}
-	 	else {
+		else {
 			$r = q("INSERT INTO pgrp_member (uid, gid, xchan)
 				VALUES( %d, %d, '%s' ) ",
 				intval($uid),
@@ -211,10 +204,9 @@ class AccessList {
 				dbesc($member)
 			);
 		}
-		Libsync::build_sync_packet($uid,null,true);
+		Libsync::build_sync_packet($uid, null, true);
 		return $r;
 	}
-
 
 	static function members($uid, $gid) {
 		$ret = [];
@@ -233,7 +225,7 @@ class AccessList {
 		return $ret;
 	}
 
-	static function members_xchan($uid,$gid) {
+	static function members_xchan($uid, $gid) {
 		$ret = [];
 		if (intval($gid)) {
 			$r = q("SELECT xchan FROM pgrp_member WHERE gid = %d AND uid = %d",
@@ -249,59 +241,37 @@ class AccessList {
 		return $ret;
 	}
 
-	static function members_profile_xchan($uid,$gid) {
-		$ret = [];
-		if (intval($gid)) {
-			$r = q("SELECT abook_xchan as xchan from abook left join profile on abook_profile = profile_guid where profile.id = %d and profile.uid = %d",
-				intval($gid),
-				intval($uid)
-			);
-			if ($r) {
-				foreach($r as $rv) {
-					$ret[] = $rv['xchan'];
-				}
-			}
-		}
-		return $ret;
-	}
-
-
-
-
-	static function select($uid,$group = '') {
+	static function select($uid, $group = '') {
 
 		$grps = [];
 
-		$r = q("SELECT * FROM pgrp WHERE deleted = 0 AND uid = %d ORDER BY gname ASC",
+		$r      = q("SELECT * FROM pgrp WHERE deleted = 0 AND uid = %d ORDER BY gname ASC",
 			intval($uid)
 		);
-		$grps[] = [ 'name' => '', 'hash' => '0', 'selected' => '' ];
+		$grps[] = ['name' => '', 'hash' => '0', 'selected' => ''];
 		if ($r) {
 			foreach ($r as $rr) {
-				$grps[] = [ 'name' => $rr['gname'], 'id' => $rr['hash'], 'selected' => (($group == $rr['hash']) ? 'true' : '') ];
+				$grps[] = ['name' => $rr['gname'], 'id' => $rr['hash'], 'selected' => (($group == $rr['hash']) ? 'true' : '')];
 			}
 
 		}
 
 		return replace_macros(get_markup_template('group_selection.tpl'), [
-			'$label' => t('Add new connections to this access list'),
+			'$label'  => t('Add new connections to this access list'),
 			'$groups' => $grps
 		]);
 	}
 
-
-	static function widget($every="connections",$each="lists",$edit = false, $group_id = 0, $cid = '',$mode = 1) {
-
-		$o = '';
+	static function widget($every = "connections", $each = "lists", $edit = false, $group_id = 0, $cid = '', $mode = 1) {
 
 		$groups = [];
 
-		$r = q("SELECT * FROM pgrp WHERE deleted = 0 AND uid = %d ORDER BY gname ASC",
+		$r         = q("SELECT * FROM pgrp WHERE deleted = 0 AND uid = %d ORDER BY gname ASC",
 			intval($_SESSION['uid'])
 		);
 		$member_of = [];
 		if ($cid) {
-			$member_of = self::containing(local_channel(),$cid);
+			$member_of = self::containing(local_channel(), $cid);
 		}
 
 		if ($r) {
@@ -309,39 +279,38 @@ class AccessList {
 				$selected = (($group_id == $rr['id']) ? ' group-selected' : '');
 
 				if ($edit) {
-					$groupedit = [ 'href' => "lists/".$rr['id'], 'title' => t('edit') ];
+					$groupedit = ['href' => "lists/" . $rr['id'], 'title' => t('edit')];
 				}
 				else {
 					$groupedit = null;
 				}
 
 				$groups[] = [
-					'id'		=> $rr['id'],
-					'enc_cid'   => base64url_encode($cid),
-					'cid'		=> $cid,
-					'text' 		=> $rr['gname'],
-					'selected' 	=> $selected,
-					'href'		=> (($mode == 0) ? $each.'?f=&gid='.$rr['id'] : $each."/".$rr['id']) . ((x($_GET,'new')) ? '&new=' . $_GET['new'] : '') . ((x($_GET,'order')) ? '&order=' . $_GET['order'] : ''),
-					'edit'		=> $groupedit,
-					'ismember'	=> in_array($rr['id'],$member_of),
+					'id'       => $rr['id'],
+					'enc_cid'  => base64url_encode($cid),
+					'cid'      => $cid,
+					'text'     => $rr['gname'],
+					'selected' => $selected,
+					'href'     => (($mode == 0) ? $each . '?f=&gid=' . $rr['id'] : $each . "/" . $rr['id']) . ((x($_GET, 'new')) ? '&new=' . $_GET['new'] : '') . ((x($_GET, 'order')) ? '&order=' . $_GET['order'] : ''),
+					'edit'     => $groupedit,
+					'ismember' => in_array($rr['id'], $member_of),
 				];
 			}
 		}
 
 		return replace_macros(get_markup_template('group_side.tpl'), [
-			'$title'		=> t('Lists'),
-			'$edittext'     => t('Edit list'),
-			'$createtext' 	=> t('Create new list'),
-			'$ungrouped'    => (($every === 'contacts') ? t('Channels not in any access list') : ''),
-			'$groups'		=> $groups,
-			'$add'			=> t('add'),
+			'$title'      => t('Lists'),
+			'$edittext'   => t('Edit list'),
+			'$createtext' => t('Create new list'),
+			'$ungrouped'  => (($every === 'contacts') ? t('Channels not in any access list') : ''),
+			'$groups'     => $groups,
+			'$add'        => t('add'),
 		]);
 
 	}
 
-
 	static function expand($g) {
-		if (! (is_array($g) && count($g))) {
+		if (!(is_array($g) && count($g))) {
 			return [];
 		}
 
@@ -351,8 +320,8 @@ class AccessList {
 		// private profile linked virtual groups
 
 		foreach ($g as $gv) {
-			if (substr($gv,0,3) === 'vp.') {
-				$profile_hash = substr($gv,3);
+			if (substr($gv, 0, 3) === 'vp.') {
+				$profile_hash = substr($gv, 3);
 				if ($profile_hash) {
 					$r = q("select abook_xchan from abook where abook_profile = '%s'",
 						dbesc($profile_hash)
@@ -370,7 +339,7 @@ class AccessList {
 		}
 
 		if ($x) {
-			stringify_array_elms($x,true);
+			stringify_array_elms($x, true);
 			$groups = implode(',', $x);
 			if ($groups) {
 				$r = q("SELECT xchan FROM pgrp_member WHERE gid IN ( select id from pgrp where hash in ( $groups ))");
@@ -384,7 +353,6 @@ class AccessList {
 		return $ret;
 	}
 
-
 	static function member_of($c) {
 		$r = q("SELECT pgrp.gname, pgrp.id FROM pgrp LEFT JOIN pgrp_member ON pgrp_member.gid = pgrp.id
 			WHERE pgrp_member.xchan = '%s' AND pgrp.deleted = 0 ORDER BY pgrp.gname  ASC ",
@@ -394,7 +362,7 @@ class AccessList {
 		return $r;
 	}
 
-	static function containing($uid,$c) {
+	static function containing($uid, $c) {
 
 		$r = q("SELECT gid FROM pgrp_member WHERE uid = %d AND pgrp_member.xchan = '%s' ",
 			intval($uid),

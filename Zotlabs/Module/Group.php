@@ -5,6 +5,7 @@ use App;
 use Zotlabs\Web\Controller;
 use Zotlabs\Lib\Apps;
 use Zotlabs\Lib\Libsync;
+use Zotlabs\Lib\AccessList;
 
 require_once('include/group.php');
 
@@ -41,7 +42,7 @@ class Group extends Controller {
 
 			$name = notags(trim($_POST['groupname']));
 			$public = intval($_POST['public']);
-			$r = group_add(local_channel(),$name,$public);
+			$r = AccessList::add(local_channel(),$name,$public);
 			$group_hash = $r;
 
 			if($r) {
@@ -141,7 +142,7 @@ class Group extends Controller {
 			foreach($groups as $group) {
 				$entries[$i]['name'] = $group['gname'];
 				$entries[$i]['id'] = $group['id'];
-				$entries[$i]['count'] = count(group_get_members($group['id']));
+				$entries[$i]['count'] = count(AccessList::members($group['id']));
 				$i++;
 			}
 
@@ -195,7 +196,7 @@ class Group extends Controller {
 					intval(local_channel())
 				);
 				if($r)
-					$result = group_rmv(local_channel(),$r[0]['gname']);
+					$result = AccessList::remove(local_channel(),$r[0]['gname']);
 				if($result) {
 					$hookinfo = [ 'pgrp_extras' => '', 'group' => argv(2) ];
 					call_hooks ('privacygroup_extras_drop',$hookinfo);
@@ -236,7 +237,7 @@ class Group extends Controller {
 			$group = $r[0];
 
 
-			$members = group_get_members($group['id']);
+			$members = AccessList::members($group['id']);
 
 			$preselected = array();
 			if(count($members))	{
@@ -248,13 +249,13 @@ class Group extends Controller {
 			if($change) {
 
 				if(in_array($change,$preselected)) {
-					group_rmv_member(local_channel(),$group['gname'],$change);
+					AccessList::member_remove(local_channel(),$group['gname'],$change);
 				}
 				else {
-					group_add_member(local_channel(),$group['gname'],$change);
+					AccessList::member_add(local_channel(),$group['gname'],$change);
 				}
 
-				$members = group_get_members($group['id']);
+				$members = AccessList::members($group['id']);
 
 				$preselected = array();
 				if(count($members))	{
@@ -301,7 +302,7 @@ class Group extends Controller {
 				$groupeditor['members'][] = micropro($member,true,'mpgroup', $textmode);
 			}
 			else
-				group_rmv_member(local_channel(),$group['gname'],$member['xchan_hash']);
+				AccessList::member_remove(local_channel(),$group['gname'],$member['xchan_hash']);
 		}
 
 		$r = q("SELECT abook.*, xchan.* FROM abook left join xchan on abook_xchan = xchan_hash WHERE abook_channel = %d AND abook_self = 0 and abook_blocked = 0 and abook_pending = 0 and xchan_deleted = 0 order by xchan_name asc",

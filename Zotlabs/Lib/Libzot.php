@@ -455,10 +455,10 @@ class Libzot {
 							$default_group = $channel['channel_default_group'];
 
 							if ($default_group) {
-								$g = Group::rec_byhash($channel['channel_id'], $default_group);
+								$g = AccessList::rec_byhash($channel['channel_id'], $default_group);
 
 								if ($g) {
-									Group::member_add($channel['channel_id'], '', $x['hash'], $g['id']);
+									AccessList::member_add($channel['channel_id'], '', $x['hash'], $g['id']);
 								}
 							}
 						}
