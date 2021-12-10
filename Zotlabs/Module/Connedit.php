@@ -23,7 +23,6 @@ use Zotlabs\Lib\AccessList;
 
 require_once('include/socgraph.php');
 require_once('include/selectors.php');
-require_once('include/group.php');
 require_once('include/photos.php');
 
 class Connedit extends Controller {
@@ -188,7 +187,6 @@ class Connedit extends Controller {
 		if ($new_friend) {
 			$default_group = $channel['channel_default_group'];
 			if ($default_group) {
-				require_once('include/group.php');
 				$g = AccessList::rec_byhash(local_channel(), $default_group);
 				if ($g)
 					AccessList::member_add(local_channel(), '', App::$poi['abook_xchan'], $g['id']);

@@ -7,8 +7,6 @@ use Zotlabs\Lib\Apps;
 use Zotlabs\Lib\Libsync;
 use Zotlabs\Lib\AccessList;
 
-require_once('include/group.php');
-
 class Group extends Controller {
 
 	function init() {

@@ -19,7 +19,6 @@ use Zotlabs\Lib\AccessList;
 
 require_once('include/permissions.php');
 require_once('include/security.php');
-require_once('include/group.php');
 
 /**
  * @brief Guess the mimetype from file ending.

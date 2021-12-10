@@ -36,8 +36,6 @@ require_once('include/permissions.php');
  */
 function collect_recipients($item, &$private_envelope,$include_groups = true) {
 
-	require_once('include/group.php');
-
 	$private_envelope = ((intval($item['item_private'])) ? true : false);
 	$recipients = array();
 

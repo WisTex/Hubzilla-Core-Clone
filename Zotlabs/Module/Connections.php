@@ -6,7 +6,6 @@ use Zotlabs\Lib\Permcat;
 
 require_once('include/socgraph.php');
 require_once('include/selectors.php');
-require_once('include/group.php');
 
 class Connections extends \Zotlabs\Web\Controller {
 

@@ -5,7 +5,6 @@ namespace Zotlabs\Module;
 use Zotlabs\Lib\Libzotdir;
 
 require_once 'include/acl_selectors.php';
-require_once 'include/group.php';
 
 /**
  * @brief ACL selector json backend.
