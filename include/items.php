@@ -16,7 +16,7 @@ use Zotlabs\Lib\Libzot;
 use Zotlabs\Lib\ActivityStreams;
 use Zotlabs\Access\PermissionLimits;
 use Zotlabs\Access\PermissionRoles;
-use Zotlabs\Access\AccessList;
+use Zotlabs\Lib\AccessList;
 use Zotlabs\Daemon\Master;
 
 require_once('include/bbcode.php');
