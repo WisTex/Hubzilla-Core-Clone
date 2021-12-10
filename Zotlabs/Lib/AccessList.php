@@ -9,7 +9,7 @@ class AccessList {
 		$ret  = false;
 		$hash = '';
 		if ($uid && $name) {
-			$r = self::byname($uid, $name); // check for dups
+			$r = self::by_name($uid, $name); // check for dups
 			if ($r !== false) {
 
 				// This could be a problem.
@@ -117,7 +117,7 @@ class AccessList {
 	// returns the integer id of an access group owned by $uid and named $name
 	// or false.
 
-	static function byname($uid, $name) {
+	static function by_name($uid, $name) {
 		if (!($uid && $name)) {
 			return false;
 		}
@@ -146,7 +146,7 @@ class AccessList {
 		return false;
 	}
 
-	static function rec_byhash($uid, $hash) {
+	static function by_hash($uid, $hash) {
 		if (!($uid && $hash)) {
 			return false;
 		}
@@ -161,7 +161,7 @@ class AccessList {
 	}
 
 	static function member_remove($uid, $name, $member) {
-		$gid = self::byname($uid, $name);
+		$gid = self::by_name($uid, $name);
 
 		if (!($uid && $gid && $member)) {
 			return false;
@@ -180,7 +180,7 @@ class AccessList {
 
 	static function member_add($uid, $name, $member, $gid = 0) {
 		if (!$gid) {
-			$gid = self::byname($uid, $name);
+			$gid = self::by_name($uid, $name);
 		}
 		if (!($gid && $uid && $member)) {
 			return false;
@@ -235,6 +235,23 @@ class AccessList {
 			if ($r) {
 				foreach ($r as $rv) {
 					$ret[] = $rv['xchan'];
+				}
+			}
+		}
+		return $ret;
+	}
+
+	static function profile_members_xchan($uid,$gid) {
+		$ret = [];
+
+		if(intval($gid)) {
+			$r = q("SELECT abook_xchan as xchan from abook left join profile on abook_profile = profile_guid where profile.id = %d and profile.uid = %d",
+				intval($gid),
+				intval($uid)
+			);
+			if($r) {
+				foreach($r as $rr) {
+					$ret[] = $rr['xchan'];
 				}
 			}
 		}
@@ -377,4 +394,5 @@ class AccessList {
 
 		return $ret;
 	}
+
 }

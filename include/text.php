@@ -12,6 +12,7 @@ use Ramsey\Uuid\Exception\UnableToBuildUuidException;
 use Zotlabs\Lib\Crypto;
 use Zotlabs\Lib\SvgSanitizer;
 use Zotlabs\Lib\Libzot;
+use Zotlabs\Lib\AccessList;
 
 require_once("include/bbcode.php");
 
@@ -3020,7 +3021,7 @@ function handle_tag(&$body, &$str_tags, $profile_uid, $tag, $in_network = true) 
 			// weird - as all the other tags are linked to something.
 
 			if(local_channel() && local_channel() == $profile_uid) {
-				$grp = group_byname($profile_uid,$name);
+				$grp = AccessList::byname($profile_uid,$name);
 
 				if($grp) {
 					$g = q("select hash from pgrp where id = %d and visible = 1 limit 1",
