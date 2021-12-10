@@ -416,6 +416,7 @@ class Item extends Controller {
 
 
 		$expires = NULL_DATE;
+		$comments_closed = NULL_DATE;
 
 		$route          = '';
 		$parent_item    = null;
@@ -692,6 +693,7 @@ class Item extends Controller {
 			$postopts            = $orig_post['postopts'];
 			$created             = $orig_post['created'];
 			$expires             = $orig_post['expires'];
+			$comments_closed     = $orig_post['comments_closed'];
 			$mid                 = $orig_post['mid'];
 			$parent_mid          = $orig_post['parent_mid'];
 			$plink               = $orig_post['plink'];
@@ -1014,6 +1016,8 @@ class Item extends Controller {
 			$obj['id']            = $mid;
 			$obj['diaspora:guid'] = $uuid;
 			$obj['attributedTo']  = channel_url($channel);
+			$obj['published']     = $created;
+
 			$datarray['obj']      = $obj;
 
 			if ($obj['endTime']) {
@@ -1022,7 +1026,8 @@ class Item extends Controller {
 					$comments_closed = $d;
 				}
 			}
-			$obj_type             = 'Question';
+
+			$obj_type = 'Question';
 		}
 
 		if (!$parent_mid) {
@@ -1086,6 +1091,7 @@ class Item extends Controller {
 		$datarray['created']             = $created;
 		$datarray['edited']              = (($orig_post) ? datetime_convert() : $created);
 		$datarray['expires']             = $expires;
+		$datarray['comments_closed']     = $comments_closed;
 		$datarray['commented']           = (($orig_post) ? datetime_convert() : $created);
 		$datarray['received']            = (($orig_post) ? datetime_convert() : $created);
 		$datarray['changed']             = (($orig_post) ? datetime_convert() : $created);

@@ -1857,7 +1857,7 @@ function format_poll($item,$s,$opts) {
 
 	$commentable = can_comment_on_post(((local_channel()) ? get_observer_hash() : EMPTY_STR), $item);
 
-	$activated = ((local_channel() && local_channel() == $item['uid']) ? true : false);
+	$activated = ((local_channel() && local_channel() == $item['uid'] && get_observer_hash() !== $item['owner_xchan']) ? true : false);
 	$output = $s;
 
 	if (strpos($item['body'], '[/share]') !== false) {
@@ -1910,8 +1910,8 @@ function format_poll($item,$s,$opts) {
 						$output .= '<div class="progress bg-secondary bg-opacity-25" style="height: 3px;">';
 						$output .= '<div class="progress-bar bg-info" role="progressbar" style="width: ' . (($totalResponses) ?  intval($total / $totalResponses * 100) : 0). '%;" aria-valuenow="" aria-valuemin="0" aria-valuemax="100"></div>';
 						$output .= '</div>';
+						$output .= '<div class="text-muted"><small>' . sprintf(tt('%d Vote', '%d Votes', $total, 'noun'), $total) . '</small></div>';
 						$output .= EOL;
-
 					}
 
 					else {
@@ -1919,19 +1919,20 @@ function format_poll($item,$s,$opts) {
 						$output .= '<div class="progress bg-secondary bg-opacity-25" style="height: 3px;">';
 						$output .= '<div class="progress-bar bg-info" role="progressbar" style="width: ' . (($totalResponses) ?  intval($total / $totalResponses * 100) : 0) . '%;" aria-valuenow="" aria-valuemin="0" aria-valuemax="100"></div>';
 						$output .= '</div>';
+						$output .= '<div class="text-muted"><small>' . sprintf(tt('%d Vote', '%d Votes', $total, 'noun'), $total) . '</small></div>';
 						$output .= EOL;
 					}
 				}
 			}
 		}
 
-		$message = (($totalResponses) ? sprintf(tt('%d Vote', '%d Votes', $totalResponses, 'noun'), $totalResponses) . EOL : '');
+		$message = (($totalResponses) ? sprintf(tt('%d Vote in total', '%d Votes in total', $totalResponses, 'noun'), $totalResponses) . EOL : '');
 
 		if ($item['comments_closed'] > NULL_DATE) {
 			$t = datetime_convert('UTC',date_default_timezone_get(), $item['comments_closed'], 'Y-m-d H:i');
 			$closed = ((datetime_convert() > $item['comments_closed']) ? true : false);
 			if ($closed) {
-				$message .= t('Poll has ended.');
+				$message .= t('Poll has ended');
 			}
 			else {
 				$message .= sprintf(t('Poll ends in %s'), '<span class="autotime" title="' . $t . '"></span>');
@@ -1939,7 +1940,6 @@ function format_poll($item,$s,$opts) {
 		}
 
 		$output .= '<div class="mb-3">' . $message . '</div>';
-
 
 		if ($activated && $commentable && !$closed) {
 			$output .= '<input type="button" class="btn btn-std btn-success" name="vote" value="' . t("Vote") . '" onclick="submitPoll(' . $item['id'] . '); return false;">'. '</form>';
