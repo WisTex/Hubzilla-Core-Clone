@@ -165,6 +165,7 @@ class Permcats extends Controller {
 			'form_id' => 'group_select',
 			'label' => t('Assign this role to')
 		];
+
 		$group_select = AccessList::select(local_channel(), $group_select_options);
 
 		$tpl = get_markup_template("permcats.tpl");
@@ -183,7 +184,7 @@ class Permcats extends Controller {
 			'$inherited' => t('inherited'),
 			'$is_system_role' => $is_system_role,
 			'$permlbl' => t('Role Permissions'),
-			'$permnote' => t('Some permissions may be inherited from your <a href="settings">channel role</a>, which have higher priority than role settings.'),
+			'$permnote' => t('Some permissions may be inherited from your <a href="settings">channel role</a>, which have higher priority than contact role settings.'),
 			'$submit' 	=> t('Submit'),
 			'$return_path' => argv(1),
 			'$group_select' => $group_select,

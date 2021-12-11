@@ -258,26 +258,46 @@ class AccessList {
 		return $ret;
 	}
 
-	static function select($uid, $group = '') {
+	static function select($uid, $options) {
+
+		$selected = $options['selected'];
+		$form_id = $options['form_id'];
+		$label = $options['label'];
 
 		$grps = [];
+		$o = '';
 
-		$r      = q("SELECT * FROM pgrp WHERE deleted = 0 AND uid = %d ORDER BY gname ASC",
+		$grps[] = [
+			'name' => '',
+			'hash' => '0',
+			'selected' => ''
+		];
+
+		$r = q("SELECT * FROM pgrp WHERE deleted = 0 AND uid = %d ORDER BY gname ASC",
 			intval($uid)
 		);
-		$grps[] = ['name' => '', 'hash' => '0', 'selected' => ''];
-		if ($r) {
-			foreach ($r as $rr) {
-				$grps[] = ['name' => $rr['gname'], 'id' => $rr['hash'], 'selected' => (($group == $rr['hash']) ? 'true' : '')];
-			}
 
+		if($r) {
+			foreach($r as $rr) {
+				$grps[] = [
+					'name' => $rr['gname'],
+					'id' => $rr['hash'],
+					'selected' => ($selected == $rr['hash'])
+				];
+			}
 		}
 
-		return replace_macros(get_markup_template('group_selection.tpl'), [
-			'$label'  => t('Add new connections to this access list'),
+		logger('select: ' . print_r($grps,true), LOGGER_DATA);
+
+		$o = replace_macros(get_markup_template('group_selection.tpl'), array(
+			'$label' => $label,
+			'$form_id' => $form_id,
 			'$groups' => $grps
-		]);
+		));
+
+		return $o;
 	}
+
 
 	static function widget($every = "connections", $each = "lists", $edit = false, $group_id = 0, $cid = '', $mode = 1) {
 
