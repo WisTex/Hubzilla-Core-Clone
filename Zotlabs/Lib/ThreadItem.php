@@ -106,7 +106,7 @@ class ThreadItem {
 		$acl->set($item);
 
 		$lock = ((intval($item['item_private']) || ($item['uid'] == local_channel() && $acl->is_private()))
-			? t('Private Message')
+			? t('Restricted message')
 			: false);
 
 		// 1 = restricted message, 2 = direct message
