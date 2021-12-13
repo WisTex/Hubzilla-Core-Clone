@@ -260,18 +260,24 @@ class AccessList {
 
 	static function select($uid, $options) {
 
-		$selected = $options['selected'];
-		$form_id = $options['form_id'];
-		$label = $options['label'];
+		$selected = $options['selected'] ?? '';
+		$form_id = $options['form_id'] ?? 'accesslist_select';
+		$label = $options['label'] ?? t('Select a privacy group');
+		$before = $options['before'] ?? [];
+		$after = $options['after'] ?? [];
 
 		$grps = [];
 		$o = '';
 
 		$grps[] = [
 			'name' => '',
-			'hash' => '0',
-			'selected' => ''
+			'id' => '0',
+			'selected' => false
 		];
+
+		if ($before) {
+			$grps[] = $before;
+		}
 
 		$r = q("SELECT * FROM pgrp WHERE deleted = 0 AND uid = %d ORDER BY gname ASC",
 			intval($uid)
@@ -285,6 +291,10 @@ class AccessList {
 					'selected' => ($selected == $rr['hash'])
 				];
 			}
+		}
+
+		if ($after) {
+			$grps[] = $after;
 		}
 
 		logger('select: ' . print_r($grps,true), LOGGER_DATA);

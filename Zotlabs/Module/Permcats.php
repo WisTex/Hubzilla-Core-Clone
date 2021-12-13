@@ -24,12 +24,25 @@ class Permcats extends Controller {
 		$is_system_role = isset($_POST['is_system_role']);
 		$return_path = z_root() . '/permcats/' . $_POST['return_path'];
 		$group_hash = ((isset($_POST['group_select'])) ? $_POST['group_select'] : '');
+		$contacts = [];
 
-		if ($group_hash)
+		if ($group_hash === 'all_contacts') {
+			$r = q("SELECT abook_xchan FROM abook WHERE abook_channel = %d and abook_self = 0 and abook_pending = 0",
+				intval(local_channel())
+			);
+
+			if ($r) {
+				$contacts = ids_to_array($r, 'abook_xchan');
+			}
+		}
+
+		if (!$contacts && $group_hash) {
 			$group = AccessList::rec_byhash(local_channel(), $group_hash);
+		}
 
-		if ($group)
+		if ($group) {
 			$contacts = AccessList::members_xchan(local_channel(), $group['id']);
+		}
 
 		if(! $name ) {
 			notice( t('Permission category name is required.') . EOL);
@@ -163,7 +176,12 @@ class Permcats extends Controller {
 		$group_select_options = [
 			'selected' => '',
 			'form_id' => 'group_select',
-			'label' => t('Assign this role to')
+			'label' => t('Assign this role to'),
+			'after' => [
+				'name' => t('All my contacts'),
+				'id' => 'all_contacts',
+				'selected' => false
+			]
 		];
 
 		$group_select = AccessList::select(local_channel(), $group_select_options);

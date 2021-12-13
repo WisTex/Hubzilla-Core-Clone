@@ -266,7 +266,7 @@ class Connections extends \Zotlabs\Web\Controller {
 
 		if($r) {
 
-			vcard_query($r);
+			//vcard_query($r);
 
 
 			foreach($r as $rr) {
