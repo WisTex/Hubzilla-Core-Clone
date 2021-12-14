@@ -52,7 +52,7 @@ class PermissionRoles {
 				$ret['limits']['view_contacts'] = PERMS_SPECIFIC;
 				break;
 
-			case 'forum':
+			case 'group':
 				$ret['default_collection'] = false;
 				$ret['perms_connect'] = [
 					'view_stream', 'view_profile', 'view_contacts', 'view_storage',
@@ -383,7 +383,7 @@ class PermissionRoles {
 			//'custom' => [t('Custom'), t('This role comes with the presets of the personal role but allows you to configure it to your needs')]
 			'public' => t('Public'),
 			'personal' => t('Personal'),
-			'forum' => t('Community forum'),
+			'group' => t('Community forum'),
 			'custom' => t('Custom')
 		];
 

@@ -326,6 +326,12 @@ function create_identity($arr) {
 	if($role_permissions && array_key_exists('perms_auto',$role_permissions))
 		set_pconfig($r[0]['channel_id'],'system','autoperms',intval($role_permissions['perms_auto']));
 
+	$group_actor = false;
+	if($role_permissions && array_key_exists('channel_type', $role_permissions) && $role_permissions['channel_type'] === 'group') {
+		set_pconfig($r[0]['channel_id'], 'system', 'group_actor', 1);
+		$group_actor = true;
+	}
+
 	$ret['channel'] = $r[0];
 
 	if(intval($arr['account_id']))
@@ -375,7 +381,8 @@ function create_identity($arr) {
 			'xchan_network'     => 'zot6',
 			'xchan_photo_date'  => datetime_convert(),
 			'xchan_name_date'   => datetime_convert(),
-			'xchan_system'      => $system
+			'xchan_system'      => $system,
+			'xchan_pubforum'    => $group_actor
 		]
 	);
 	if(! $r)
@@ -445,7 +452,6 @@ function create_identity($arr) {
 		// Create a group with yourself as a member. This allows somebody to use it
 		// right away as a default group for new contacts.
 
-		require_once('include/group.php');
 		$group_hash = AccessList::add($newuid, t('Friends'));
 
 		if($group_hash) {

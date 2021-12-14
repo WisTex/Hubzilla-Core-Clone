@@ -37,7 +37,7 @@ class Permcats extends Controller {
 		}
 
 		if (!$contacts && $group_hash) {
-			$group = AccessList::rec_byhash(local_channel(), $group_hash);
+			$group = AccessList::by_hash(local_channel(), $group_hash);
 		}
 
 		if ($group) {

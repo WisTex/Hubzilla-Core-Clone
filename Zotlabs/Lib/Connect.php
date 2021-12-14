@@ -301,7 +301,7 @@ class Connect {
 		/** If there is a default group for this channel, add this connection to it */
 
 		if ($default_group) {
-			$g = AccessList::rec_byhash($uid,$default_group);
+			$g = AccessList::by_hash($uid,$default_group);
 			if ($g) {
 				AccessList::member_add($uid,'',$xchan_hash,$g['id']);
 			}

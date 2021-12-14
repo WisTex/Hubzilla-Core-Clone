@@ -695,7 +695,7 @@ class Profiles extends \Zotlabs\Web\Controller {
 
 				$hide_friends = array(
 					'hide_friends',
-					t('Hide your connections list from viewers of this profile'),
+					t('Hide my connections from viewers of this profile'),
 					$r[0]['hide_friends'],
 					'',
 					[t('No'), t('Yes')]

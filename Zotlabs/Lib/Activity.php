@@ -1087,8 +1087,7 @@ class Activity {
 		$ret['type'] = 'Person';
 
 		if ($c) {
-			$role = get_pconfig($c['channel_id'], 'system', 'permissions_role');
-			if (strpos($role, 'forum') !== false) {
+			if (get_pconfig($c['channel_id'], 'system', 'group_actor')) {
 				$ret['type'] = 'Group';
 			}
 
@@ -1554,9 +1553,9 @@ class Activity {
 		/* If there is a default group for this channel and permissions are automatic, add this member to it */
 
 		if ($channel['channel_default_group'] && $automatic) {
-			$g = Group::rec_byhash($channel['channel_id'], $channel['channel_default_group']);
+			$g = AccessList::by_hash($channel['channel_id'], $channel['channel_default_group']);
 			if ($g)
-				Group::member_add($channel['channel_id'], '', $ret['xchan_hash'], $g['id']);
+				AccessList::member_add($channel['channel_id'], '', $ret['xchan_hash'], $g['id']);
 		}
 
 
