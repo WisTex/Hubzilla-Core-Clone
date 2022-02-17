@@ -31,6 +31,7 @@
 		</div>
 	</div>
 </div>
+
 <ul class="nav position-fixed bottom-0 start-50 bg-light translate-middle-x">
 	<li class="nav-item">
 		<a id="pdledit_gui_modules" class="nav-link" href="#">Select Module</a>
@@ -42,7 +43,7 @@
 		<a id="pdledit_gui_items" class="nav-link" href="#" >Add Item</a>
 	</li>
 	<li class="nav-item">
-		<a id="pdledit_gui_save" class="nav-link" href="#">Save</a>
+		<a id="pdledit_gui_src" class="nav-link" href="#">Page Source</a>
 	</li>
 	{{if $module_modified}}
 	<li class="nav-item">
@@ -50,10 +51,7 @@
 	</li>
 	{{/if}}
 	<li class="nav-item">
-		<a id="pdledit_gui_src" class="nav-link" href="#">Page Source</a>
-	</li>
-	<li class="nav-item">
-		<a id="pdledit_gui_preview" class="nav-link" href="#">Preview?</a>
+		<a id="pdledit_gui_save" class="nav-link" href="#">Save</a>
 	</li>
 </ul>
 
@@ -62,7 +60,6 @@
 		var poi;
 		var edit_modal = new bootstrap.Modal(document.getElementById('pdledit_gui_item_modal'));
 		var page_modal = new bootstrap.Modal(document.getElementById('pdledit_gui_page_modal'));
-
 
 		{{foreach $content_regions as $content_region}}
 		let sortable_{{$content_region}} = document.getElementById('{{$content_region}}');
@@ -120,15 +117,9 @@
 		});
 		$(document).on('click', '#pdledit_gui_save', function(e) {
 			e.preventDefault();
-			page_modal.show();
 		});
 		$(document).on('click', '#pdledit_gui_reset', function(e) {
 			e.preventDefault();
-			page_modal.show();
-		});
-		$(document).on('click', '#pdledit_gui_preview', function(e) {
-			e.preventDefault();
-			page_modal.show();
 		});
 
 	});

@@ -77,7 +77,8 @@ class Pdledit_gui extends Controller {
 			'$page_src' => base64_encode($pdl),
 			'$templates' => base64_encode($templates_html),
 			'$modules' => base64_encode(self::get_modules()),
-			'$module_modified' => $modified
+			'$module_modified' => $modified,
+			'$module' => $module
 
 		]);
 
