@@ -10,7 +10,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-				<button id="pdledit_gui_item_modal_store" type="button" class="btn btn-primary">Save</button>
+				<button id="pdledit_gui_item_modal_store" type="button" class="btn btn-primary">Submit</button>
 			</div>
 		</div>
 	</div>
@@ -26,7 +26,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-				<button id="pdledit_gui_page_modal_store" type="button" class="btn btn-primary">Save</button>
+				<button id="pdledit_gui_page_modal_store" type="button" class="btn btn-primary">Submit</button>
 			</div>
 		</div>
 	</div>

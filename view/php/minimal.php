@@ -1,7 +1,7 @@
 <?php
 /**
  *   * Name: full
- *   * Description: A single column full width layout
+ *   * Description: A single column full width layout without a navbar
  *   * Version: 1
  *   * Author: None
  *   * Maintainer: None

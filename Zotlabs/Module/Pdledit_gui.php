@@ -70,16 +70,14 @@ class Pdledit_gui extends Controller {
 		}
 
 		$templates = self::get_templates();
-		$templates_html = replace_macros(get_markup_template('pdledit_gui_templates.tpl'), ['$templates' => $templates]);
+		$templates_html = replace_macros(get_markup_template('pdledit_gui_templates.tpl'), ['$templates' => $templates, '$active' => $template]);
 
 		App::$layout['region_content'] .= replace_macros(get_markup_template('pdledit_gui.tpl'), [
 			'$content_regions' => $template_info['contentregion'],
 			'$page_src' => base64_encode($pdl),
 			'$templates' => base64_encode($templates_html),
 			'$modules' => base64_encode(self::get_modules()),
-			'$module_modified' => $modified,
-			'$module' => $module
-
+			'$module_modified' => $modified
 		]);
 
 	}
@@ -102,8 +100,11 @@ class Pdledit_gui extends Controller {
 			foreach($files as $f) {
 				$name = basename($f, '.php');
 				$x = get_template_info($name);
-				if($x['contentregion']) {
-					$ret[] = $name;
+				if(!empty($x['contentregion'])) {
+					$ret[] = [
+						'name' => $name,
+						'desc' => $x['description']
+					];
 				}
 			}
 		}
