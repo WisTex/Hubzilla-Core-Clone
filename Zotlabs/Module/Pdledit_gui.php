@@ -62,7 +62,9 @@ class Pdledit_gui extends Controller {
 			if (is_array($v)) {
 				ksort($v);
 				foreach ($v as $entry) {
-					$region_str .= replace_macros(get_markup_template('pdledit_gui_item.tpl'), ['$entry' => $entry]);
+					$region_str .= replace_macros(get_markup_template('pdledit_gui_item.tpl'), [
+						'$entry' => $entry
+					]);
 				}
 			}
 
@@ -70,26 +72,43 @@ class Pdledit_gui extends Controller {
 		}
 
 		$templates = self::get_templates();
-		$templates_html = replace_macros(get_markup_template('pdledit_gui_templates.tpl'), ['$templates' => $templates, '$active' => $template]);
+		$templates_html = replace_macros(get_markup_template('pdledit_gui_templates.tpl'), [
+			'$templates' => $templates,
+			'$active' => $template
+		]);
+
+		$items_html = '';
+
+		foreach (self::get_widgets() as $entry) {
+			$items_html .= replace_macros(get_markup_template('pdledit_gui_item.tpl'), [
+				'$entry' => $entry,
+				'$disable_controls' => true
+			]);
+		}
+
+		foreach (self::get_menus() as $entry) {
+			$items_html .= replace_macros(get_markup_template('pdledit_gui_item.tpl'), [
+				'$entry' => $entry,
+				'$disable_controls' => true
+			]);
+		}
+
+		foreach (self::get_blocks() as $entry) {
+			$items_html .= replace_macros(get_markup_template('pdledit_gui_item.tpl'), [
+				'$entry' => $entry,
+				'$disable_controls' => true
+			]);
+		}
 
 		App::$layout['region_content'] .= replace_macros(get_markup_template('pdledit_gui.tpl'), [
 			'$content_regions' => $template_info['contentregion'],
 			'$page_src' => base64_encode($pdl),
 			'$templates' => base64_encode($templates_html),
 			'$modules' => base64_encode(self::get_modules()),
+			'$items' => base64_encode($items_html),
 			'$module_modified' => $modified
 		]);
 
-	}
-
-	function get_template($pdl) {
-		$ret = 'default';
-		$cnt = preg_match("/\[template\](.*?)\[\/template\]/ism", $pdl, $matches);
-		if($cnt && isset($matches[1])) {
-			$ret = trim($matches[1]);
-		}
-
-		return $ret;
 	}
 
 	function get_templates() {
@@ -108,6 +127,7 @@ class Pdledit_gui extends Controller {
 				}
 			}
 		}
+
 		return $ret;
 	}
 
@@ -124,6 +144,87 @@ class Pdledit_gui extends Controller {
 				}
 			}
 		}
+
+		return $ret;
+	}
+
+	function get_widgets() {
+		$ret = [];
+
+		$checkpaths = [
+			'Zotlabs/Widget/*.php'
+		];
+
+		foreach ($checkpaths as $path) {
+			$files = glob($path);
+			if($files) {
+				foreach($files as $f) {
+					$name = lcfirst(basename($f, '.php'));
+					$desc = '';
+					$ret[] = [
+						'type' => 'widget',
+						'name' => $name,
+						'desc' => $desc,
+						'src' => base64_encode('[widget=' . $name . '][/widget]')
+					];
+				}
+			}
+		}
+
+		return $ret;
+	}
+
+	function get_menus() {
+		$ret = [];
+
+		$r = q("select * from menu where menu_channel_id = %d and menu_flags = 0",
+			intval(local_channel())
+		);
+
+		foreach ($r as $rr) {
+			$name = $rr['menu_name'];
+			$desc = $rr['menu_desc'];
+			$ret[] = [
+				'type' => 'menu',
+				'name' => $name,
+				'desc' => $desc,
+				'src' => base64_encode('[menu]' . $name . '[/menu]')
+			];
+		}
+
+		return $ret;
+	}
+
+	function get_blocks() {
+		$ret = [];
+
+		$r = q("select v, title, summary from item join iconfig on iconfig.iid = item.id and item.uid = %d
+			and iconfig.cat = 'system' and iconfig.k = 'BUILDBLOCK'",
+			intval(local_channel())
+		);
+
+		foreach ($r as $rr) {
+			$name = $rr['v'];
+			$desc = (($rr['title']) ? $rr['title'] : $rr['summary']);
+			$ret[] = [
+				'type' => 'block',
+				'name' => $name,
+				'desc' => $desc,
+				'src' => base64_encode('[block]' . $name . '[/block]')
+			];
+		}
+
+		return $ret;
+	}
+
+	function get_template($pdl) {
+		$ret = 'default';
+
+		$cnt = preg_match("/\[template\](.*?)\[\/template\]/ism", $pdl, $matches);
+		if($cnt && isset($matches[1])) {
+			$ret = trim($matches[1]);
+		}
+
 		return $ret;
 	}
 
@@ -137,17 +238,14 @@ class Pdledit_gui extends Controller {
 				if (!in_array($mtch[1], $supported_regions)) {
 					continue;
 				}
-
 				$ret['region_' . $mtch[1]] = self::parse_region($mtch[2]);
 			}
 		}
 
 		return $ret;
-
 	}
 
 	function parse_region($pdl) {
-
 		$ret = [];
 
 		$cnt = preg_match_all('/\$content\b/ism', $pdl, $matches, PREG_SET_ORDER|PREG_OFFSET_CAPTURE);
@@ -159,7 +257,8 @@ class Pdledit_gui extends Controller {
 				$src = base64_encode($mtch[0][0]);
 				$ret[$offset] = [
 					'type' => 'content',
-					'name' => t('Main content'),
+					'name' => t('Content'),
+					'desc' => t('The main content of this page'),
 					'src' => $src
 				];
 			}
@@ -176,6 +275,7 @@ class Pdledit_gui extends Controller {
 				$ret[$offset] = [
 					'type' => 'menu',
 					'name' => $name,
+					'desc' => '',
 					'src' => $src
 				];
 			}
@@ -202,6 +302,7 @@ class Pdledit_gui extends Controller {
 				$ret[$offset] = [
 					'type' => 'block',
 					'name' => $name,
+					'desc' => '',
 					'src' => $src
 				];
 			}
@@ -241,6 +342,7 @@ class Pdledit_gui extends Controller {
 				$ret[$offset] = [
 					'type' => 'widget',
 					'name' => $name,
+					'desc' => '',
 					'src' => $src
 				];
 			}
@@ -273,8 +375,8 @@ class Pdledit_gui extends Controller {
 		$info = array(
 			'name' => $template,
 			'description' => '',
-			'author' => array(),
-			'maintainer' => array(),
+			'author' => [],
+			'maintainer' => [],
 			'version' => '',
 			'contentregion' => []
 		);
