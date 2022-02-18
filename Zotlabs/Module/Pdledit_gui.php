@@ -9,10 +9,6 @@ use Zotlabs\Lib\Libsync;
 
 class Pdledit_gui extends Controller {
 
-	function init() {
-
-	}
-
 	function post() {
 
 		if(!local_channel()) {
@@ -32,12 +28,12 @@ class Pdledit_gui extends Controller {
 
 		if($_REQUEST['reset']) {
 			del_pconfig(local_channel(), 'system', 'mod_' . $module . '.pdl');
+			Libsync::build_sync_packet();
 			$ret['success'] = true;
 			json_return_and_die($ret);
 		}
 
 		if($_REQUEST['save']) {
-
 			if(!$_REQUEST['data']) {
 				return $ret;
 			}
@@ -51,8 +47,7 @@ class Pdledit_gui extends Controller {
 				foreach ($entries as $entry) {
 					$region_pdl .= base64_decode($entry) . "\r\n";
 				}
-
-				$pdl = preg_replace("/\[region=$region\](.*?)\[\/region\]/ism", '[region=' . $region . ']' . "\r\n" . $region_pdl . "\r\n" . '[/region]', $pdl);
+				$pdl = preg_replace('/\[region=' . $region . '\](.*?)\[\/region\]/ism', '[region=' . $region . ']' . "\r\n" . $region_pdl . "\r\n" . '[/region]', $pdl);
 			}
 
 			set_pconfig(local_channel(), 'system', 'mod_' . $module . '.pdl', escape_tags($pdl));
@@ -64,6 +59,8 @@ class Pdledit_gui extends Controller {
 
 		if($_REQUEST['save_src']) {
 			set_pconfig(local_channel(), 'system', 'mod_' . $module . '.pdl', escape_tags($_REQUEST['src']));
+			Libsync::build_sync_packet();
+
 			$ret['success'] = true;
 			json_return_and_die($ret);
 		}
@@ -493,6 +490,5 @@ class Pdledit_gui extends Controller {
 		}
 
 		return $ret;
-
 	}
 }
