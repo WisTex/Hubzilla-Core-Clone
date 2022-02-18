@@ -121,6 +121,7 @@ class Pdledit_gui extends Controller {
 		$template = self::get_template($pdl);
 
 		$template_info = self::get_template_info($template);
+
 		if(empty($template_info['contentregion'])) {
 			return t('This template does not support pdledi_gui (no content regions defined)');
 		}
@@ -178,8 +179,7 @@ class Pdledit_gui extends Controller {
 			'$modules' => base64_encode(self::get_modules()),
 			'$items' => base64_encode($items_html),
 			'$module_modified' => $modified,
-			'$module' => $module,
-			'$regions' => array_keys($regions)
+			'$module' => $module
 		]);
 
 	}
@@ -490,7 +490,7 @@ class Pdledit_gui extends Controller {
 						}
 					}
 					elseif (in_array($k, ['contentregion'])){
-						$info[$k][] = $v;
+						$info[$k][] = array_map('trim', explode(',', $v));
 					}
 					else {
 						$info[$k] = $v;

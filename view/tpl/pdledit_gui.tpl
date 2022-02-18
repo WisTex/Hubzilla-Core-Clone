@@ -53,19 +53,16 @@
 		let regions = [];
 		let content_regions = [];
 
-		{{foreach $regions as $region}}
-			regions.push('{{$region}}');
-		{{/foreach}}
-
 		let offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas'));
 		let edit_offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas_edit'));
 		let submit_offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas_submit'));
 
 		{{foreach $content_regions as $content_region}}
-		content_regions.push('{{$content_region}}');
+		regions.push('{{$content_region.0}}');
+		content_regions.push('{{$content_region.1}}');
 
-		let sortable_{{$content_region}} = document.getElementById('{{$content_region}}');
-		new Sortable(sortable_{{$content_region}}, {
+		let sortable_{{$content_region.1}} = document.getElementById('{{$content_region.1}}');
+		new Sortable(sortable_{{$content_region.1}}, {
 			group: 'shared',
 			handle: '.pdledit_gui_item_handle',
 			animation: 150

@@ -5,7 +5,7 @@
  *   * Version: 1
  *   * Author: None
  *   * Maintainer: None
- *   * ContentRegion: region_1_minimal
+ *   * ContentRegion: content, region_1
  */
 ?>
 <!DOCTYPE html >
@@ -16,7 +16,7 @@
   <?php if(x($page,'htmlhead')) echo $page['htmlhead'] ?>
 </head>
 <body>
-	<section id="region_1_minimal">
+	<section id="region_1">
 		<?php if(x($page,'content')) echo $page['content']; ?>
 		<div id="page-footer"></div>
 	</section>

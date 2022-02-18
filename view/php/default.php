@@ -5,9 +5,9 @@
  *   * Version: 1
  *   * Author: Mario Vavti
  *   * Maintainer: Mario Vavti
- *   * ContentRegion: left_aside_wrapper
- *   * ContentRegion: region_2
- *   * ContentRegion: right_aside_wrapper
+ *   * ContentRegion: aside, left_aside_wrapper
+ *   * ContentRegion: content, region_2
+ *   * ContentRegion: right_aside, right_aside_wrapper
  */
 ?>
 <!DOCTYPE html >

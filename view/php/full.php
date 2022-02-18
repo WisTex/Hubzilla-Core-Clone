@@ -5,7 +5,7 @@
  *   * Version: 1
  *   * Author: None
  *   * Maintainer: None
- *   * ContentRegion: region_1_full
+ *   * ContentRegion: content, region_1
  */
 ?>
 <!DOCTYPE html >
@@ -19,7 +19,7 @@
 	<?php if(x($page,'banner')) echo $page['banner']; ?>
 	<header><?php if(x($page,'header')) echo $page['header']; ?></header>
 	<?php if(x($page,'nav')) echo $page['nav']; ?>
-	<section id="region_1_full">
+	<section id="region_1">
 		<?php if(x($page,'content')) echo $page['content']; ?>
 		<div id="page-footer"></div>
 	</section>
