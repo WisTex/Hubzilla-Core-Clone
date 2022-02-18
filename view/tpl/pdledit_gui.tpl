@@ -24,7 +24,7 @@
 	</div>
 </div>
 
-<ul class="nav position-fixed bottom-0 start-50 bg-light translate-middle-x" style="min-width: 300px">
+<ul class="nav position-fixed bottom-0 start-50 bg-light translate-middle-x text-uppercase" style="min-width: 300px">
 	<li class="nav-item">
 		<a id="pdledit_gui_modules" class="nav-link" href="#">Modules</a>
 	</li>
@@ -39,23 +39,31 @@
 	</li>
 	{{if $module_modified}}
 	<li class="nav-item">
-		<a id="pdledit_gui_reset" class="nav-link disabled" href="#">Reset</a>
+		<a id="pdledit_gui_reset" class="nav-link" href="#">Reset</a>
 	</li>
 	{{/if}}
 	<li class="nav-item">
-		<a id="pdledit_gui_save" class="nav-link disabled" href="#">Save</a>
+		<a id="pdledit_gui_save" class="nav-link" href="#">Apply</a>
 	</li>
 </ul>
 
 <script>
 	$(document).ready(function() {
 		let poi;
+		let regions = [];
+		let content_regions = [];
+
+		{{foreach $regions as $region}}
+			regions.push('{{$region}}');
+		{{/foreach}}
 
 		let offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas'));
 		let edit_offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas_edit'));
 		let submit_offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas_submit'));
 
 		{{foreach $content_regions as $content_region}}
+		content_regions.push('{{$content_region}}');
+
 		let sortable_{{$content_region}} = document.getElementById('{{$content_region}}');
 		new Sortable(sortable_{{$content_region}}, {
 			group: 'shared',
@@ -94,7 +102,26 @@
 
 		$(document).on('click', '#pdledit_gui_offcanvas_edit_submit', function(e) {
 			let src = $('#pdledit_gui_offcanvas_edit_textarea').val();
-			poi.dataset.src = btoa(src);
+
+			if (poi) {
+				poi.dataset.src = btoa(src);
+			}
+			else {
+				$.post(
+					'pdledit_gui',
+					{
+						'save_src': 1,
+						'module': '{{$module}}',
+						'src': $('#pdledit_gui_offcanvas_edit_textarea').val()
+					}
+				)
+				.done(function(data) {
+					if (data.success) {
+						window.location.href = 'pdledit_gui/' + data.module;
+					}
+				});
+			}
+
 			edit_offcanvas.hide();
 		});
 
@@ -102,6 +129,7 @@
 
 		$(document).on('click', '#pdledit_gui_src', function(e) {
 			e.preventDefault();
+			poi = null; // this is important!
 			$('#pdledit_gui_offcanvas_edit_textarea').val(atob('{{$page_src}}'));
 			$('#pdledit_gui_offcanvas_edit_textarea').bbco_autocomplete('comanche');
 			edit_offcanvas.show();
@@ -128,10 +156,46 @@
 
 		$(document).on('click', '#pdledit_gui_save', function(e) {
 			e.preventDefault();
+
+			let obj = {};
+
+			content_regions.forEach(function (content_region, i) {
+				let data_src = [];
+				$('#' + content_region + ' > .card').each(function () {
+					data_src.push(this.dataset.src);
+				});
+				obj[regions[i]] = data_src;
+			});
+
+			$.post(
+				'pdledit_gui',
+				{
+					'save': 1,
+					'module': '{{$module}}',
+					'data': JSON.stringify(obj)
+				}
+			)
+			.done(function(data) {
+				if (data.success) {
+					window.location.href = 'pdledit_gui/' + data.module;
+				}
+			});
 		});
 
 		$(document).on('click', '#pdledit_gui_reset', function(e) {
 			e.preventDefault();
+			$.post(
+				'pdledit_gui',
+				{
+					'reset': 1,
+					'module': '{{$module}}'
+				}
+			)
+			.done(function(data) {
+				if (data.success) {
+					window.location.href = 'pdledit_gui/' + data.module;
+				}
+			});
 		});
 
 	});

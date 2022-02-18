@@ -5,6 +5,7 @@ namespace Zotlabs\Module;
 use App;
 use Zotlabs\Web\Controller;
 use Zotlabs\Render\Comanche;
+use Zotlabs\Lib\Libsync;
 
 class Pdledit_gui extends Controller {
 
@@ -14,6 +15,58 @@ class Pdledit_gui extends Controller {
 
 	function post() {
 
+		if(!local_channel()) {
+			return;
+		}
+
+		if(!$_REQUEST['module']) {
+			return;
+		}
+
+		$module = $_REQUEST['module'];
+
+		$ret = [
+			'success' => false,
+			'module' => $module
+		];
+
+		if($_REQUEST['reset']) {
+			del_pconfig(local_channel(), 'system', 'mod_' . $module . '.pdl');
+			$ret['success'] = true;
+			json_return_and_die($ret);
+		}
+
+		if($_REQUEST['save']) {
+
+			if(!$_REQUEST['data']) {
+				return $ret;
+			}
+
+			$data = json_decode($_REQUEST['data'],true);
+			$stored_pdl_result = self::get_pdl($module);
+			$pdl = $stored_pdl_result['pdl'];
+
+			foreach ($data as $region => $entries) {
+				$region_pdl = '';
+				foreach ($entries as $entry) {
+					$region_pdl .= base64_decode($entry) . "\r\n";
+				}
+
+				$pdl = preg_replace("/\[region=$region\](.*?)\[\/region\]/ism", '[region=' . $region . ']' . "\r\n" . $region_pdl . "\r\n" . '[/region]', $pdl);
+			}
+
+			set_pconfig(local_channel(), 'system', 'mod_' . $module . '.pdl', escape_tags($pdl));
+			Libsync::build_sync_packet();
+
+			$ret['success'] = true;
+			json_return_and_die($ret);
+		}
+
+		if($_REQUEST['save_src']) {
+			set_pconfig(local_channel(), 'system', 'mod_' . $module . '.pdl', escape_tags($_REQUEST['src']));
+			$ret['success'] = true;
+			json_return_and_die($ret);
+		}
 	}
 
 	function get() {
@@ -28,19 +81,10 @@ class Pdledit_gui extends Controller {
 			goaway(z_root() . '/pdledit_gui/hq');
 		}
 
-		$pdl_path = 'mod_' . $module . '.pdl';
+		$pdl_result = self::get_pdl($module);
 
-		$pdl = get_pconfig(local_channel(), 'system', $pdl_path);
-
-		$modified = true;
-
-		if(!$pdl) {
-			$pdl_path = theme_include($pdl_path);
-			if ($pdl_path) {
-				$pdl = file_get_contents($pdl_path);
-				$modified = false;
-			}
-		}
+		$pdl = $pdl_result['pdl'];
+		$modified = $pdl_result['modified'];
 
 		if(!$pdl) {
 			return t('Layout not found');
@@ -67,8 +111,7 @@ class Pdledit_gui extends Controller {
 					]);
 				}
 			}
-
-			App::$layout[$k] = $region_str;
+			App::$layout['region_' . $k] = $region_str;
 		}
 
 		$templates = self::get_templates();
@@ -106,7 +149,9 @@ class Pdledit_gui extends Controller {
 			'$templates' => base64_encode($templates_html),
 			'$modules' => base64_encode(self::get_modules()),
 			'$items' => base64_encode($items_html),
-			'$module_modified' => $modified
+			'$module_modified' => $modified,
+			'$module' => $module,
+			'$regions' => array_keys($regions)
 		]);
 
 	}
@@ -238,7 +283,7 @@ class Pdledit_gui extends Controller {
 				if (!in_array($mtch[1], $supported_regions)) {
 					continue;
 				}
-				$ret['region_' . $mtch[1]] = self::parse_region($mtch[2]);
+				$ret[$mtch[1]] = self::parse_region($mtch[2]);
 			}
 		}
 
@@ -371,15 +416,15 @@ class Pdledit_gui extends Controller {
 	 * @return array with the information
 	 */
 	function get_template_info($template){
-		$m = array();
-		$info = array(
+		$m = [];
+		$info = [
 			'name' => $template,
 			'description' => '',
 			'author' => [],
 			'maintainer' => [],
 			'version' => '',
 			'contentregion' => []
-		);
+		];
 
 		$checkpaths = [
 			'view/php/' . $template . '.php',
@@ -395,21 +440,21 @@ class Pdledit_gui extends Controller {
 			}
 		}
 
-		if(! ($template_found && $f))
+		if(!($template_found && $f))
 			return $info;
 
 		$f = escape_tags($f);
-		$r = preg_match("|/\*.*\*/|msU", $f, $m);
+		$r = preg_match('|/\*.*\*/|msU', $f, $m);
 
 		if ($r) {
 			$ll = explode("\n", $m[0]);
-			foreach( $ll as $l ) {
+			foreach($ll as $l) {
 				$l = trim($l, "\t\n\r */");
-				if ($l != ""){
-					list($k, $v) = array_map("trim", explode(":", $l, 2));
+				if ($l != ''){
+					list($k, $v) = array_map('trim', explode(':', $l, 2));
 					$k = strtolower($k);
 					if (in_array($k, ['author', 'maintainer'])){
-						$r = preg_match("|([^<]+)<([^>]+)>|", $v, $m);
+						$r = preg_match('|([^<]+)<([^>]+)>|', $v, $m);
 						if ($r) {
 							$info[$k][] = array('name' => $m[1], 'link' => $m[2]);
 						} else {
@@ -429,4 +474,25 @@ class Pdledit_gui extends Controller {
 		return $info;
 	}
 
+	function get_pdl($module) {
+		$ret = [
+			'pdl' => null,
+			'modified' => true
+		];
+
+		$pdl_path = 'mod_' . $module . '.pdl';
+
+		$ret['pdl'] = get_pconfig(local_channel(), 'system', $pdl_path);
+
+		if(!$ret['pdl']) {
+			$pdl_path = theme_include($pdl_path);
+			if ($pdl_path) {
+				$ret['pdl'] = file_get_contents($pdl_path);
+				$ret['modified'] = false;
+			}
+		}
+
+		return $ret;
+
+	}
 }
