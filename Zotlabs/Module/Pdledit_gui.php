@@ -11,11 +11,11 @@ class Pdledit_gui extends Controller {
 
 	function post() {
 
-		if(!local_channel()) {
+		if (!local_channel()) {
 			return;
 		}
 
-		if(!$_REQUEST['module']) {
+		if (!$_REQUEST['module']) {
 			return;
 		}
 
@@ -26,15 +26,15 @@ class Pdledit_gui extends Controller {
 			'module' => $module
 		];
 
-		if($_REQUEST['reset']) {
+		if ($_REQUEST['reset']) {
 			del_pconfig(local_channel(), 'system', 'mod_' . $module . '.pdl');
 			Libsync::build_sync_packet();
 			$ret['success'] = true;
 			json_return_and_die($ret);
 		}
 
-		if($_REQUEST['save']) {
-			if(!$_REQUEST['data']) {
+		if ($_REQUEST['save']) {
+			if (!$_REQUEST['data']) {
 				return $ret;
 			}
 
@@ -57,13 +57,44 @@ class Pdledit_gui extends Controller {
 			json_return_and_die($ret);
 		}
 
-		if($_REQUEST['save_src']) {
+		if ($_REQUEST['save_src']) {
 			set_pconfig(local_channel(), 'system', 'mod_' . $module . '.pdl', escape_tags($_REQUEST['src']));
 			Libsync::build_sync_packet();
 
 			$ret['success'] = true;
 			json_return_and_die($ret);
 		}
+
+		if ($_REQUEST['save_template']) {
+			if (!$_REQUEST['data']) {
+				return $ret;
+			}
+
+			$template = $_REQUEST['data'][0]['value'];
+			$pdl_result = self::get_pdl($module);
+			$stored_template = self::get_template($pdl_result['pdl']);
+
+			if ($template === $stored_template) {
+				$ret['success'] = true;
+				return $ret;
+			}
+
+			$cnt = preg_match("/\[template\](.*?)\[\/template\]/ism", $pdl_result['pdl'], $matches);
+			if ($cnt) {
+				$pdl = str_replace('[template]' . $stored_template . '[/template]', '[template]' . $template . '[/template]', $pdl_result['pdl']);
+			}
+			else {
+				$pdl = '[template]' . $template . '[/template]' . "\r\n";
+				$pdl .= $pdl_result['pdl'];
+			}
+
+			set_pconfig(local_channel(), 'system', 'mod_' . $module . '.pdl', escape_tags($pdl));
+			Libsync::build_sync_packet();
+
+			$ret['success'] = true;
+			json_return_and_die($ret);
+		}
+
 	}
 
 	function get() {

@@ -125,7 +125,25 @@
 			edit_offcanvas.hide();
 		});
 
-// #################################
+		$(document).on('click', '#pdledit_gui_offcanvas_submit_submit', function(e) {
+			if ($('#pdledit_gui_templates_form').length) {
+				$.post(
+					'pdledit_gui',
+					{
+						'save_template': 1,
+						'module': '{{$module}}',
+						'data': $('#pdledit_gui_templates_form').serializeArray()
+					}
+				)
+				.done(function(data) {
+					if (data.success) {
+						window.location.href = 'pdledit_gui/' + data.module;
+					}
+				});
+			}
+
+			submit_offcanvas.hide();
+		});
 
 		$(document).on('click', '#pdledit_gui_src', function(e) {
 			e.preventDefault();
