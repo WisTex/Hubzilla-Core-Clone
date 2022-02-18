@@ -140,7 +140,7 @@ class Pdledit_gui extends Controller {
 				$name = lcfirst(basename($f,'.php'));
 				$x = theme_include('mod_' . $name . '.pdl');
 				if($x) {
-					$ret .= '<a href="pdledit_gui/' . $name . '">' . $name . '</a><br />';
+					$ret .= '<div class="mb-2"><a href="pdledit_gui/' . $name . '">' . $name . '</a></div>';
 				}
 			}
 		}

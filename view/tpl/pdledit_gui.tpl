@@ -1,3 +1,10 @@
+<div id="pdledit_gui_offcanvas" class="offcanvas offcanvas-lg offcanvas-bottom shadow border rounded-top start-50 translate-middle-x" tabindex="-1" data-bs-backdrop="false" data-bs-scroll="true" style="min-width: 300px">
+	<div id="pdledit_gui_offcanvas_body" class="offcanvas-body"></div>
+	<div class="offcanvas-header">
+		<div class="offcanvas-title h3"></div>
+		<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+	</div>
+</div>
 
 <div id="pdledit_gui_offcanvas_edit" class="offcanvas offcanvas-lg offcanvas-bottom shadow border rounded-top start-50 translate-middle-x" tabindex="-1" data-bs-backdrop="false" data-bs-scroll="true" style="min-width: 300px">
 	<div id="pdledit_gui_offcanvas_edit_body" class="offcanvas-body">
@@ -17,14 +24,6 @@
 	</div>
 </div>
 
-<div id="pdledit_gui_offcanvas" class="offcanvas offcanvas-lg offcanvas-bottom shadow border rounded-top start-50 translate-middle-x" tabindex="-1" data-bs-backdrop="false" data-bs-scroll="true" style="min-width: 300px">
-	<div id="pdledit_gui_offcanvas_body" class="offcanvas-body"></div>
-	<div class="offcanvas-header">
-		<div class="offcanvas-title h3"></div>
-		<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-	</div>
-</div>
-
 <ul class="nav position-fixed bottom-0 start-50 bg-light translate-middle-x" style="min-width: 300px">
 	<li class="nav-item">
 		<a id="pdledit_gui_modules" class="nav-link" href="#">Modules</a>
@@ -40,21 +39,21 @@
 	</li>
 	{{if $module_modified}}
 	<li class="nav-item">
-		<a id="pdledit_gui_reset" class="nav-link" href="#">Reset</a>
+		<a id="pdledit_gui_reset" class="nav-link disabled" href="#">Reset</a>
 	</li>
 	{{/if}}
 	<li class="nav-item">
-		<a id="pdledit_gui_save" class="nav-link" href="#">Save</a>
+		<a id="pdledit_gui_save" class="nav-link disabled" href="#">Save</a>
 	</li>
 </ul>
 
 <script>
 	$(document).ready(function() {
-		var poi;
+		let poi;
 
-		var offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas'));
-		var edit_offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas_edit'));
-		var submit_offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas_submit'));
+		let offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas'));
+		let edit_offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas_edit'));
+		let submit_offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas_submit'));
 
 		{{foreach $content_regions as $content_region}}
 		let sortable_{{$content_region}} = document.getElementById('{{$content_region}}');
@@ -120,14 +119,17 @@
 
 			submit_offcanvas.show();
 		});
+
 		$(document).on('click', '#pdledit_gui_modules', function(e) {
 			e.preventDefault();
 			$('#pdledit_gui_offcanvas_body').html(atob('{{$modules}}'));
 			offcanvas.show();
 		});
+
 		$(document).on('click', '#pdledit_gui_save', function(e) {
 			e.preventDefault();
 		});
+
 		$(document).on('click', '#pdledit_gui_reset', function(e) {
 			e.preventDefault();
 		});
