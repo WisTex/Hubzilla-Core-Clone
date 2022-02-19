@@ -102,11 +102,7 @@
 			let src = $('#pdledit_gui_offcanvas_edit_textarea').val();
 
 			if (poi) {
-				original_src = atob(poi.dataset.src);
 				poi.dataset.src = btoa(src);
-
-				// also update page_src accordingly
-				page_src = page_src.replace(original_src, src);
 			}
 			else {
 				$.post(
