@@ -149,7 +149,15 @@ class Pdledit_gui extends Controller {
 			'$active' => $template
 		]);
 
-		$items_html = '';
+		$items_html = replace_macros(get_markup_template('pdledit_gui_item.tpl'), [
+			'$entry' => [
+				'type' => 'content',
+				'name' => t('Content'),
+				'desc' => t('The main content of this page'),
+				'src' => base64_encode('$content')
+			],
+			'$disable_controls' => true
+		]);;
 
 		foreach (self::get_widgets() as $entry) {
 			$items_html .= replace_macros(get_markup_template('pdledit_gui_item.tpl'), [
