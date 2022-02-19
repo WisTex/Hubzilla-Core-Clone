@@ -52,6 +52,7 @@
 		let poi;
 		let regions = [];
 		let content_regions = [];
+		let page_src = atob('{{$page_src}}');
 
 		let offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas'));
 		let edit_offcanvas = new bootstrap.Offcanvas(document.getElementById('pdledit_gui_offcanvas_edit'));
@@ -101,7 +102,11 @@
 			let src = $('#pdledit_gui_offcanvas_edit_textarea').val();
 
 			if (poi) {
+				original_src = atob(poi.dataset.src);
 				poi.dataset.src = btoa(src);
+
+				// also update page_src accordingly
+				page_src = page_src.replace(original_src, src);
 			}
 			else {
 				$.post(
@@ -145,7 +150,7 @@
 		$(document).on('click', '#pdledit_gui_src', function(e) {
 			e.preventDefault();
 			poi = null; // this is important!
-			$('#pdledit_gui_offcanvas_edit_textarea').val(atob('{{$page_src}}'));
+			$('#pdledit_gui_offcanvas_edit_textarea').val(page_src);
 			$('#pdledit_gui_offcanvas_edit_textarea').bbco_autocomplete('comanche');
 			edit_offcanvas.show();
 		});
