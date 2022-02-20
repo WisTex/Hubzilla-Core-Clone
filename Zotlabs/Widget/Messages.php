@@ -1,5 +1,13 @@
 <?php
 
+/**
+ *   * Name: HQ Message selector
+ *   * Description: Supports messages, direct messages, starred messages (if enabled) and notifications
+ *   * Author: Mario Vavti
+ *   * Requires: hq
+ */
+
+
 namespace Zotlabs\Widget;
 
 use App;

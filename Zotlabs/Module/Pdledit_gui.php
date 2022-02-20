@@ -135,6 +135,11 @@ class Pdledit_gui extends Controller {
 			if (is_array($v)) {
 				ksort($v);
 				foreach ($v as $entry) {
+					// Get the info from the file and replace entry if we get anything useful
+					$widget_info = get_widget_info($entry['name']);
+					$entry['name'] = (($widget_info['name']) ? $widget_info['name'] : $entry['name']);
+					$entry['desc'] = (($widget_info['description']) ? $widget_info['description'] : $entry['desc']);
+
 					$region_str .= replace_macros(get_markup_template('pdledit_gui_item.tpl'), [
 						'$entry' => $entry
 					]);
@@ -149,17 +154,18 @@ class Pdledit_gui extends Controller {
 			'$active' => $template
 		]);
 
-		$items_html = replace_macros(get_markup_template('pdledit_gui_item.tpl'), [
-			'$entry' => [
-				'type' => 'content',
-				'name' => t('Content'),
-				'desc' => t('The main content of this page'),
-				'src' => base64_encode('$content')
-			],
-			'$disable_controls' => true
-		]);;
+		$items_html = '';
 
-		foreach (self::get_widgets() as $entry) {
+		//$items_html .= replace_macros(get_markup_template('pdledit_gui_item.tpl'), [
+			//'$entry' => [
+				//'type' => 'content',
+				//'name' => t('Main page content'),
+				//'src' => base64_encode('$content')
+			//],
+			//'$disable_controls' => true
+		//]);
+
+		foreach (self::get_widgets($module) as $entry) {
 			$items_html .= replace_macros(get_markup_template('pdledit_gui_item.tpl'), [
 				'$entry' => $entry,
 				'$disable_controls' => true
@@ -219,6 +225,11 @@ class Pdledit_gui extends Controller {
 		if($files) {
 			foreach($files as $f) {
 				$name = lcfirst(basename($f,'.php'));
+
+				if ($name === 'admin' && !is_site_admin()) {
+					continue;
+				}
+
 				$x = theme_include('mod_' . $name . '.pdl');
 				if($x) {
 					$ret .= '<div class="mb-2"><a href="pdledit_gui/' . $name . '">' . $name . '</a></div>';
@@ -229,7 +240,7 @@ class Pdledit_gui extends Controller {
 		return $ret;
 	}
 
-	function get_widgets() {
+	function get_widgets($module) {
 		$ret = [];
 
 		$checkpaths = [
@@ -241,11 +252,20 @@ class Pdledit_gui extends Controller {
 			if($files) {
 				foreach($files as $f) {
 					$name = lcfirst(basename($f, '.php'));
-					$desc = '';
+
+					$widget_info = get_widget_info($name);
+					if ($widget_info['requires'] && strpos($widget_info['requires'], 'admin') !== false && !is_site_admin()) {
+						continue;
+					}
+
+					if ($widget_info['requires'] && strpos($widget_info['requires'], $module) === false) {
+						continue;
+					}
+
 					$ret[] = [
 						'type' => 'widget',
-						'name' => $name,
-						'desc' => $desc,
+						'name' => $widget_info['name'] ?? $name,
+						'desc' => $widget_info['description'] ?? '',
 						'src' => base64_encode('[widget=' . $name . '][/widget]')
 					];
 				}
@@ -338,8 +358,8 @@ class Pdledit_gui extends Controller {
 				$src = base64_encode($mtch[0][0]);
 				$ret[$offset] = [
 					'type' => 'content',
-					'name' => t('Content'),
-					'desc' => t('The main content of this page'),
+					'name' => t('Main page content'),
+					'desc' => t('The main page content can not be edited!'),
 					'src' => $src
 				];
 			}
