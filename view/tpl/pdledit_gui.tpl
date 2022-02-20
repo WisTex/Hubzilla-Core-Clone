@@ -32,7 +32,7 @@
 		<a id="pdledit_gui_templates" class="nav-link" href="#">Templates</a>
 	</li>
 	<li class="nav-item">
-		<a id="pdledit_gui_items" class="nav-link" href="#" >Items</a>
+		<a id="pdledit_gui_items" class="nav-link" href="#">Items</a>
 	</li>
 	<li class="nav-item">
 		<a id="pdledit_gui_src" class="nav-link" href="#">Source</a>
@@ -146,6 +146,31 @@
 		$(document).on('click', '#pdledit_gui_src', function(e) {
 			e.preventDefault();
 			poi = null; // this is important!
+
+			let obj = {};
+
+			content_regions.forEach(function (content_region, i) {
+				let data_src = [];
+				$('#' + content_region + ' > .card').each(function () {
+					data_src.push(atob(this.dataset.src));
+				});
+				obj[regions[i]] = data_src;
+			});
+
+			for (let [region, entries] of Object.entries(obj)) {
+				let region_pdl = '';
+
+				entries.forEach(function (entry) {
+					region_pdl = region_pdl.concat(entry + "\r\n");
+				});
+
+				let regex_str = '\\[region=' + region + '\\](.*?)\\[\\/region\\]';
+				let replace_str = '[region=' + region + ']' + "\r\n" + region_pdl + "\r\n" + '[/region]'
+				let regex = new RegExp(regex_str, 'ism');
+
+				page_src = page_src.replace(regex, replace_str);
+			}
+
 			$('#pdledit_gui_offcanvas_edit_textarea').val(page_src);
 			$('#pdledit_gui_offcanvas_edit_textarea').bbco_autocomplete('comanche');
 			edit_offcanvas.show();
