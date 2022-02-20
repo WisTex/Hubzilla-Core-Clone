@@ -1,8 +1,8 @@
 <?php
 
 /**
- *   * Name: HQ Message selector
- *   * Description: Supports messages, direct messages, starred messages (if enabled) and notifications
+ *   * Name: HQ Messages
+ *   * Description: Quick access to messages, direct messages, starred messages (if enabled) and notifications
  *   * Author: Mario Vavti
  *   * Requires: hq
  */
