@@ -1,5 +1,11 @@
 $(document).ready(function() {
 
+	$(document).on('click', '.channel-activities-toggle', function(e) {
+		$(window).scrollTop(0);
+		$(document).trigger('hz:hqControlsClickAction');
+		$('#channel-activities').toggle();
+	});
+
 	$(document).on('click', '.jot-toggle', function(e) {
 		$(window).scrollTop(0);
 		$(document).trigger('hz:hqControlsClickAction');

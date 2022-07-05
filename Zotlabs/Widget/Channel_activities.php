@@ -24,7 +24,7 @@ class Channel_activities {
 		self::$uid = local_channel();
 		self::$channel = App::get_channel();
 
-		//$o = '<div class="thread-parent">';
+		$o = '<div id="channel-activities">';
 
 
 		$o .= '<h2>Welcome ' . self::$channel['channel_name'] . '!</h2>';
@@ -58,7 +58,7 @@ class Channel_activities {
 			$o .= '<br><br>';
 		}
 
-		//$o .= '</div>';
+		$o .= '</div>';
 
 
 		return $o;
