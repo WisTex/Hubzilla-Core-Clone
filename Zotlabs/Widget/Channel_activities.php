@@ -168,7 +168,9 @@ EOF;
 
 		$account = App::get_account();
 
-		$r = q("SELECT channel_id, channel_name FROM channel WHERE channel_account_id = %d
+		$r = q("SELECT channel_id, channel_name, xchan_photo_s FROM channel
+			LEFT JOIN xchan ON channel_hash = xchan_hash
+			WHERE channel_account_id = %d
 			AND channel_id != %d",
 			intval($account['account_id']),
 			intval(self::$uid)
@@ -202,14 +204,20 @@ EOF;
 			$i[] = '<div class="card">';
 			$i[] = "<a href='$url' class='text-dark'>";
 			$i[] = '<div class="card-body">';
+			$i[] = '<img src="' . $rr['xchan_photo_s'] . '" class="menu-img-2">&nbsp;' . $rr['channel_name'];
+			$i[] = '</div>';
+			$i[] = '<div class="card-footer text-muted">';
 			if ($intros[0]['total']) {
-				$i[] = t('New connections') . '&nbsp;<span class="badge bg-danger">' . intval($intros[0]['total']) . '</span><br>';
+				$i[] = intval($intros[0]['total']) . ' ' . t('new connections');
+				if ($notices[0]['total']) {
+					$i[] = ', ';
+				}
 			}
 			if ($notices[0]['total']) {
-				$i[] = t('Notices') . '&nbsp;<span class="badge bg-danger">' . intval($notices[0]['total']) . '</span>';
+				$i[] = intval($notices[0]['total']) . ' ' . t('notices');
 			}
 			$i[] = '</div>';
-			$i[] = '<div class="card-footer">' . $rr['channel_name'] . '</div>';
+
 			$i[] = '</a>';
 			$i[] = '</div>';
 			$i[] = '</div>';
