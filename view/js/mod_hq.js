@@ -1,5 +1,8 @@
 $(document).ready(function() {
 
+	$('.autotime').timeago();
+
+
 	if (bParam_mid) {
 		src = 'hq';
 		$('.channel-activities-toggle').removeClass('d-none');

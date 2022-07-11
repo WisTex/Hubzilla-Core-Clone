@@ -27,11 +27,12 @@ class Channel_activities {
 		$o = '<div id="channel-activities" class="d-none">';
 
 
-		$o .= '<h2>Welcome ' . self::$channel['channel_name'] . '!</h2>';
+		$o .= '<h2 class="mb-4">Welcome ' . self::$channel['channel_name'] . '!</h2>';
 		//$o .= 'Last login date: ' . get_pconfig(self::$uid, 'system', 'stored_login_date') . ' from ' . get_pconfig(self::$uid, 'system', 'stored_login_addr');
 
 		self::get_photos_activity();
 		self::get_files_activity();
+		self::get_channels_activity();
 
 		$hookdata = [
 			'channel' => self::$channel,
@@ -50,20 +51,20 @@ class Channel_activities {
 
 		array_multisort($keys, SORT_DESC, $hookdata['activities']);
 
-		hz_syslog('activities: ' . print_r($hookdata['activities'], true));
 
-		$o .= '<br>';
+		//hz_syslog('activities: ' . print_r($hookdata['activities'], true));
+
+		$o .= '<div class="container-lg ps-0 pe-1">';
 
 		foreach($hookdata['activities'] as $a) {
-			$o .= '<h3>' . $a['label'] . '</h3>';
+			$o .= '<h3><a href="' . $a['url'] . '"><i class="fa fa-' . $a['icon'] . '"></i> ' . $a['label'] . '</a></h3>';
 
 			foreach($a['items'] as $i) {
 				$o .= $i;
 			}
-
-			$o .= '<br><br>';
 		}
 
+		$o .= '</div>';
 		$o .= '</div>';
 
 
@@ -72,7 +73,9 @@ class Channel_activities {
 
 	private static function get_photos_activity() {
 
-		$r = q("SELECT edited, height, width, imgscale, description, filename, resource_id FROM photo WHERE uid = %d AND photo_usage = 0 AND imgscale = 3 ORDER BY edited DESC LIMIT %d",
+		$r = q("SELECT edited, height, width, imgscale, description, filename, resource_id FROM photo WHERE uid = %d
+			AND photo_usage = 0 AND imgscale = 3
+			ORDER BY edited DESC LIMIT %d",
 			intval(self::$uid),
 			intval(self::$limit)
 		);
@@ -81,7 +84,7 @@ class Channel_activities {
 			return;
 		}
 
-		$i[] = '<div id="photo-album">';
+		$i[] = '<div id="photo-album" class="mb-4">';
 
 		foreach($r as $rr) {
 			$url = z_root() . '/photos/' . self::$channel['channel_address'] . '/image/' . $rr['resource_id'];
@@ -106,7 +109,9 @@ EOF;
 
 
 		self::$activities['photos'] = [
-			'label' => t('Last active photos'),
+			'label' => t('Photos'),
+			'icon' => 'photo',
+			'url' => z_root() . '/photos/' . self::$channel['channel_address'],
 			'date' => $r[0]['edited'],
 			'items' => $i
 		];
@@ -115,7 +120,9 @@ EOF;
 
 	private static function get_files_activity() {
 
-		$r = q("SELECT edited, display_path FROM attach WHERE uid = %d AND is_dir = 0 AND is_photo = 0 ORDER BY edited DESC LIMIT %d",
+		$r = q("SELECT * FROM attach WHERE uid = %d
+			AND is_dir = 0 AND is_photo = 0
+			ORDER BY edited DESC LIMIT %d",
 			intval(self::$uid),
 			intval(self::$limit)
 		);
@@ -124,17 +131,108 @@ EOF;
 			return;
 		}
 
+		$i[] = '<div class="row mb-3">';
+
 		foreach($r as $rr) {
-			$url = z_root() . '/cloud/' . self::$channel['channel_address'] . '/' . $rr['display_path'];
-			$i[]  = "<a href='$url'>$url</a><br>";
+			$url = z_root() . '/cloud/' . self::$channel['channel_address'] . '/' . rtrim($rr['display_path'], $rr['filename']) . '#' . $rr['id'];
+			$summary = $rr['filename'];
+			$changed = datetime_convert('UTC', date_default_timezone_get(), $rr['edited']);
+
+			$i[] = '<div class="col-sm-4 mb-3">';
+			$i[] = '<div class="card">';
+			$i[] = "<a href='$url' class='text-dark'>";
+
+			$i[] = '<div class="card-body">';
+			$i[] = $summary;
+			$i[] = '</div>';
+			$i[] = '<div class="card-footer text-muted autotime" title="' . $changed . '"></div>';
+			$i[] = '</a>';
+
+			$i[] = '</div>';
+			$i[] = '</div>';
 		}
 
+		$i[] = '</div>';
+
 		self::$activities['files'] = [
-			'label' => t('Last active files'),
+			'label' => t('Files'),
+			'icon' => 'folder-open',
+			'url' => z_root() . '/cloud/' . self::$channel['channel_address'],
 			'date' => $r[0]['edited'],
 			'items' => $i
 		];
 
 	}
+
+	private static function get_channels_activity() {
+
+		$account = App::get_account();
+
+		$r = q("SELECT channel_id, channel_name FROM channel WHERE channel_account_id = %d
+			AND channel_id != %d",
+			intval($account['account_id']),
+			intval(self::$uid)
+		);
+
+		if (!$r) {
+			return;
+		}
+
+		$i[] = '<div class="row mb-3">';
+		$channels_activity = 0;
+
+		foreach($r as$rr) {
+
+			$intros = q("SELECT COUNT(abook_id) AS total FROM abook WHERE abook_channel = %d
+				AND abook_pending = 1 AND abook_self = 0 AND abook_ignored = 0",
+				intval($rr['channel_id'])
+			);
+
+			$notices = q("SELECT COUNT(id) AS total FROM notify WHERE uid = %d AND seen = 0",
+				intval($rr['channel_id'])
+			);
+
+			if (!$intros[0]['total'] && !$notices[0]['total']) {
+				continue;
+			}
+
+			$url = z_root() . '/manage/' . $rr['channel_id'];
+
+			$i[] = '<div class="col-sm-4 mb-3">';
+			$i[] = '<div class="card">';
+			$i[] = "<a href='$url' class='text-dark'>";
+			$i[] = '<div class="card-body">';
+			if ($intros[0]['total']) {
+				$i[] = t('New connections') . '&nbsp;<span class="badge bg-danger">' . intval($intros[0]['total']) . '</span><br>';
+			}
+			if ($notices[0]['total']) {
+				$i[] = t('Notices') . '&nbsp;<span class="badge bg-danger">' . intval($notices[0]['total']) . '</span>';
+			}
+			$i[] = '</div>';
+			$i[] = '<div class="card-footer">' . $rr['channel_name'] . '</div>';
+			$i[] = '</a>';
+			$i[] = '</div>';
+			$i[] = '</div>';
+
+			$channels_activity++;
+
+		}
+
+		$i[] = '</div>';
+
+		if(!$channels_activity) {
+			return;
+		}
+
+		self::$activities['channels'] = [
+			'label' => t('Channels'),
+			'icon' => 'home',
+			'url' => z_root() . '/manage',
+			'date' => datetime_convert(),
+			'items' => $i
+		];
+
+	}
+
 }
 
