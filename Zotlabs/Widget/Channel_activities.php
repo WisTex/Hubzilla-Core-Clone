@@ -204,7 +204,7 @@ EOF;
 			$i[] = '<div class="card">';
 			$i[] = "<a href='$url' class='text-dark'>";
 			$i[] = '<div class="card-body">';
-			$i[] = '<img src="' . $rr['xchan_photo_s'] . '" class="menu-img-2">&nbsp;' . $rr['channel_name'];
+			$i[] = '<img src="' . $rr['xchan_photo_s'] . '" class="menu-img-2">' . $rr['channel_name'];
 			$i[] = '</div>';
 			$i[] = '<div class="card-footer text-muted">';
 			if ($intros[0]['total']) {
