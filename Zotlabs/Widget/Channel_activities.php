@@ -167,7 +167,7 @@ EOF;
 		$r = q("SELECT channel_id, channel_name, xchan_photo_s FROM channel
 			LEFT JOIN xchan ON channel_hash = xchan_hash
 			WHERE channel_account_id = %d
-			AND channel_id != %d",
+			AND channel_id != %d AND channel_removed = 0",
 			intval($account['account_id']),
 			intval(self::$uid)
 		);
