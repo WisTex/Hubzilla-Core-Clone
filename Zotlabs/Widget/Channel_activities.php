@@ -71,10 +71,9 @@ class Channel_activities {
 	private static function get_photos_activity() {
 
 		$r = q("SELECT edited, height, width, imgscale, description, filename, resource_id FROM photo WHERE uid = %d
-			AND photo_usage = 0 AND imgscale = 3
-			ORDER BY edited DESC LIMIT %d",
-			intval(self::$uid),
-			intval(self::$limit)
+			AND photo_usage = 0 AND is_nsfw = 0 AND imgscale = 3
+			ORDER BY edited DESC LIMIT 6",
+			intval(self::$uid)
 		);
 
 		if (!$r) {

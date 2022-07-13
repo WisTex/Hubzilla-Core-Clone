@@ -1801,3 +1801,7 @@ span.default-highlight {
 .bootstrap-tagsinput {
 	width: 100%;
 }
+
+.jg-entry img {
+	border-radius: $radius;
+}
