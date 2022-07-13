@@ -32,6 +32,7 @@ class Channel_activities {
 
 		self::get_photos_activity();
 		self::get_files_activity();
+		self::get_webpages_activity();
 		self::get_channels_activity();
 
 		$hookdata = [
@@ -55,7 +56,7 @@ class Channel_activities {
 		//hz_syslog('activities: ' . print_r($hookdata['activities'], true));
 
 		foreach($hookdata['activities'] as $a) {
-			$o .= '<div class="mb-1 text-uppercase"><a href="' . $a['url'] . '"><i class="fa fa-fw fa-' . $a['icon'] . '"></i> ' . $a['label'] . '</a></div>';
+			$o .= '<div class="mb-1 text-uppercase"><a href="' . $a['url'] . '"><i class="fa fa-fw fa-' . $a['icon'] . ' generic-icons-nav"></i>' . $a['label'] . '</a></div>';
 
 			foreach($a['items'] as $i) {
 				$o .= $i;
@@ -154,6 +155,62 @@ EOF;
 			'label' => t('Files'),
 			'icon' => 'folder-open',
 			'url' => z_root() . '/cloud/' . self::$channel['channel_address'],
+			'date' => $r[0]['edited'],
+			'items' => $i
+		];
+
+	}
+
+	private static function get_webpages_activity() {
+
+		$r = q("SELECT * FROM iconfig LEFT JOIN item ON iconfig.iid = item.id WHERE item.uid = %d
+			AND iconfig.cat = 'system' AND iconfig.k = 'WEBPAGE' AND item_type = %d
+			ORDER BY item.edited DESC LIMIT %d",
+			intval(self::$uid),
+			intval(ITEM_TYPE_WEBPAGE),
+			intval(self::$limit)
+		);
+
+		if (!$r) {
+			return;
+		}
+
+		$i[] = '<div class="row mb-3">';
+
+		foreach($r as $rr) {
+			$url = z_root() . '/page/' . self::$channel['channel_address'] . '/' . $rr['v'];
+
+			$summary = html2plain(purify_html(bbcode($rr['body'], ['drop_media' => true, 'tryoembed' => false])), 85, true);
+			if ($summary) {
+				$summary = substr_words(htmlentities($summary, ENT_QUOTES, 'UTF-8', false), 85);
+			}
+
+			$changed = datetime_convert('UTC', date_default_timezone_get(), $rr['edited']);
+
+			$i[] = '<div class="col-sm-4 mb-3">';
+			$i[] = '<div class="card">';
+			$i[] = "<a href='$url' class='text-dark'>";
+
+			$i[] = '<div class="card-body">';
+			if ($rr['title']) {
+				$i[] = '<strong>' . $rr['title'] . '</strong>';
+				$i[] = '<hr>';
+			}
+			$i[] = $summary;
+			$i[] = '</div>';
+			$i[] = '<div class="card-footer text-muted autotime" title="' . $changed . '"></div>';
+			$i[] = '</a>';
+
+			$i[] = '</div>';
+			$i[] = '</div>';
+		}
+
+		$i[] = '</div>';
+
+		self::$activities['webpages'] = [
+			'label' => t('Webpages'),
+			'icon' => 'newspaper-o',
+			'url' => z_root() . '/webpages/' . self::$channel['channel_address'],
 			'date' => $r[0]['edited'],
 			'items' => $i
 		];
