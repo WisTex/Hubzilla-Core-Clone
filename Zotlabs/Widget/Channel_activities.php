@@ -204,13 +204,13 @@ EOF;
 			$i[] = '</div>';
 			$i[] = '<div class="card-footer text-muted">';
 			if ($intros[0]['total']) {
-				$i[] = intval($intros[0]['total']) . ' ' . t('new connections');
+				$i[] = intval($intros[0]['total']) . ' ' . tt('new connection', 'new connections', intval($intros[0]['total']), 'noun');
 				if ($notices[0]['total']) {
 					$i[] = ', ';
 				}
 			}
 			if ($notices[0]['total']) {
-				$i[] = intval($notices[0]['total']) . ' ' . t('notices');
+				$i[] = intval($notices[0]['total']) . ' ' . tt('notice', 'notices', intval($notices[0]['total']), 'noun');
 			}
 			$i[] = '</div>';
 
