@@ -24,7 +24,7 @@ class Channel_activities {
 		self::$uid = local_channel();
 		self::$channel = App::get_channel();
 
-		$o = '<div id="channel-activities" class="d-none">';
+		$o = '<div id="channel-activities" class="d-none overflow-hidden">';
 
 
 		$o .= '<h2 class="mb-4">Welcome ' . self::$channel['channel_name'] . '!</h2>';
@@ -54,10 +54,8 @@ class Channel_activities {
 
 		//hz_syslog('activities: ' . print_r($hookdata['activities'], true));
 
-		$o .= '<div class="container-lg ps-0 pe-1">';
-
 		foreach($hookdata['activities'] as $a) {
-			$o .= '<h3><a href="' . $a['url'] . '"><i class="fa fa-' . $a['icon'] . '"></i> ' . $a['label'] . '</a></h3>';
+			$o .= '<div class="mb-1 text-uppercase"><a href="' . $a['url'] . '"><i class="fa fa-fw fa-' . $a['icon'] . '"></i> ' . $a['label'] . '</a></div>';
 
 			foreach($a['items'] as $i) {
 				$o .= $i;
@@ -65,8 +63,6 @@ class Channel_activities {
 		}
 
 		$o .= '</div>';
-		$o .= '</div>';
-
 
 		return $o;
 	}
