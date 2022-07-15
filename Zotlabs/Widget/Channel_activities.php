@@ -24,7 +24,7 @@ class Channel_activities {
 		self::$uid = local_channel();
 		self::$channel = App::get_channel();
 
-		$o = '<div id="channel-activities" class="d-none overflow-hidden">';
+		$o .= '<div id="channel-activities" class="d-none overflow-hidden">';
 
 
 		$o .= '<h2 class="mb-4">Welcome ' . self::$channel['channel_name'] . '!</h2>';
@@ -52,18 +52,17 @@ class Channel_activities {
 
 		array_multisort($keys, SORT_DESC, $hookdata['activities']);
 
-
-		//hz_syslog('activities: ' . print_r($hookdata['activities'], true));
+	//	hz_syslog('activities: ' . print_r($hookdata['activities'], true));
 
 		foreach($hookdata['activities'] as $a) {
-			$o .= '<div class="mb-1 text-uppercase"><a href="' . $a['url'] . '"><i class="fa fa-fw fa-' . $a['icon'] . ' generic-icons-nav"></i>' . $a['label'] . '</a></div>';
-
-			foreach($a['items'] as $i) {
-				$o .= $i;
-			}
+			hz_syslog(print_r($a,true));
+			$o .= replace_macros(get_markup_template($a['tpl']), [
+				'$url' => $a['url'],
+				'$icon' => $a['icon'],
+				'$label' => $a['label'],
+				'$items' => $a['items']
+			]);
 		}
-
-		$o .= '</div>';
 
 		return $o;
 	}
@@ -80,36 +79,24 @@ class Channel_activities {
 			return;
 		}
 
-		$i[] = '<div id="photo-album" class="mb-4">';
-
 		foreach($r as $rr) {
-			$url = z_root() . '/photos/' . self::$channel['channel_address'] . '/image/' . $rr['resource_id'];
-			$changed = datetime_convert('UTC', date_default_timezone_get(), $rr['edited']);
-			$src = z_root() . '/photo/' . $rr['resource_id'] . '-' . $rr['imgscale'];
-			$w = $rr['width'];
-			$h = $rr['height'];
-			$alt = (($rr['description']) ? $rr['description'] : $rr['filename']);
-			$i[]  = "<a href='$url' title='$alt'><img src='$src' width='$w' height='$h' alt='$alt' loading='lazy' ><div class='jg-caption autotime' title='$changed'></div></a>";
+			$i[] = [
+				'url' => z_root() . '/photos/' . self::$channel['channel_address'] . '/image/' . $rr['resource_id'],
+				'edited' => datetime_convert('UTC', date_default_timezone_get(), $rr['edited']),
+				'width' => $rr['width'],
+				'height' => $rr['height'],
+				'alt' => (($rr['description']) ? $rr['description'] : $rr['filename']),
+				'src' => z_root() . '/photo/' . $rr['resource_id'] . '-' . $rr['imgscale']
+			];
 		}
-
-		$i[] = '</div>';
-		$i[] = <<<EOF
-		<script>
-		$('#photo-album').justifiedGallery({
-			border: 0,
-			margins: 3,
-			maxRowsCount: 1
-		});
-		</script>
-EOF;
-
 
 		self::$activities['photos'] = [
 			'label' => t('Photos'),
 			'icon' => 'photo',
 			'url' => z_root() . '/photos/' . self::$channel['channel_address'],
 			'date' => $r[0]['edited'],
-			'items' => $i
+			'items' => $i,
+			'tpl' => 'channel_activities_photos.tpl'
 		];
 
 	}
@@ -127,35 +114,21 @@ EOF;
 			return;
 		}
 
-		$i[] = '<div class="row mb-3">';
-
 		foreach($r as $rr) {
-			$url = z_root() . '/cloud/' . self::$channel['channel_address'] . '/' . rtrim($rr['display_path'], $rr['filename']) . '#' . $rr['id'];
-			$summary = $rr['filename'];
-			$changed = datetime_convert('UTC', date_default_timezone_get(), $rr['edited']);
-
-			$i[] = '<div class="col-sm-4 mb-3">';
-			$i[] = '<div class="card">';
-			$i[] = "<a href='$url' class='text-dark'>";
-
-			$i[] = '<div class="card-body">';
-			$i[] = $summary;
-			$i[] = '</div>';
-			$i[] = '<div class="card-footer text-muted autotime" title="' . $changed . '"></div>';
-			$i[] = '</a>';
-
-			$i[] = '</div>';
-			$i[] = '</div>';
+			$i[] = [
+				'url' => z_root() . '/cloud/' . self::$channel['channel_address'] . '/' . rtrim($rr['display_path'], $rr['filename']) . '#' . $rr['id'],
+				'summary' => $rr['filename'],
+				'footer' => datetime_convert('UTC', date_default_timezone_get(), $rr['edited'])
+			];
 		}
-
-		$i[] = '</div>';
 
 		self::$activities['files'] = [
 			'label' => t('Files'),
 			'icon' => 'folder-open',
 			'url' => z_root() . '/cloud/' . self::$channel['channel_address'],
 			'date' => $r[0]['edited'],
-			'items' => $i
+			'items' => $i,
+			'tpl' => 'channel_activities.tpl'
 		];
 
 	}
@@ -174,44 +147,27 @@ EOF;
 			return;
 		}
 
-		$i[] = '<div class="row mb-3">';
-
 		foreach($r as $rr) {
-			$url = z_root() . '/page/' . self::$channel['channel_address'] . '/' . $rr['v'];
-
 			$summary = html2plain(purify_html(bbcode($rr['body'], ['drop_media' => true, 'tryoembed' => false])), 85, true);
 			if ($summary) {
 				$summary = substr_words(htmlentities($summary, ENT_QUOTES, 'UTF-8', false), 85);
 			}
 
-			$changed = datetime_convert('UTC', date_default_timezone_get(), $rr['edited']);
-
-			$i[] = '<div class="col-sm-4 mb-3">';
-			$i[] = '<div class="card">';
-			$i[] = "<a href='$url' class='text-dark'>";
-
-			$i[] = '<div class="card-body">';
-			if ($rr['title']) {
-				$i[] = '<strong>' . $rr['title'] . '</strong>';
-				$i[] = '<hr>';
-			}
-			$i[] = $summary;
-			$i[] = '</div>';
-			$i[] = '<div class="card-footer text-muted autotime" title="' . $changed . '"></div>';
-			$i[] = '</a>';
-
-			$i[] = '</div>';
-			$i[] = '</div>';
+			$i[] = [
+				'url' => z_root() . '/page/' . self::$channel['channel_address'] . '/' . $rr['v'],
+				'title' => $rr['title'],
+				'summary' => $summary,
+				'footer' => datetime_convert('UTC', date_default_timezone_get(), $rr['edited'])
+			];
 		}
-
-		$i[] = '</div>';
 
 		self::$activities['webpages'] = [
 			'label' => t('Webpages'),
 			'icon' => 'newspaper-o',
 			'url' => z_root() . '/webpages/' . self::$channel['channel_address'],
 			'date' => $r[0]['edited'],
-			'items' => $i
+			'items' => $i,
+			'tpl' => 'channel_activities.tpl'
 		];
 
 	}
@@ -232,7 +188,6 @@ EOF;
 			return;
 		}
 
-		$i[] = '<div class="row mb-3">';
 		$channels_activity = 0;
 
 		foreach($r as$rr) {
@@ -250,35 +205,28 @@ EOF;
 				continue;
 			}
 
-			$url = z_root() . '/manage/' . $rr['channel_id'];
+			$footer = '';
 
-			$i[] = '<div class="col-sm-4 mb-3">';
-			$i[] = '<div class="card">';
-			$i[] = "<a href='$url' class='text-dark'>";
-			$i[] = '<div class="card-body">';
-			$i[] = '<img src="' . $rr['xchan_photo_s'] . '" class="menu-img-2">' . $rr['channel_name'];
-			$i[] = '</div>';
-			$i[] = '<div class="card-footer text-muted">';
 			if ($intros[0]['total']) {
-				$i[] = intval($intros[0]['total']) . ' ' . tt('new connection', 'new connections', intval($intros[0]['total']), 'noun');
+				$footer .= intval($intros[0]['total']) . ' ' . tt('New connection', 'New connections', intval($intros[0]['total']), 'noun');
 				if ($notices[0]['total']) {
-					$i[] = ', ';
+					$footer .= ', ';
 				}
 			}
 			if ($notices[0]['total']) {
-				$i[] = intval($notices[0]['total']) . ' ' . tt('notice', 'notices', intval($notices[0]['total']), 'noun');
+				$footer .= intval($notices[0]['total']) . ' ' . tt('Notice', 'Notices', intval($notices[0]['total']), 'noun');
 			}
-			$i[] = '</div>';
 
-			$i[] = '</a>';
-			$i[] = '</div>';
-			$i[] = '</div>';
+			$i[] = [
+				'url' => z_root() . '/manage/' . $rr['channel_id'],
+				'title' => '',
+				'summary' => '<img src="' . $rr['xchan_photo_s'] . '" class="menu-img-2">' . $rr['channel_name'],
+				'footer' => $footer
+			];
 
 			$channels_activity++;
 
 		}
-
-		$i[] = '</div>';
 
 		if(!$channels_activity) {
 			return;
@@ -289,7 +237,8 @@ EOF;
 			'icon' => 'home',
 			'url' => z_root() . '/manage',
 			'date' => datetime_convert(),
-			'items' => $i
+			'items' => $i,
+			'tpl' => 'channel_activities.tpl'
 		];
 
 	}
