@@ -84,12 +84,12 @@ class Channel_activities {
 
 		foreach($r as $rr) {
 			$url = z_root() . '/photos/' . self::$channel['channel_address'] . '/image/' . $rr['resource_id'];
-
+			$changed = datetime_convert('UTC', date_default_timezone_get(), $rr['edited']);
 			$src = z_root() . '/photo/' . $rr['resource_id'] . '-' . $rr['imgscale'];
 			$w = $rr['width'];
 			$h = $rr['height'];
 			$alt = (($rr['description']) ? $rr['description'] : $rr['filename']);
-			$i[]  = "<a href='$url'><img src='$src' width='$w' height='$h' alt='$alt'></a>";
+			$i[]  = "<a href='$url' title='$alt'><img src='$src' width='$w' height='$h' alt='$alt' loading='lazy' ><div class='jg-caption autotime' title='$changed'></div></a>";
 		}
 
 		$i[] = '</div>';
