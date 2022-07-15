@@ -208,13 +208,13 @@ class Channel_activities {
 			$footer = '';
 
 			if ($intros[0]['total']) {
-				$footer .= intval($intros[0]['total']) . ' ' . tt('New connection', 'New connections', intval($intros[0]['total']), 'noun');
+				$footer .= intval($intros[0]['total']) . ' ' . tt('new connection', 'new connections', intval($intros[0]['total']), 'noun');
 				if ($notices[0]['total']) {
 					$footer .= ', ';
 				}
 			}
 			if ($notices[0]['total']) {
-				$footer .= intval($notices[0]['total']) . ' ' . tt('Notice', 'Notices', intval($notices[0]['total']), 'noun');
+				$footer .= intval($notices[0]['total']) . ' ' . tt('notice', 'notices', intval($notices[0]['total']), 'noun');
 			}
 
 			$i[] = [
