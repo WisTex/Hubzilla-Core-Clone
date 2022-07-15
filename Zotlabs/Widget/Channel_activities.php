@@ -25,8 +25,6 @@ class Channel_activities {
 		self::$channel = App::get_channel();
 
 		$o .= '<div id="channel-activities" class="d-none overflow-hidden">';
-
-
 		$o .= '<h2 class="mb-4">Welcome ' . self::$channel['channel_name'] . '!</h2>';
 		//$o .= 'Last login date: ' . get_pconfig(self::$uid, 'system', 'stored_login_date') . ' from ' . get_pconfig(self::$uid, 'system', 'stored_login_addr');
 
@@ -55,7 +53,6 @@ class Channel_activities {
 	//	hz_syslog('activities: ' . print_r($hookdata['activities'], true));
 
 		foreach($hookdata['activities'] as $a) {
-			hz_syslog(print_r($a,true));
 			$o .= replace_macros(get_markup_template($a['tpl']), [
 				'$url' => $a['url'],
 				'$icon' => $a['icon'],
@@ -63,6 +60,8 @@ class Channel_activities {
 				'$items' => $a['items']
 			]);
 		}
+
+		$o .= '</div>';
 
 		return $o;
 	}
